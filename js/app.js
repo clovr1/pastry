@@ -74,10 +74,10 @@ function footerHtml() {
   return '<footer class="foot"><div class="foot-in">' +
     '<div class="foot-brand"><a class="brand" href="index.html">' + brandHtml(CONFIG.shop) + '</a>' +
       '<p>' + esc(CONFIG.tagline || 'Pastry dibuat dengan tangan dan dipanggang segar setiap pagi.') + '</p></div>' +
-    '<nav class="foot-col" aria-label="Jelajahi"><h2>Jelajahi</h2><a href="index.html">Home</a><a href="products.html">Product</a>' + ((CONFIG.collections || []).length ? '<a href="koleksi.html">Collection</a>' : '') + '<a href="keranjang.html">Keranjang</a><a href="masuk.html">Akun</a></nav>' +
-    '<div class="foot-col"><h2>Kunjungi kami</h2><p>' + esc(CONFIG.address) + '</p>' +
+    '<nav class="foot-col" aria-label="Explore"><h2>Explore</h2><a href="index.html">Home</a><a href="products.html">Product</a>' + ((CONFIG.collections || []).length ? '<a href="koleksi.html">Collection</a>' : '') + '<a href="keranjang.html">Cart</a><a href="masuk.html">Account</a></nav>' +
+    '<div class="foot-col"><h2>Visit us</h2><p>' + esc(CONFIG.address) + '</p>' +
       '<p>Jam buka ' + esc(hoursText()) + '</p></div>' +
-    '<div class="foot-col"><h2>Ikuti kami</h2>' + socialHtml() + '</div>' +
+    '<div class="foot-col"><h2>Follow us</h2>' + socialHtml() + '</div>' +
     '</div><div class="foot-bot"><span>© ' + new Date().getFullYear() + ' ' + esc(CONFIG.shop) + '. Semua hak dilindungi.</span>' +
       '<span>Kami mengolah gluten, susu, telur, kacang, dan kedelai di dapur yang sama.</span></div></footer>';
 }
