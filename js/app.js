@@ -20,11 +20,6 @@ function mountShell() {
   document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
 }
 const SHELL_PANEL = `
-<button class="bar" type="button" id="bar" hidden>
-  <span><span id="barCount">0</span> item · <b id="barTotal">Rp 0</b></span>
-  <span class="go">Lihat pesanan</span>
-</button>
-
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" inert>
   <div class="dhead">
@@ -305,8 +300,7 @@ function renderCart() {
 
   $('sum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di langkah berikutnya</span></div>';
   $('sum2').innerHTML = sumRows(t, true);
-  $('cartN').textContent = t.count; $('barCount').textContent = t.count; $('barTotal').textContent = rp(t.sub);
-  $('bar').hidden = t.count === 0 || drawerOpen();
+  $('cartN').textContent = t.count;
   updateFoot(); updateInCart();
 }
 function change(id, d) {
@@ -323,7 +317,7 @@ function openCart() {
   showStep('cart');
   $('drawer').removeAttribute('inert'); $('drawer').classList.add('open'); $('scrim').hidden = false;
   try { document.documentElement.style.overflow = 'hidden'; } catch (e) {}
-  $('bar').hidden = true; $('closeCart').focus();
+  $('closeCart').focus();
 }
 function closeCart() {
   $('drawer').classList.remove('open'); $('drawer').setAttribute('inert', ''); $('scrim').hidden = true;
@@ -413,7 +407,6 @@ $('loginLink').addEventListener('click', e => {
   n.hidden = false;
   clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { n.hidden = true; }, 4500);
 });
-$('bar').addEventListener('click', openCart);
 $('closeCart').addEventListener('click', closeCart);
 $('scrim').addEventListener('click', closeCart);
 $('toMenu').addEventListener('click', e => { if (PAGE === 'products') { e.preventDefault(); closeCart(); } });
