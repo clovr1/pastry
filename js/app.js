@@ -35,16 +35,13 @@ function toggleTheme() {
 
 /* Footer: dibuat dari data toko (nama, alamat, kontak, jam buka, cara bayar) di data/menu.json. */
 function footerHtml() {
-  let wa = String(CONFIG.contact || '').replace(/\D/g, '');
-  if (wa.startsWith('0')) wa = '62' + wa.slice(1);
   const pays = (CONFIG.payments || []).map(p => esc(p.label)).join(', ');
   return '<footer class="foot"><div class="foot-in">' +
     '<div class="foot-brand"><a class="brand" href="index.html">' + brandHtml(CONFIG.shop) + '</a>' +
       '<p>' + esc(CONFIG.tagline || 'Pastry dibuat dengan tangan dan dipanggang segar setiap pagi.') + '</p></div>' +
     '<nav class="foot-col" aria-label="Jelajahi"><h2>Jelajahi</h2><a href="index.html">Home</a><a href="products.html">Product</a><a href="keranjang.html">Keranjang</a><a href="masuk.html">Akun</a></nav>' +
-    '<div class="foot-col"><h2>Kunjungi &amp; hubungi</h2><p>' + esc(CONFIG.address) + '</p>' +
-      '<p>Jam buka ' + esc(hoursText()) + '</p>' +
-      (CONFIG.contact ? '<a href="' + (wa ? 'https://wa.me/' + wa : '#') + '" target="_blank" rel="noopener">WhatsApp ' + esc(CONFIG.contact) + '</a>' : '') + '</div>' +
+    '<div class="foot-col"><h2>Kunjungi kami</h2><p>' + esc(CONFIG.address) + '</p>' +
+      '<p>Jam buka ' + esc(hoursText()) + '</p></div>' +
     '<div class="foot-col"><h2>Cara pesan</h2><p>Ambil di tempat atau delivery (minimal pesanan antar ' + rp(CONFIG.minDelivery) + ').</p>' +
       (pays ? '<p>Pembayaran: ' + pays + '.</p>' : '') + '</div>' +
     '</div><div class="foot-bot"><span>© ' + new Date().getFullYear() + ' ' + esc(CONFIG.shop) + '. Semua hak dilindungi.</span>' +

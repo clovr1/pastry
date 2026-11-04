@@ -160,4 +160,4 @@ Pesanan **bayar tunai** otomatis ditandai lunas saat statusnya diubah ke Selesai
 
 ## Footer
 
-Footer di semua halaman pembeli (kecuali detail pesanan) dibuat otomatis dari data toko: nama, alamat, jam buka, kontak WhatsApp, minimal pesanan antar, dan metode bayar. Jadi cukup ubah di dashboard owner (Pengaturan toko) atau `data/menu.json`. Kalimat pendek di bawah logo bisa diganti lewat `config.tagline` di `data/menu.json` (opsional). Gayanya ada di bagian `/* Footer */` pada `css/style.css`.
+Footer di semua halaman pembeli (kecuali detail pesanan) dibuat otomatis dari data toko: nama, alamat, jam buka, minimal pesanan antar, dan metode bayar. Jadi cukup ubah di dashboard owner (Pengaturan toko) atau `data/menu.json`. Kalimat pendek di bawah logo bisa diganti lewat `config.tagline` di `data/menu.json` (opsional). Gayanya ada di bagian `/* Footer */` pada `css/style.css`.
