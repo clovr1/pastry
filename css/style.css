@@ -498,3 +498,11 @@ a.backcart { text-decoration: none; color: inherit; }
   @keyframes bnBob { 0%, 100% { transform: translateY(0) rotate(45deg); } 50% { transform: translateY(5px) rotate(45deg); } }
 }
 @media (max-width: 900px) { .banner { min-height: 440px; height: calc(100vh - var(--hdr-h, 134px)); height: calc(100svh - var(--hdr-h, 134px)); } }
+
+/* Layar lebar: teks banner di kiri (area gelap foto), kue tetap bebas di kanan. */
+@media (min-width: 901px) {
+  .banner .bn-text { height: 100%; align-items: flex-start; justify-content: center; text-align: left; padding: 0 24px 6vh max(24px, 7vw);
+    background: linear-gradient(to right, rgba(24, 14, 9, .38) 0%, rgba(24, 14, 9, .16) 45%, rgba(24, 14, 9, 0) 70%); }
+  .banner .bn-title { max-width: none; font-size: clamp(36px, 4.6vw, 80px); }
+  .banner .bn-script { display: block; margin-top: .06em; }
+}
