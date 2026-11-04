@@ -113,6 +113,15 @@ function photo(src, name, label) {
 }
 
 /* ---- Info toko ---- */
+function storeStatus() {
+  const now = new Date(), closedDay = CONFIG.closedDays.includes(now.getDay());
+  const open = !closedDay && now.getHours() >= CONFIG.open && now.getHours() < CONFIG.close;
+  return { open, text: open ? 'Buka sekarang' : (closedDay ? 'Tutup hari ini' : 'Sedang tutup') };
+}
+function hoursText() {
+  const closed = CONFIG.closedDays.map(d => DAYS[d]).join(', ');
+  return pad(CONFIG.open) + '.00–' + pad(CONFIG.close) + '.00' + (closed ? ' · Tutup ' + closed : '');
+}
 function initInfo() {
   $('shopName').textContent = CONFIG.shop;
   if (PAGE !== 'product') document.title = (PAGE === 'products' ? 'Product · ' : '') + CONFIG.shop;
@@ -122,11 +131,9 @@ function initInfo() {
     $('bnTitle').textContent = b.title; $('bnCta').textContent = b.cta;
     $('bnImg').innerHTML = photo(b.img, CONFIG.shop, 'Foto banner · rasio 16:8');
   }
-  const now = new Date(), st = $('status');
-  const isClosedDay = CONFIG.closedDays.includes(now.getDay());
-  const openNow = !isClosedDay && now.getHours() >= CONFIG.open && now.getHours() < CONFIG.close;
-  st.textContent = openNow ? 'Buka sekarang' : (isClosedDay ? 'Tutup hari ini' : 'Sedang tutup');
-  st.classList.toggle('closed', !openNow);
+  const s = storeStatus(), st = $('status');
+  st.textContent = s.text;
+  st.classList.toggle('closed', !s.open);
 }
 
 /* ---- Menu ---- */
@@ -207,13 +214,14 @@ function updateInCart() {
 const ICO = {
   alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.01"/>',
   truck: '<path d="M1 4h13v12H1zM14 8h4l4 4v4h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/>',
-  bag: '<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
-  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'
+  bag: '<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8a3 3 0 0 1 6 0"/>'
 };
+function hoursLine() {
+  const s = storeStatus();
+  return '<p class="hours"><span class="sd' + (s.open ? '' : ' off') + '" aria-hidden="true"></span><b>' + s.text + '</b><span>Jam buka ' + hoursText() + '</span></p>';
+}
 function accordion(it) {
   const slotText = CONFIG.slots.map(s => s.label).join(', ');
-  const closed = CONFIG.closedDays.map(d => DAYS[d]).join(', ');
-  const hours = pad(CONFIG.open) + '.00–' + pad(CONFIG.close) + '.00';
   const row = (key, title, body, open) => '<details' + (open ? ' open' : '') + '><summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[key] + '</svg>' + title + '</summary><div class="acc-body">' + body + '</div></details>';
   const al = it.allergens && it.allergens.length
     ? '<p class="al-l">Produk ini mengandung:</p><div class="al">' + it.allergens.map(x => '<span>' + esc(x) + '</span>').join('') + '</div>' : '';
@@ -223,7 +231,6 @@ function accordion(it) {
       CONFIG.zones.map(z => '<li><span>' + esc(z.label) + '</span><b>' + rp(z.fee) + '</b></li>').join('') + '</ul>' +
       '<p>Jam antar: ' + esc(slotText) + '. Pilih tanggal dan jam saat memesan.</p>') +
     row('bag', 'Pick up', '<p>Ambil sendiri di <b>' + esc(CONFIG.address) + '</b>. Tidak ada minimal pesanan.</p><p>Jam ambil: ' + esc(slotText) + '. Pilih tanggal dan jam saat memesan.</p>') +
-    row('clock', 'Jam buka toko', '<p>Setiap hari <b>' + hours + '</b>' + (closed ? '. Tutup hari ' + esc(closed) + '.' : '.') + '</p>') +
     '</div>';
 }
 function renderProduct() {
@@ -243,7 +250,7 @@ function renderProduct() {
     (it.soldOut ? '<p class="soldout">Habis hari ini. Coba lagi besok atau pilih produk lain.</p>' :
       '<div class="qtyrow"><span class="label">Jumlah</span><div class="stepper q"><button type="button" data-qty="-1" aria-label="Kurangi jumlah">−</button><output id="qty" aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Tambah jumlah">+</button></div></div>' +
       '<p class="incart" id="inCart" hidden></p><button class="btn block" type="button" id="addBtn">Tambah ke keranjang</button>') +
-    '<p class="pd-desc">' + esc(it.desc) + '</p>' + accordion(it) +
+    hoursLine() + '<p class="pd-desc">' + esc(it.desc) + '</p>' + accordion(it) +
     '<p class="hint">Pesanan dikonfirmasi lewat WhatsApp sebelum kamu bayar.</p></div>';
   const others = ITEMS.filter(i => i.id !== it.id);
   const rel = others.filter(i => i.cat === it.cat).concat(others.filter(i => i.cat !== it.cat)).slice(0, 4);

@@ -295,3 +295,8 @@ a.item:hover .nm { color: var(--accent); }
 .al-l { color: var(--ink); font-weight: 600; font-size: 14px; }
 .al { display: flex; flex-wrap: wrap; gap: 8px; }
 .al span { border: 1px solid var(--warn); color: var(--warn); border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
+
+.hours { margin: -4px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 14px; color: var(--muted); }
+.hours b { color: var(--ink); font-weight: 600; }
+.hours .sd { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.hours .sd.off { background: var(--warn); }
