@@ -28,57 +28,64 @@ const SHELL_PANEL = `
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" inert>
   <div class="dhead">
-    <h2 id="cartTitle">Pesananmu</h2>
+    <h2 id="cartTitle">Shopping Cart</h2>
     <button class="x" type="button" id="closeCart" aria-label="Tutup">✕</button>
   </div>
-  <div class="dbody">
-    <div class="empty" id="emptyMsg">
-      <span>Belum ada pesanan. Tambahkan pastry dari menu.</span>
-      <a class="btn ghost" href="products.html" id="toMenu">Lihat produk</a>
-    </div>
-    <ul class="lines" id="lines"></ul>
-    <div class="sum" id="sum" hidden></div>
+  <div class="dbody" id="dbody">
+    <section class="step" id="stepCart">
+      <div class="empty" id="emptyMsg">
+        <span>Belum ada pesanan. Tambahkan pastry dari menu.</span>
+        <a class="btn ghost" href="products.html" id="toMenu">Lihat produk</a>
+      </div>
+      <div class="nudge" id="nudge" hidden></div>
+      <ul class="lines" id="lines"></ul>
+      <div class="sum" id="sum" hidden></div>
+      <button class="btn block" type="button" id="toForm" hidden>Lanjut ke detail pesanan</button>
+    </section>
 
-    <form id="form" novalidate hidden>
-      <h3 class="dh3">Detail pesanan</h3>
-      <div class="seg" role="radiogroup" aria-label="Cara terima pesanan">
-        <label><input type="radio" name="mode" value="pickup" checked> Ambil di toko</label>
-        <label><input type="radio" name="mode" value="delivery"> Diantar</label>
-      </div>
-      <div class="two">
-        <div class="field"><label for="name">Nama</label><input id="name" autocomplete="name" placeholder="Nama kamu"></div>
-        <div class="field"><label for="phone">No. WhatsApp</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0812…"></div>
-      </div>
-      <div class="two">
-        <div class="field"><label for="date">Tanggal</label><input id="date" type="date"></div>
-        <div class="field"><label for="slot">Jam</label><select id="slot"></select></div>
-      </div>
-      <div class="dfields" id="deliveryFields" hidden>
-        <div class="field"><label for="zone">Area antar</label><select id="zone"></select></div>
-        <div class="field"><label for="addr">Alamat lengkap</label><textarea id="addr" autocomplete="street-address" placeholder="Jalan, nomor rumah, patokan"></textarea></div>
-      </div>
-      <div class="field"><label for="pay">Pembayaran</label>
-        <select id="pay">
-          <option>Transfer bank (setelah konfirmasi)</option>
-          <option>QRIS (setelah konfirmasi)</option>
-          <option>Bayar tunai saat terima</option>
-        </select>
-      </div>
-      <div class="field"><label for="note">Catatan</label><textarea id="note" placeholder="Contoh: tanpa kacang, tulis ucapan di box"></textarea></div>
-      <p class="err" id="err" role="alert" hidden></p>
-      <button class="btn block" type="submit">Siapkan pesanan</button>
-      <p class="hint">Pesanan baru sah setelah kami balas dan konfirmasi di WhatsApp.</p>
-    </form>
+    <section class="step" id="stepForm" hidden>
+      <button class="back" type="button" id="backBtn">← Kembali ke keranjang</button>
+      <form id="form" novalidate>
+        <div class="seg" role="radiogroup" aria-label="Cara terima pesanan">
+          <label><input type="radio" name="mode" value="pickup" checked> Ambil di toko</label>
+          <label><input type="radio" name="mode" value="delivery"> Diantar</label>
+        </div>
+        <div class="two">
+          <div class="field"><label for="name">Nama</label><input id="name" autocomplete="name" placeholder="Nama kamu"></div>
+          <div class="field"><label for="phone">No. WhatsApp</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0812…"></div>
+        </div>
+        <div class="two">
+          <div class="field"><label for="date">Tanggal</label><input id="date" type="date"></div>
+          <div class="field"><label for="slot">Jam</label><select id="slot"></select></div>
+        </div>
+        <div class="dfields" id="deliveryFields" hidden>
+          <div class="field"><label for="zone">Area antar</label><select id="zone"></select></div>
+          <div class="field"><label for="addr">Alamat lengkap</label><textarea id="addr" autocomplete="street-address" placeholder="Jalan, nomor rumah, patokan"></textarea></div>
+        </div>
+        <div class="field"><label for="pay">Pembayaran</label>
+          <select id="pay">
+            <option>Transfer bank (setelah konfirmasi)</option>
+            <option>QRIS (setelah konfirmasi)</option>
+            <option>Bayar tunai saat terima</option>
+          </select>
+        </div>
+        <div class="field"><label for="note">Catatan</label><textarea id="note" placeholder="Contoh: tanpa kacang, tulis ucapan di box"></textarea></div>
+        <div class="sum" id="sum2"></div>
+        <p class="err" id="err" role="alert" hidden></p>
+        <button class="btn block" type="submit">Siapkan pesanan</button>
+        <p class="hint">Pesanan baru sah setelah kami balas dan konfirmasi di WhatsApp.</p>
+      </form>
 
-    <div class="done" id="done" hidden>
-      <h3>Tinggal satu langkah lagi</h3>
-      <p class="hint" style="color:var(--ink)">Buka WhatsApp, lalu tekan kirim. Kalau tombolnya tidak terbuka, salin pesan ini dan kirim sendiri ke <b id="waShow"></b>.</p>
-      <pre id="msg"></pre>
-      <div class="acts">
-        <a class="btn" id="waLink" href="#" target="_blank" rel="noopener">Buka WhatsApp</a>
-        <button class="btn ghost" type="button" id="copyBtn">Salin pesan</button>
+      <div class="done" id="done" hidden>
+        <h3>Tinggal satu langkah lagi</h3>
+        <p class="hint" style="color:var(--ink)">Buka WhatsApp, lalu tekan kirim. Kalau tombolnya tidak terbuka, salin pesan ini dan kirim sendiri ke <b id="waShow"></b>.</p>
+        <pre id="msg"></pre>
+        <div class="acts">
+          <a class="btn" id="waLink" href="#" target="_blank" rel="noopener">Buka WhatsApp</a>
+          <button class="btn ghost" type="button" id="copyBtn">Salin pesan</button>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
 </aside>
 `;
@@ -213,22 +220,49 @@ function totals() {
   return { sub, count, fee, total: sub + fee, zone };
 }
 const drawerOpen = () => $('drawer').classList.contains('open');
+const sumRows = (t, withFee) => '<div><span>Subtotal</span><span>' + rp(t.sub) + '</span></div>' +
+  (withFee && mode() === 'delivery' ? '<div class="muted"><span>Ongkir</span><span>' + rp(t.fee) + '</span></div>' : '') +
+  (withFee ? '<div class="total"><span>Total</span><span>' + rp(t.total) + '</span></div>' : '');
+const TRUCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4h13v12H1zM14 8h4l4 4v4h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>';
+let step = 'cart';
+function showStep(name) {
+  step = name;
+  $('stepCart').hidden = name !== 'cart';
+  $('stepForm').hidden = name !== 'form';
+  $('cartTitle').textContent = name === 'cart' ? 'Shopping Cart' : 'Detail pesanan';
+  $('dbody').scrollTop = 0;
+}
 function renderCart() {
-  const t = totals(), ids = Object.keys(state.cart);
-  $('emptyMsg').hidden = ids.length > 0;
-  $('form').hidden = ids.length === 0;
-  if (ids.length === 0) $('done').hidden = true;
+  const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
+  if (!has && step === 'form') showStep('cart');
+  $('emptyMsg').hidden = has;
+  $('toForm').hidden = !has;
+  if (!has) $('done').hidden = true;
+
+  // pengingat minimal pesanan antar
+  const nd = $('nudge');
+  nd.hidden = !has;
+  if (has) {
+    const left = CONFIG.minDelivery - t.sub, pct = Math.min(100, Math.round(t.sub / CONFIG.minDelivery * 100));
+    nd.innerHTML = '<div class="nrow">' + TRUCK + '<span>' + (left > 0
+      ? 'Tambah <b>' + rp(left) + '</b> lagi supaya pesanan bisa diantar. Ambil di toko tanpa minimal.'
+      : 'Pesananmu sudah memenuhi minimal untuk diantar.') + '</span></div>' +
+      '<div class="pg" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
+  }
+
   $('lines').innerHTML = ids.map(id => {
     const it = byId(id), q = state.cart[id];
-    return '<li><span class="ln">' + esc(it.name) + '<div class="sub">' + q + ' × ' + rp(it.price) + '</div></span>' +
-      '<div class="stepper"><button type="button" data-act="dec" data-id="' + id + '" aria-label="Kurangi ' + esc(it.name) + '">−</button><output>' + q + '</output><button type="button" data-act="inc" data-id="' + id + '" aria-label="Tambah ' + esc(it.name) + '">+</button></div></li>';
+    return '<li><div class="th">' + (it.img ? '<img src="' + esc(it.img) + '" alt="" onerror="this.hidden=true">' : '') + '</div>' +
+      '<div class="lm"><span class="ln">' + esc(it.name) + '</span>' +
+      '<div class="stepper"><button type="button" data-act="dec" data-id="' + id + '" aria-label="Kurangi ' + esc(it.name) + '">−</button><output>' + q + '</output><button type="button" data-act="inc" data-id="' + id + '" aria-label="Tambah ' + esc(it.name) + '">+</button></div></div>' +
+      '<div class="rt"><button type="button" class="rm" data-act="rm" data-id="' + id + '" aria-label="Hapus ' + esc(it.name) + '">×</button><span class="price">' + rp(it.price * q) + '</span></div></li>';
   }).join('');
+
   const sum = $('sum');
-  sum.hidden = ids.length === 0;
-  sum.innerHTML = '<div><span>Subtotal</span><span>' + rp(t.sub) + '</span></div>' +
-    (mode() === 'delivery' ? '<div class="muted"><span>Ongkir</span><span>' + rp(t.fee) + '</span></div>' : '') +
-    '<div class="total"><span>Total</span><span>' + rp(t.total) + '</span></div>';
-  $('cartN').textContent = t.count; $('barCount').textContent = t.count; $('barTotal').textContent = rp(t.total);
+  sum.hidden = !has;
+  sum.innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di langkah berikutnya</span></div>';
+  $('sum2').innerHTML = sumRows(t, true);
+  $('cartN').textContent = t.count; $('barCount').textContent = t.count; $('barTotal').textContent = rp(t.sub);
   $('bar').hidden = t.count === 0 || drawerOpen();
 }
 function change(id, d) {
@@ -242,6 +276,7 @@ function change(id, d) {
 let lastFocus = null;
 function openCart() {
   lastFocus = document.activeElement;
+  showStep('cart');
   $('drawer').removeAttribute('inert'); $('drawer').classList.add('open'); $('scrim').hidden = false;
   try { document.documentElement.style.overflow = 'hidden'; } catch (e) {}
   $('bar').hidden = true; $('closeCart').focus();
@@ -317,13 +352,15 @@ document.addEventListener('click', e => {
     return;
   }
   const b = e.target.closest('[data-act]');
-  if (b) change(b.dataset.id, b.dataset.act === 'inc' ? 1 : -1);
+  if (b) change(b.dataset.id, b.dataset.act === 'inc' ? 1 : (b.dataset.act === 'rm' ? -999 : -1));
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
 document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', syncMode));
 $('zone').addEventListener('change', () => { renderCart(); $('done').hidden = true; });
 $('date').addEventListener('change', buildSlots);
 $('cartBtn').addEventListener('click', openCart);
+$('toForm').addEventListener('click', () => { showStep('form'); $('name').focus({ preventScroll: true }); });
+$('backBtn').addEventListener('click', () => showStep('cart'));
 let noticeTimer = 0;
 $('loginLink').addEventListener('click', e => {
   e.preventDefault();
