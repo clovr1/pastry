@@ -94,6 +94,13 @@ Tombol bulan/matahari di menu atas mengganti mode. Kalau pembeli belum memilih, 
 pengaturan perangkatnya. Pilihan disimpan di browser (kunci `sweetbite-theme`) dan berlaku di semua halaman.
 Warna kedua mode ada di bagian atas `css/style.css`.
 
+## Pemecahan masalah
+
+Kalau halaman owner atau checkout menampilkan pesan soal database atau ekstensi, buka
+`http://localhost/nama-folder/api/diagnose.php`. Halaman itu menampilkan PHP dan `php.ini` mana yang dipakai web server,
+apakah `pdo_sqlite` aktif, dan apakah folder `storage` bisa ditulis. Ia hanya menjawab dari komputer yang sama.
+**Hapus file `api/diagnose.php` sebelum situs dipasang di internet.**
+
 ## Keamanan dan perawatan
 
 - **Kata sandi owner** disimpan sebagai hash di `api/config.php` (tidak masuk GitHub). Setelah 6 kali salah, login dikunci 10 menit.
