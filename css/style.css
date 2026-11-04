@@ -626,3 +626,70 @@ body.has-foot > .wrap + * { margin-top: 0; }
 .acctbtn svg { width: 20px; height: 20px; }
 .foot-col a.foot-soc { display: inline-flex; align-items: center; gap: 10px; }
 .foot-soc svg { width: 20px; height: 20px; flex: none; }
+
+/* ============ Animasi ============ */
+:root { --ease: cubic-bezier(.22, .61, .36, 1); }
+@view-transition { navigation: auto; }
+/* peralihan tema melingkar: hanya saat tombol tema ditekan (kelas vt-theme); perpindahan halaman memakai efek pudar bawaan browser */
+html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html.vt-theme::view-transition-old(root) { z-index: 1; }
+html.vt-theme::view-transition-new(root) { z-index: 2; }
+
+/* peralihan mode terang/gelap (cadangan kalau browser tidak mendukung peralihan melingkar) */
+html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+  transition: background-color .5s var(--ease), color .5s var(--ease), border-color .5s var(--ease), fill .5s var(--ease), stroke .5s var(--ease), box-shadow .5s var(--ease) !important;
+}
+.themebtn svg { transition: transform .5s var(--ease); }
+.themebtn.spin svg { animation: themeSpin .6s var(--ease); }
+@keyframes themeSpin { from { transform: rotate(-90deg) scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: no-preference) {
+  /* muncul saat digulir (kelas .rv ditambahkan oleh js/fx.js) */
+  .fx .rv { opacity: 0; transform: translateY(26px); transition: opacity .75s var(--ease), transform .75s var(--ease); transition-delay: calc(var(--d, 0) * 80ms); }
+  .fx .rv.in { opacity: 1; transform: none; }
+
+  /* foto memudar masuk */
+  .fx .ph img { opacity: 0; transition: opacity .7s var(--ease), transform .9s var(--ease); }
+  .fx .ph img.in { opacity: 1; }
+
+  /* banner: foto perlahan mengecil, teks naik bertahap */
+  #bnImg img { animation: bnZoom 2.2s var(--ease) both; }
+  @keyframes bnZoom { from { transform: scale(1.14); } to { transform: scale(1); } }
+  #bnImg { top: -120px !important; will-change: transform; }
+  .bn-text { will-change: transform, opacity; }
+  .bn-text > * { animation: rise .9s var(--ease) both; }
+  .bn-text > :nth-child(1) { animation-delay: .15s; }
+  .bn-text > :nth-child(2) { animation-delay: .3s; }
+  .bn-text > :nth-child(3) { animation-delay: .5s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+  .bn-scroll { animation: fadeIn 1s 1.1s var(--ease) both; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* menu atas dan kartu */
+  .topbar { animation: dropIn .7s var(--ease) backwards; }
+  @keyframes dropIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+  .item .ph img { transition: opacity .7s var(--ease), transform .9s var(--ease); }
+  .item:hover .ph img { transform: scale(1.06); }
+  .btn, .o-btn, .tab { transition: transform .2s var(--ease), background-color .2s ease, color .2s ease, border-color .2s ease, opacity .2s ease; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active, .o-btn:active, .tab:active { transform: scale(.96); }
+  .cartbtn, .themebtn, .acctbtn { transition: transform .2s var(--ease), background-color .2s ease, color .2s ease, border-color .2s ease; }
+  .cartbtn:hover, .themebtn:hover, .acctbtn:hover { transform: translateY(-2px); }
+  .cn.pop { animation: pop .45s var(--ease); }
+  @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
+  .nav a { position: relative; }
+  .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); }
+  .nav a:hover::after, .nav a[aria-current]::after { transform: scaleX(1); }
+  .acc-order, .acc-vrow, .ord-card, .o-card2, .o-prod { transition: transform .25s var(--ease), border-color .2s ease, box-shadow .25s ease; }
+  .acc-vrow:hover, .ord-card:hover { box-shadow: 0 10px 24px rgba(0, 0, 0, .08); }
+  .notice, .closedbar { animation: dropIn .5s var(--ease) backwards; }
+  .scrim { animation: fadeIn .25s ease both; }
+}
+
+/* garis kemajuan gulir di paling atas layar */
+.progress { position: fixed; z-index: 60; top: 0; left: 0; right: 0; height: 3px; background: var(--accent); transform: scaleX(0); transform-origin: left; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .progress { display: none; }
+}

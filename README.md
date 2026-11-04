@@ -163,3 +163,16 @@ Pesanan **bayar tunai** otomatis ditandai lunas saat statusnya diubah ke Selesai
 Footer di semua halaman pembeli (kecuali detail pesanan) dibuat otomatis dari data toko: nama, alamat, jam buka, dan media sosial. Jadi cukup ubah di dashboard owner (Pengaturan toko) atau `data/menu.json`. Kalimat pendek di bawah logo bisa diganti lewat `config.tagline` di `data/menu.json` (opsional). Gayanya ada di bagian `/* Footer */` pada `css/style.css`.
 
 **Media sosial di footer**: isi Instagram, TikTok, dan Facebook di dashboard owner (Pengaturan toko, bagian Info toko). Boleh ditulis `@namaakun` atau tautan lengkap. Yang dikosongkan tidak ditampilkan. Ikon akun (orang) di menu atas membuka halaman masuk/daftar, dan berubah gelap saat pembeli sudah masuk.
+
+## Animasi
+
+Situs memakai animasi ringan tanpa library (CSS di bagian `/* Animasi */` pada `css/style.css`, JavaScript di `js/fx.js`):
+
+- Ganti mode terang/gelap: lingkaran warna meluas dari tombol tema (browser yang belum mendukung memakai pudar warna halus).
+- Banner: foto perlahan mengecil saat halaman dibuka, teks naik bertahap, lalu foto bergeser pelan (paralaks) dan teks memudar saat digulir.
+- Garis merah tipis di paling atas layar menunjukkan seberapa jauh halaman sudah digulir.
+- Kartu produk, judul, footer, riwayat pesanan, dan lainnya muncul bertahap saat digulir ke layar. Foto memudar masuk setelah selesai dimuat, dan membesar sedikit saat disorot.
+- Tombol terangkat saat disorot dan menekan saat diklik, garis bawah menu menyapu, angka keranjang membesar sebentar saat produk ditambah, dan perpindahan antarhalaman memudar halus (Chrome/Edge/Safari terbaru).
+- Semua animasi mati otomatis kalau perangkat pembeli memakai pengaturan "kurangi gerakan".
+
+Kalau ingin mematikan satu efek, hapus aturannya di bagian `/* Animasi */`; kalau ingin mematikan semuanya, hapus tag `js/fx.js` dari halaman dan bagian CSS itu.

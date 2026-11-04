@@ -30,9 +30,12 @@
   }
   $('themeBtn').addEventListener('click', () => {
     const next = curTheme() === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
+    const root = document.documentElement;
+    root.classList.add('theme-anim');
+    root.setAttribute('data-theme', next);
     try { localStorage.setItem('sweetbite-theme', next); } catch (e) {}
     paintTheme();
+    setTimeout(() => root.classList.remove('theme-anim'), 600);
   });
   paintTheme();
 

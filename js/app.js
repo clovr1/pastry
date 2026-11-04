@@ -30,9 +30,31 @@ function paintThemeBtn() {
 }
 function toggleTheme() {
   const next = currentTheme() === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
-  paintThemeBtn();
+  const apply = () => {
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+    paintThemeBtn();
+  };
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const btn = document.getElementById('themeBtn');
+  if (btn) { btn.classList.remove('spin'); void btn.offsetWidth; btn.classList.add('spin'); }
+  if (reduced) { apply(); return; }
+  // peralihan melingkar yang meluas dari tombol tema (browser yang mendukung), kalau tidak: warna memudar halus
+  if (document.startViewTransition && btn) {
+    const r = btn.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    document.documentElement.classList.add('vt-theme');
+    const vt = document.startViewTransition(apply);
+    vt.finished.finally(() => document.documentElement.classList.remove('vt-theme'));
+    vt.ready.then(() => document.documentElement.animate(
+      { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)'] },
+      { duration: 650, easing: 'cubic-bezier(.4, 0, .2, 1)', pseudoElement: '::view-transition-new(root)' })).catch(() => {});
+    return;
+  }
+  const root = document.documentElement;
+  root.classList.add('theme-anim');
+  apply();
+  setTimeout(() => root.classList.remove('theme-anim'), 600);
 }
 
 /* Footer: dibuat dari data toko (nama, alamat, kontak, jam buka, cara bayar) di data/menu.json. */
@@ -396,7 +418,10 @@ function renderCart() {
   $('sum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
   $('dfoot').hidden = !has;
   const badge = $('cartN');
+  const prevN = Number(badge.dataset.n || 0);
   badge.textContent = t.count > 99 ? '99+' : t.count; badge.hidden = t.count === 0;
+  if (t.count > prevN && prevN !== undefined && badge.dataset.n !== undefined) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
+  badge.dataset.n = String(t.count);
   $('cartBtn').setAttribute('aria-label', (PAGE === 'checkout' ? 'Kembali ke keranjang, ' : 'Shopping Cart, ') + t.count + ' item');
   updateInCart();
   if (PAGE === 'checkout') renderCheckout();
