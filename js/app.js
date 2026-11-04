@@ -74,8 +74,7 @@ function footerHtml() {
   return '<footer class="foot"><div class="foot-in">' +
     '<div class="foot-brand"><a class="brand" href="index.html">' + brandHtml(CONFIG.shop) + '</a>' +
       '<p>' + esc(CONFIG.tagline || 'Pastry dibuat dengan tangan dan dipanggang segar setiap pagi.') + '</p></div>' +
-    '<nav class="foot-col" aria-label="Jelajahi"><h2>Jelajahi</h2><a href="index.html">Home</a><a href="products.html">Product</a><a href="keranjang.html">Keranjang</a><a href="masuk.html">Akun</a></nav>' +
-    ((CONFIG.collections || []).length ? '<nav class="foot-col" aria-label="Koleksi"><h2>Koleksi</h2>' + CONFIG.collections.map(c => '<a href="koleksi.html?id=' + encodeURIComponent(c.id) + '">' + esc(c.title) + '</a>').join('') + '</nav>' : '') +
+    '<nav class="foot-col" aria-label="Jelajahi"><h2>Jelajahi</h2><a href="index.html">Home</a><a href="products.html">Product</a>' + ((CONFIG.collections || []).length ? '<a href="koleksi.html">Collection</a>' : '') + '<a href="keranjang.html">Keranjang</a><a href="masuk.html">Akun</a></nav>' +
     '<div class="foot-col"><h2>Kunjungi kami</h2><p>' + esc(CONFIG.address) + '</p>' +
       '<p>Jam buka ' + esc(hoursText()) + '</p></div>' +
     '<div class="foot-col"><h2>Ikuti kami</h2>' + socialHtml() + '</div>' +
