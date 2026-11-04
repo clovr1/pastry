@@ -130,11 +130,14 @@ function initHeaderHide() {
   const bar = document.getElementById('topbar');
   if (!bar) return;
   const root = document.documentElement;
-  const setOffset = () => {
-    root.style.setProperty('--hdr', (bar.classList.contains('is-hidden') ? 0 : bar.offsetHeight) + 'px');
-    root.style.setProperty('--hdr-h', bar.offsetHeight + 'px');   // tinggi menu yang tidak berubah walau menu bersembunyi (dipakai banner)
-  };
-  const setHidden = h => { if (bar.classList.contains('is-hidden') === h) return; bar.classList.toggle('is-hidden', h); setOffset(); };
+  let barH = bar.offsetHeight;
+  // --hdr-h (tinggi menu, dipakai banner) hanya diperbarui saat ukuran berubah; menulis variabel di <html> memaksa seluruh halaman dihitung ulang,
+  // jadi saat menu muncul/hilang saat digulir yang diperbarui hanya elemen lengket yang memakainya (kolom ringkasan, info produk).
+  const stickies = () => document.querySelectorAll('.pd-info, .kr-sum');
+  const measure = () => { barH = bar.offsetHeight; root.style.setProperty('--hdr-h', barH + 'px'); apply(); };
+  const apply = () => { const v = (bar.classList.contains('is-hidden') ? 0 : barH) + 'px'; stickies().forEach(el => el.style.setProperty('--hdr', v)); };
+  const setOffset = apply;
+  const setHidden = h => { if (bar.classList.contains('is-hidden') === h) return; bar.classList.toggle('is-hidden', h); apply(); };
   let lastY = window.scrollY, acc = 0;
   function onScroll() {
     const y = Math.max(0, window.scrollY), d = y - lastY;
@@ -147,10 +150,11 @@ function initHeaderHide() {
     else if (acc < -18) { setHidden(false); acc = 0; }
   }
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', setOffset);
-  window.addEventListener('load', setOffset);
+  window.addEventListener('resize', measure);
+  window.addEventListener('load', measure);
   bar.addEventListener('focusin', () => setHidden(false));   // pengguna keyboard tidak kehilangan menu
-  setOffset(); onScroll();
+  measure(); onScroll();
+  new MutationObserver(apply).observe(document.body, { childList: true });   // elemen lengket yang dibuat belakangan ikut mendapat nilainya
 }
 const SHELL_PANEL = `
 <div class="scrim" id="scrim" hidden></div>
@@ -191,7 +195,7 @@ const save = () => { try { localStorage.setItem('sweetbite-cart', JSON.stringify
 
 function photo(src, name, label) {
   const ph = '<div class="noimg"' + (src ? ' hidden' : '') + '><i>' + esc(name) + '</i><span>' + label + '</span></div>';
-  return src ? '<img src="' + esc(src) + '" alt="' + esc(name) + '" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false">' + ph : ph;
+  return src ? '<img src="' + esc(src) + '" alt="' + esc(name) + '" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false">' + ph : ph;
 }
 
 /* ---- Info toko ---- */

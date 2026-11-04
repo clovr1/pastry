@@ -52,10 +52,13 @@
   bar.className = 'progress'; bar.setAttribute('aria-hidden', 'true');
   document.body.appendChild(bar);
   const banner = document.getElementById('banner'), bnImg = document.getElementById('bnImg'), bnText = banner && banner.querySelector('.bn-text');
+  const cssScroll = window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()');   // paralaks dan garis kemajuan dijalankan CSS (mulus, tanpa JS)
+  if (cssScroll) html.classList.add('css-scroll');
   let ticking = false;
   function onScroll() {
     ticking = false;
     const y = window.scrollY, max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    if (cssScroll) return;
     bar.style.transform = 'scaleX(' + Math.min(1, y / max) + ')';
     if (reduced || !banner) return;
     const h = banner.offsetHeight;

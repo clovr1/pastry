@@ -106,8 +106,8 @@ button { cursor: pointer; }
 .bn-script { font-family: var(--font-brand); font-weight: 400; color: #FFD9DF; text-shadow: 0 2px 16px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .45); font-size: 1.25em; line-height: .8; letter-spacing: 0; white-space: nowrap; }
 .bn-cta { margin-top: 6px; }
 /* Tombol kaca: gelap transparan + blur + garis putih, supaya tetap jelas di atas foto yang merah. Hover: penuh merah. */
-.bn-cta .btn { background: rgba(24, 14, 9, .34); color: #fff; font-size: 16px; padding: 14px 32px;
-  border: 1.5px solid rgba(255, 255, 255, .85); backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
+.bn-cta .btn { background: rgba(24, 14, 9, .5); color: #fff; font-size: 16px; padding: 14px 32px;
+  border: 1.5px solid rgba(255, 255, 255, .85);
   box-shadow: 0 8px 24px rgba(0, 0, 0, .22); text-shadow: 0 1px 6px rgba(0, 0, 0, .35); transition: background .2s ease, border-color .2s ease, transform .2s ease; }
 .bn-cta .btn::after { content: "→"; margin-left: 8px; }
 .bn-cta .btn:hover { opacity: 1; background: var(--bn-ink); border-color: var(--bn-ink); transform: translateY(-1px); }
@@ -787,3 +787,28 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
   .auth .err:not([hidden]) { animation: shake .45s var(--ease); }
   @keyframes shake { 0%, 100% { transform: none; } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 }
+
+/* paralaks banner dan garis kemajuan lewat CSS scroll-driven animation (jalan di GPU, tidak membebani JavaScript saat menggulir) */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html.css-scroll #bnImg { animation: bnPar linear both; animation-timeline: scroll(root); animation-range: 0 700px; }
+    html.css-scroll .bn-text { animation: bnFade linear both; animation-timeline: scroll(root); animation-range: 0 520px; }
+    @keyframes bnPar { to { transform: translate3d(0, 110px, 0); } }
+    @keyframes bnFade { to { opacity: 0; transform: translate3d(0, -40px, 0); } }
+  }
+  html.css-scroll .progress { animation: progGrow linear both; animation-timeline: scroll(root); transform: none; }
+  @keyframes progGrow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+}
+
+/* Footer lebih besar dan lega */
+.foot-in { padding-block: 84px 56px; gap: 56px; grid-template-columns: 1.4fr 0.8fr 1.2fr 1.2fr; }
+.foot .brand .b1 { font-size: 64px; }
+.foot .brand .b2 { font-size: 22px; }
+.foot-brand { gap: 20px; }
+.foot-brand p { font-size: 18px; line-height: 1.6; max-width: 28ch; }
+.foot-col { gap: 14px; font-size: 17px; }
+.foot-col h2 { font-size: 14px; margin-bottom: 8px; }
+.foot-soc svg { width: 24px; height: 24px; }
+.foot-bot { padding-block: 26px 36px; font-size: 14.5px; }
+@media (max-width: 900px) { .foot-in { padding-block: 56px 40px; gap: 40px; } .foot .brand .b1 { font-size: 52px; } }
+@media (max-width: 520px) { .foot-in { gap: 34px; } .foot-brand p { font-size: 17px; } }
