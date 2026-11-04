@@ -32,16 +32,12 @@
     document.title = 'Masuk · ' + CONFIG.shop;
     root.innerHTML =
       '<div class="auth">' +
-        '<div class="auth-head"><h1>Akun ' + esc(CONFIG.shop) + '</h1><p>Simpan data dan lihat riwayat pesananmu. Tanpa akun pun kamu tetap bisa memesan.</p></div>' +
-        '<div class="seg auth-tabs" role="tablist">' +
-          '<button type="button" role="tab" id="tabIn" aria-selected="true">Masuk</button>' +
-          '<button type="button" role="tab" id="tabUp" aria-selected="false">Daftar</button></div>' +
+        '<div class="auth-head"><h1 id="aTitle"></h1><p id="aSub"></p></div>' +
         '<form id="fIn" class="auth-form" novalidate>' +
           field('inEmail', 'Email', 'email', ' autocomplete="email" inputmode="email" required') +
           field('inPw', 'Kata sandi', 'password', ' autocomplete="current-password" required') +
           '<p class="err" id="inErr" role="alert" hidden></p>' +
           '<button class="btn block" type="submit" id="inBtn">Masuk</button>' +
-          '<p class="auth-alt">Belum punya akun? <a href="#daftar" id="goUp">Daftar</a></p>' +
         '</form>' +
         '<form id="fUp" class="auth-form" novalidate hidden>' +
           field('upName', 'Nama lengkap', 'text', ' autocomplete="name" required') +
@@ -51,23 +47,25 @@
           '<p class="auth-hint">Minimal 8 karakter.</p>' +
           '<p class="err" id="upErr" role="alert" hidden></p>' +
           '<button class="btn block" type="submit" id="upBtn">Buat akun</button>' +
-          '<p class="auth-alt">Sudah punya akun? <a href="#masuk" id="goIn">Masuk</a></p>' +
         '</form>' +
+        '<div class="auth-switch"><span id="swText"></span><button class="btn ghost block" type="button" id="swBtn"></button></div>' +
       '</div>';
 
     const $q = id => document.getElementById(id);
+    let cur = 'in';
     function tab(which) {
+      cur = which;
       const up = which === 'up';
       $q('fIn').hidden = up; $q('fUp').hidden = !up;
-      $q('tabIn').setAttribute('aria-selected', String(!up)); $q('tabUp').setAttribute('aria-selected', String(up));
+      $q('aTitle').textContent = up ? 'Buat akun baru' : 'Selamat datang kembali';
+      $q('aSub').textContent = up ? 'Daftar untuk menyimpan data dan melihat riwayat pesananmu.' : 'Masuk untuk melihat riwayat pesananmu dan memesan lebih cepat.';
+      $q('swText').textContent = up ? 'Sudah punya akun?' : 'Belum punya akun?';
+      $q('swBtn').textContent = up ? 'Masuk' : 'Buat akun baru';
       document.title = (up ? 'Daftar · ' : 'Masuk · ') + CONFIG.shop;
       try { history.replaceState(null, '', location.pathname + location.search + (up ? '#daftar' : '')); } catch (e) {}
       $q(up ? 'upName' : 'inEmail').focus();
     }
-    $q('tabIn').addEventListener('click', () => tab('in'));
-    $q('tabUp').addEventListener('click', () => tab('up'));
-    $q('goUp').addEventListener('click', e => { e.preventDefault(); tab('up'); });
-    $q('goIn').addEventListener('click', e => { e.preventDefault(); tab('in'); });
+    $q('swBtn').addEventListener('click', () => tab(cur === 'in' ? 'up' : 'in'));
 
     $q('fIn').addEventListener('submit', async e => {
       e.preventDefault();
