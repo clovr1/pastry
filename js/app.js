@@ -1,14 +1,37 @@
 /* Sweet Bite: logika bersama untuk semua halaman (keranjang, panel pesanan, menu atas). */
 const PAGE = document.body.dataset.page || 'home';
 
+/* ---- Mode terang / gelap ---- */
+const THEME_KEY = 'sweetbite-theme';
+const THEME_BTN_HTML = '<button class="themebtn" type="button" id="themeBtn"></button>';
+const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+const systemDark = () => window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+const currentTheme = () => document.documentElement.getAttribute('data-theme') || (systemDark() ? 'dark' : 'light');
+function paintThemeBtn() {
+  const b = document.getElementById('themeBtn');
+  if (!b) return;
+  const dark = currentTheme() === 'dark';
+  b.innerHTML = dark ? ICON_SUN : ICON_MOON;
+  b.setAttribute('aria-label', dark ? 'Ganti ke mode terang' : 'Ganti ke mode gelap');
+  b.title = dark ? 'Mode terang' : 'Mode gelap';
+}
+function toggleTheme() {
+  const next = currentTheme() === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  paintThemeBtn();
+}
+
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
 function mountShell() {
   if (PAGE === 'checkout') {
     document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
       '<header class="top top-min" id="top">' +
         '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
+        '<div class="top-r">' + THEME_BTN_HTML +
         '<button class="backcart" type="button" id="cartBtn" aria-label="Kembali ke keranjang, 0 item">' +
-          '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></button>' +
+          '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></button></div>' +
       '</header><div class="notice" id="notice" role="status" hidden></div>');
     document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
     return;
@@ -22,7 +45,7 @@ function mountShell() {
         '<a href="products.html"' + cur('products') + '>Product</a>' +
         '<a href="#" id="loginLink">Login</a>' +
       '</nav>' +
-      '<div class="top-r"><span class="status" id="status">Memuat…</span>' +
+      '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML +
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 7H6"/></svg>' +
           '<span class="cn" id="cartN" hidden>0</span></button></div>' +
@@ -383,6 +406,10 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
 $('cartBtn').addEventListener('click', openCart);
+$('themeBtn').addEventListener('click', toggleTheme);
+paintThemeBtn();
+// jika pembeli belum memilih sendiri, ikuti perubahan pengaturan sistem
+try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintThemeBtn); } catch (e) {}
 let noticeTimer = 0;
 const loginLink = $('loginLink');
 if (loginLink) loginLink.addEventListener('click', e => {

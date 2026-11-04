@@ -79,3 +79,9 @@ Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` di `ITEMS` 
 Tombol "Siapkan pesanan" membuat teks pesanan dan tautan `https://wa.me/<nomor>?text=…`.
 Pelanggan membuka WhatsApp dan mengirim pesan itu. Tidak ada server atau database,
 dan pesanan baru sah setelah toko membalas dan mengonfirmasi.
+
+## Mode terang dan gelap
+
+Tombol bulan/matahari di menu atas mengganti mode. Kalau pembeli belum memilih, situs mengikuti
+pengaturan perangkatnya. Pilihan disimpan di browser (kunci `sweetbite-theme`) dan berlaku di semua halaman.
+Warna kedua mode ada di bagian atas `css/style.css`.

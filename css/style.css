@@ -17,6 +17,7 @@ img { max-width: 100%; }
   --tile: #F8F4EC;
   --bn-ink: #B3213B;
   --bn-scrim: rgba(255, 255, 255, .8);
+  color-scheme: light;
   --font-display: "Instrument Serif", "Times New Roman", Georgia, serif;
   --font-name: "Cormorant Garamond", "Times New Roman", Georgia, serif;
   --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -342,3 +343,9 @@ a.item:hover .nm { color: var(--accent); }
 .backcart:hover { background: var(--ink); color: var(--bg); }
 .backcart .cn { min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; font-variant-numeric: tabular-nums; }
 @media (max-width: 480px) { .backcart { padding: 9px 14px; font-size: 13px; } }
+
+/* Tombol mode terang / gelap */
+.themebtn { width: 44px; height: 44px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; display: inline-grid; place-items: center; flex: none; }
+.themebtn:hover { border-color: var(--ink); }
+.themebtn svg { width: 20px; height: 20px; }
+.top-r { gap: 12px; }
