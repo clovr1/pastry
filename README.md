@@ -1,4 +1,4 @@
-# Senja Pastry
+# Sweet Bite
 
 Website pemesanan pastry: pelanggan memilih pastry, memilih ambil di toko atau diantar,
 lalu pesanan dikirim ke WhatsApp toko. Situs statis (HTML, CSS, JavaScript), tanpa build dan tanpa dependensi.

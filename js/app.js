@@ -1,4 +1,4 @@
-/* Senja Pastry: logika bersama untuk semua halaman (keranjang, panel pesanan, menu atas). */
+/* Sweet Bite: logika bersama untuk semua halaman (keranjang, panel pesanan, menu atas). */
 const PAGE = document.body.dataset.page || 'home';
 
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
@@ -6,7 +6,7 @@ function mountShell() {
   if (PAGE === 'checkout') {
     document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
       '<header class="top top-min" id="top">' +
-        '<a class="brand" href="index.html" id="shopName">Senja Pastry</a>' +
+        '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
         '<button class="backcart" type="button" id="cartBtn" aria-label="Kembali ke keranjang, 0 item">' +
           '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></button>' +
       '</header><div class="notice" id="notice" role="status" hidden></div>');
@@ -16,7 +16,7 @@ function mountShell() {
   const cur = n => ((PAGE === n || (n === 'products' && PAGE === 'product')) ? ' aria-current="page"' : '');
   document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
     '<header class="top" id="top">' +
-      '<a class="brand" href="index.html" id="shopName">Senja Pastry</a>' +
+      '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
@@ -61,10 +61,10 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 mountShell();
 
 const state = { cart: {}, filter: 'all' };
-try { const s = JSON.parse(localStorage.getItem('senja-cart') || '{}'); if (s && typeof s === 'object') state.cart = s; } catch (e) {}
+try { const s = JSON.parse(localStorage.getItem('sweetbite-cart') || '{}'); if (s && typeof s === 'object') state.cart = s; } catch (e) {}
 const byId = id => ITEMS.find(i => i.id === id);
 Object.keys(state.cart).forEach(id => { const it = byId(id); if (!it || it.soldOut || !(state.cart[id] > 0)) delete state.cart[id]; });
-const save = () => { try { localStorage.setItem('senja-cart', JSON.stringify(state.cart)); } catch (e) {} };
+const save = () => { try { localStorage.setItem('sweetbite-cart', JSON.stringify(state.cart)); } catch (e) {} };
 
 function photo(src, name, label) {
   const ph = '<div class="noimg"' + (src ? ' hidden' : '') + '><i>' + esc(name) + '</i><span>' + label + '</span></div>';

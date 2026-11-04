@@ -1,6 +1,6 @@
 /* ====== EDIT BAGIAN INI: nama toko, kontak, jam, ongkir, banner, foto, dan menu ====== */
 const CONFIG = {
-  shop: 'Senja Pastry',
+  shop: 'Sweet Bite',
   whatsapp: '6281234567890',          // format 62…, tanpa + dan tanpa spasi
   address: 'Jl. Melati No. 12, Bandung',
   deliveryText: 'Ongkir mulai Rp 10.000. Minimal pesanan Rp 75.000.',
