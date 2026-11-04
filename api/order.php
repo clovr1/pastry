@@ -11,6 +11,12 @@ $cfg = sb_config();
 $C = $menu['config'];
 $now = time();
 
+/* --- toko sedang tutup sementara (diatur owner) --- */
+if (empty($C['acceptOrders'])) {
+    $note = trim((string)($C['closedNote'] ?? ''));
+    sb_fail(503, 'Toko sedang tutup sementara dan belum menerima pesanan.' . ($note !== '' ? ' ' . $note : ''));
+}
+
 /* --- data pemesan --- */
 $name = sb_text($in['name'] ?? '', 80);
 if (sb_len($name) < 2) sb_fail(422, 'Isi nama kamu.');
@@ -98,6 +104,13 @@ $orderId = sb_store_update(function (&$d) use ($cfg, $now, $ipHash, $userId, $pu
     if ($recent >= (int)$cfg['order_limit_max']) {
         sb_fail(429, 'Terlalu banyak pesanan dalam waktu singkat. Coba lagi beberapa menit lagi.');
     }
+    // stok: cek semua produk dulu, baru dikurangi, supaya tidak ada yang berkurang kalau salah satunya kurang
+    foreach ($lines as $l) {
+        if (isset($d['stock'][$l['id']]) && (int)$d['stock'][$l['id']] < $l['qty']) return ['short' => $l['name'], 'left' => max(0, (int)$d['stock'][$l['id']])];
+    }
+    foreach ($lines as $l) {
+        if (isset($d['stock'][$l['id']])) $d['stock'][$l['id']] = max(0, (int)$d['stock'][$l['id']] - $l['qty']);
+    }
     $id = ++$d['seq'];
     $d['orders'][] = [
         'id' => $id, 'public_id' => $publicId, 'created_at' => $now, 'updated_at' => $now,
@@ -111,5 +124,11 @@ $orderId = sb_store_update(function (&$d) use ($cfg, $now, $ipHash, $userId, $pu
     ];
     return $id;
 });
+
+if (is_array($orderId)) {
+    sb_fail(422, $orderId['left'] > 0
+        ? 'Stok ' . $orderId['short'] . ' tinggal ' . $orderId['left'] . '. Kurangi jumlahnya lalu coba lagi.'
+        : $orderId['short'] . ' baru saja habis. Hapus dari keranjang lalu coba lagi.');
+}
 
 sb_json(['id' => $publicId, 'code' => sb_code($orderId), 'total' => $subtotal + $fee], 201);

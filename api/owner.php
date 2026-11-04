@@ -98,6 +98,16 @@ if ($action === 'update') {
     $updated = sb_store_update(function (&$d) use ($id, $newStatus, $hasPaid, $paid) {
         foreach ($d['orders'] as &$o) {
             if ((int)$o['id'] !== $id) continue;
+            if ($newStatus !== null && $newStatus !== $o['status']) {
+                // pesanan dibatalkan: stok produk dikembalikan; dibuka lagi: stok dikurangi lagi
+                $cancel = $newStatus === 'dibatalkan';
+                if ($cancel || $o['status'] === 'dibatalkan') {
+                    foreach ($o['items'] as $li) {
+                        if (!isset($d['stock'][$li['id']])) continue;
+                        $d['stock'][$li['id']] = max(0, (int)$d['stock'][$li['id']] + ($cancel ? 1 : -1) * (int)$li['qty']);
+                    }
+                }
+            }
             if ($newStatus !== null) $o['status'] = $newStatus;
             if ($hasPaid) $o['paid'] = $paid;
             $o['updated_at'] = time();
@@ -107,6 +117,264 @@ if ($action === 'update') {
     });
     if (!$updated) sb_fail(404, 'Pesanan tidak ditemukan.');
     sb_json(sb_order_view($updated, true));
+}
+
+/* ---------- Kelola toko: produk, stok, kategori, pengaturan ---------- */
+
+function sb_catalog_view() {
+    $m = sb_menu(true);
+    $c = $m['config'];
+    $home = [];
+    foreach ($c['home'] ?? [] as $sec) $home[] = ['id' => $sec['id'], 'title' => $sec['title'], 'items' => $sec['items'] ?? []];
+    return [
+        'items' => $m['items'],
+        'cats' => $m['cats'],
+        'home' => $home,
+        'settings' => [
+            'acceptOrders' => !empty($c['acceptOrders']), 'closedNote' => $c['closedNote'] ?? '',
+            'shop' => $c['shop'], 'address' => $c['address'], 'contact' => $c['contact'],
+            'open' => (int)$c['open'], 'close' => (int)$c['close'], 'closedDays' => array_values($c['closedDays']),
+            'minDelivery' => (int)$c['minDelivery'], 'zones' => $c['zones'],
+            'transfer' => $c['paymentInfo']['transfer'] ?? ['bank' => '', 'number' => '', 'holder' => ''],
+        ],
+    ];
+}
+
+function sb_int($v, $min, $max, $msg) {
+    if (is_string($v) && trim($v) !== '') $v = str_replace(['.', ','], '', $v);
+    if (!is_numeric($v) || (int)$v != $v || (int)$v < $min || (int)$v > $max) sb_fail(422, $msg);
+    return (int)$v;
+}
+
+function sb_remove_upload($path) {
+    // hanya foto yang diunggah lewat dashboard (images/u-*) yang boleh dihapus otomatis
+    if (is_string($path) && preg_match('#^images/u-[a-f0-9]{12}\.(jpg|png|webp)$#', $path)) @unlink(SB_ROOT . '/' . $path);
+}
+
+if ($action === 'catalog') {
+    sb_require_owner();
+    sb_json(sb_catalog_view());
+}
+
+if ($action === 'upload') {
+    sb_require_post();
+    sb_require_owner();
+    $f = $_FILES['photo'] ?? null;
+    if (!$f || !is_uploaded_file($f['tmp_name'] ?? '')) sb_fail(422, 'Pilih file foto dulu.');
+    if (($f['error'] ?? 0) !== UPLOAD_ERR_OK) sb_fail(422, 'Foto gagal diunggah (kode ' . (int)$f['error'] . '). Coba file yang lebih kecil.');
+    if ($f['size'] > 8 * 1024 * 1024) sb_fail(422, 'Foto terlalu besar. Maksimal 8 MB.');
+    $info = @getimagesize($f['tmp_name']);
+    $types = [IMAGETYPE_JPEG => 'jpg', IMAGETYPE_PNG => 'png', IMAGETYPE_WEBP => 'webp'];
+    if (!$info || !isset($types[$info[2]])) sb_fail(422, 'Format foto harus JPG, PNG, atau WebP.');
+    $dir = SB_ROOT . '/images';
+    if (!is_dir($dir) || !is_writable($dir)) sb_fail(500, 'Folder images tidak bisa ditulis oleh PHP. Beri izin tulis ke folder itu.');
+    $name = 'u-' . bin2hex(random_bytes(6)) . '.' . $types[$info[2]];
+    if (!@move_uploaded_file($f['tmp_name'], $dir . '/' . $name)) sb_fail(500, 'Foto belum tersimpan di folder images.');
+    sb_json(['path' => 'images/' . $name]);
+}
+
+if ($action === 'item_save') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $old = null;
+    $m0 = sb_menu(true);
+    foreach ($m0['items'] as $x) { if ($x['id'] === $id) $old = $x; }
+    if ($id !== '' && !$old) sb_fail(404, 'Produk tidak ditemukan.');
+
+    $name = sb_text($in['name'] ?? '', 80);
+    if (sb_len($name) < 2) sb_fail(422, 'Isi nama produk.');
+    $cat = is_string($in['cat'] ?? null) ? $in['cat'] : '';
+    $catOk = false;
+    foreach ($m0['cats'] as $c) { if ($c['id'] === $cat) $catOk = true; }
+    if (!$catOk) sb_fail(422, 'Pilih kategori.');
+    $price = sb_int($in['price'] ?? '', 0, 100000000, 'Harga harus berupa angka (rupiah).');
+    $desc = sb_text($in['desc'] ?? '', 300, true);
+    $tag = sb_text($in['tag'] ?? '', 30);
+    $allergens = [];
+    foreach (is_array($in['allergens'] ?? null) ? $in['allergens'] : [] as $a) { $a = sb_text($a, 30); if ($a !== '' && !in_array($a, $allergens, true) && count($allergens) < 10) $allergens[] = $a; }
+    $includes = [];
+    foreach (is_array($in['includes'] ?? null) ? $in['includes'] : [] as $a) { $a = sb_text($a, 80); if ($a !== '' && count($includes) < 12) $includes[] = $a; }
+    $img = is_string($in['img'] ?? null) ? $in['img'] : '';
+    if ($img !== '' && !preg_match('#^images/[A-Za-z0-9._-]+$#', $img)) sb_fail(422, 'Alamat foto tidak valid.');
+    $soldOut = !empty($in['soldOut']);
+    $stock = null;
+    if (array_key_exists('stock', $in) && $in['stock'] !== null && $in['stock'] !== '') $stock = sb_int($in['stock'], 0, 99999, 'Stok harus berupa angka bulat, atau kosongkan kalau tidak dibatasi.');
+    $homeIds = is_array($in['home'] ?? null) ? array_map('strval', $in['home']) : [];
+
+    $saved = sb_menu_update(function (&$m) use (&$id, $old, $name, $cat, $price, $desc, $tag, $allergens, $includes, $img, $soldOut, $homeIds) {
+        if ($id === '') {
+            $used = array_column($m['items'], 'id');
+            do { $id = 'p' . substr(bin2hex(random_bytes(4)), 0, 6); } while (in_array($id, $used, true));
+            $m['items'][] = ['id' => $id];
+        }
+        foreach ($m['items'] as &$it) {
+            if ($it['id'] !== $id) continue;
+            $it['cat'] = $cat; $it['name'] = $name; $it['desc'] = $desc; $it['price'] = $price;
+            foreach (['tag' => $tag, 'img' => $img] as $k => $v) { if ($v === '') unset($it[$k]); else $it[$k] = $v; }
+            $it['allergens'] = $allergens;
+            if ($includes) $it['includes'] = $includes; else unset($it['includes']);
+            if ($soldOut) $it['soldOut'] = true; else unset($it['soldOut']);
+            // urutan kunci rapi: id dulu
+            $it = ['id' => $it['id']] + $it;
+        }
+        unset($it);
+        if (!isset($m['config']['home'])) $m['config']['home'] = [];
+        foreach ($m['config']['home'] as &$sec) {
+            $sec['items'] = array_values(array_diff($sec['items'] ?? [], [$id]));
+            if (in_array($sec['id'], $homeIds, true)) $sec['items'][] = $id;
+        }
+        unset($sec);
+        return true;
+    });
+    // foto lama yang diganti tidak dipakai lagi
+    if ($old && isset($old['img']) && $old['img'] !== $img) sb_remove_upload($old['img']);
+    sb_store_update(function (&$d) use ($id, $stock) {
+        if ($stock === null) unset($d['stock'][$id]); else $d['stock'][$id] = $stock;
+    });
+    $v = sb_catalog_view();
+    $v['savedId'] = $id;
+    sb_json($v);
+}
+
+if ($action === 'item_stock') {
+    // ubah cepat dari daftar: stok dan/atau tanda habis
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $found = false;
+    foreach (sb_menu(true)['items'] as $x) { if ($x['id'] === $id) $found = true; }
+    if (!$found) sb_fail(404, 'Produk tidak ditemukan.');
+    if (array_key_exists('soldOut', $in)) {
+        $so = !empty($in['soldOut']);
+        sb_menu_update(function (&$m) use ($id, $so) {
+            foreach ($m['items'] as &$it) { if ($it['id'] === $id) { if ($so) $it['soldOut'] = true; else unset($it['soldOut']); } }
+            return true;
+        });
+    }
+    if (array_key_exists('stock', $in)) {
+        $stock = ($in['stock'] === null || $in['stock'] === '') ? null : sb_int($in['stock'], 0, 99999, 'Stok harus berupa angka bulat.');
+        sb_store_update(function (&$d) use ($id, $stock) { if ($stock === null) unset($d['stock'][$id]); else $d['stock'][$id] = $stock; });
+        // stok diisi lagi: tanda "habis" otomatis hilang
+        if ($stock !== null && $stock > 0) {
+            sb_menu_update(function (&$m) use ($id) { foreach ($m['items'] as &$it) { if ($it['id'] === $id) unset($it['soldOut']); } return true; });
+        }
+    }
+    sb_json(sb_catalog_view());
+}
+
+if ($action === 'item_delete') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $img = null;
+    $res = sb_menu_update(function (&$m) use ($id, &$img) {
+        $keep = [];
+        foreach ($m['items'] as $it) { if ($it['id'] === $id) $img = $it['img'] ?? null; else $keep[] = $it; }
+        if (count($keep) === count($m['items'])) return false;
+        $m['items'] = $keep;
+        if (!isset($m['config']['home'])) $m['config']['home'] = [];
+        foreach ($m['config']['home'] as &$sec) $sec['items'] = array_values(array_diff($sec['items'] ?? [], [$id]));
+        return true;
+    });
+    if ($res === false) sb_fail(404, 'Produk tidak ditemukan.');
+    sb_remove_upload($img);
+    sb_store_update(function (&$d) use ($id) { unset($d['stock'][$id]); });
+    sb_json(sb_catalog_view());
+}
+
+if ($action === 'cat_save') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $name = sb_text($in['name'] ?? '', 40);
+    if (sb_len($name) < 2) sb_fail(422, 'Isi nama kategori.');
+    $res = sb_menu_update(function (&$m) use ($id, $name) {
+        if ($id === '') {
+            $used = array_column($m['cats'], 'id');
+            do { $nid = 'k' . substr(bin2hex(random_bytes(3)), 0, 5); } while (in_array($nid, $used, true));
+            $m['cats'][] = ['id' => $nid, 'name' => $name];
+            return true;
+        }
+        foreach ($m['cats'] as &$c) { if ($c['id'] === $id) { $c['name'] = $name; return true; } }
+        return false;
+    });
+    if ($res === false) sb_fail(404, 'Kategori tidak ditemukan.');
+    sb_json(sb_catalog_view());
+}
+
+if ($action === 'cat_delete') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $res = sb_menu_update(function (&$m) use ($id) {
+        foreach ($m['items'] as $it) { if ($it['cat'] === $id) return 'used'; }
+        $keep = array_values(array_filter($m['cats'], function ($c) use ($id) { return $c['id'] !== $id; }));
+        if (count($keep) === count($m['cats'])) return false;
+        $m['cats'] = $keep;
+        return true;
+    });
+    if ($res === 'used') sb_fail(409, 'Kategori ini masih dipakai produk. Pindahkan atau hapus produknya dulu.');
+    if ($res === false) sb_fail(404, 'Kategori tidak ditemukan.');
+    sb_json(sb_catalog_view());
+}
+
+if ($action === 'settings_save') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $set = [];   // perubahan yang sudah divalidasi
+    if (array_key_exists('acceptOrders', $in)) $set['acceptOrders'] = !empty($in['acceptOrders']);
+    if (array_key_exists('closedNote', $in)) $set['closedNote'] = sb_text($in['closedNote'], 200);
+    if (array_key_exists('shop', $in)) { $v = sb_text($in['shop'], 40); if (sb_len($v) < 2) sb_fail(422, 'Isi nama toko.'); $set['shop'] = $v; }
+    if (array_key_exists('address', $in)) { $v = sb_text($in['address'], 200); if ($v === '') sb_fail(422, 'Isi alamat toko.'); $set['address'] = $v; }
+    if (array_key_exists('contact', $in)) $set['contact'] = sb_text($in['contact'], 40);
+    if (array_key_exists('open', $in) || array_key_exists('close', $in)) {
+        $o = sb_int($in['open'] ?? null, 0, 23, 'Jam buka tidak valid.');
+        $c = sb_int($in['close'] ?? null, 1, 24, 'Jam tutup tidak valid.');
+        if ($c <= $o) sb_fail(422, 'Jam tutup harus lebih akhir dari jam buka.');
+        $set['open'] = $o; $set['close'] = $c;
+    }
+    if (array_key_exists('closedDays', $in)) {
+        $days = [];
+        foreach (is_array($in['closedDays']) ? $in['closedDays'] : [] as $d) { $d = (int)$d; if ($d >= 0 && $d <= 6 && !in_array($d, $days, true)) $days[] = $d; }
+        sort($days);
+        if (count($days) >= 7) sb_fail(422, 'Tidak bisa menutup semua hari. Pakai tombol "Tutup sementara" kalau mau libur total.');
+        $set['closedDays'] = $days;
+    }
+    if (array_key_exists('minDelivery', $in)) $set['minDelivery'] = sb_int($in['minDelivery'], 0, 10000000, 'Minimal pesanan antar harus berupa angka.');
+    if (array_key_exists('zones', $in)) {
+        $zones = []; $used = [];
+        foreach (is_array($in['zones']) ? $in['zones'] : [] as $z) {
+            if (!is_array($z)) continue;
+            $label = sb_text($z['label'] ?? '', 60);
+            if ($label === '') continue;
+            $zid = is_string($z['id'] ?? null) && preg_match('/^[a-z0-9]{1,12}$/', $z['id']) && !in_array($z['id'], $used, true) ? $z['id'] : 'z' . substr(bin2hex(random_bytes(3)), 0, 5);
+            $used[] = $zid;
+            $zones[] = ['id' => $zid, 'label' => $label, 'fee' => sb_int($z['fee'] ?? 0, 0, 1000000, 'Ongkir harus berupa angka.')];
+            if (count($zones) >= 10) break;
+        }
+        if (!$zones) sb_fail(422, 'Isi minimal satu area antar.');
+        $set['zones'] = $zones;
+    }
+    if (array_key_exists('transfer', $in) && is_array($in['transfer'])) {
+        $t = $in['transfer'];
+        $set['transfer'] = ['bank' => sb_text($t['bank'] ?? '', 40), 'number' => sb_text($t['number'] ?? '', 40), 'holder' => sb_text($t['holder'] ?? '', 60)];
+    }
+    sb_menu_update(function (&$m) use ($set) {
+        foreach ($set as $k => $v) {
+            if ($k === 'transfer') $m['config']['paymentInfo']['transfer'] = $v; else $m['config'][$k] = $v;
+        }
+        $fees = array_column($m['config']['zones'], 'fee');
+        $m['config']['deliveryText'] = 'Ongkir mulai Rp ' . number_format($fees ? min($fees) : 0, 0, ',', '.') . '. Minimal pesanan Rp ' . number_format((int)$m['config']['minDelivery'], 0, ',', '.') . '.';
+        return true;
+    });
+    sb_json(sb_catalog_view());
 }
 
 sb_fail(404, 'Tidak ditemukan.');

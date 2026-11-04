@@ -32,16 +32,61 @@ function sb_config() {
     return $cfg;
 }
 
-function sb_menu() {
+// Menu dibaca dari storage/menu-live.json kalau owner sudah pernah mengubahnya lewat dashboard,
+// kalau belum dari data/menu.json (data awal). Stok per produk disimpan di file pesanan dan digabungkan di sini.
+function sb_menu_path() {
+    $live = SB_ROOT . '/storage/menu-live.json';
+    return is_file($live) ? $live : SB_ROOT . '/data/menu.json';
+}
+
+function sb_menu($reload = false) {
     static $menu = null;
-    if ($menu !== null) return $menu;
-    $raw = @file_get_contents(SB_ROOT . '/data/menu.json');
+    if ($menu !== null && !$reload) return $menu;
+    $raw = @file_get_contents(sb_menu_path());
     $menu = json_decode($raw ? $raw : '', true);
     if (!is_array($menu) || !isset($menu['config'], $menu['cats'], $menu['items'])) {
         sb_fail(500, 'Data menu tidak terbaca. Periksa file data/menu.json.');
     }
     sb_config(); // pastikan zona waktu terpasang
+    if (!isset($menu['config']['acceptOrders'])) $menu['config']['acceptOrders'] = true;
+    if (!isset($menu['config']['closedNote'])) $menu['config']['closedNote'] = '';
+    // dibaca tanpa kunci: file ditulis lewat rename, jadi isinya selalu utuh
+    $stock = is_file(sb_config()['data_path']) ? sb_store_load(sb_config()['data_path'])['stock'] : [];
+    foreach ($menu['items'] as &$it) {
+        if (isset($stock[$it['id']])) {
+            $it['stock'] = (int)$stock[$it['id']];
+            if ($it['stock'] <= 0) $it['soldOut'] = true;
+        } else {
+            $it['stock'] = null;
+        }
+    }
+    unset($it);
     return $menu;
+}
+
+// Mengubah menu (hanya dari dashboard owner). $fn menerima menu lewat reference; menu disimpan ke storage/menu-live.json.
+function sb_menu_update($fn) {
+    sb_store_check();
+    $dir = SB_ROOT . '/storage';
+    $lock = @fopen($dir . '/menu.lock', 'c');
+    if (!$lock || !flock($lock, LOCK_EX)) sb_fail(500, 'Penyimpanan sedang sibuk. Coba lagi sebentar lagi.');
+    $src = sb_menu_path();
+    $m = json_decode((string)@file_get_contents($src), true);
+    if (!is_array($m) || !isset($m['config'], $m['cats'], $m['items'])) sb_fail(500, 'Data menu tidak terbaca.');
+    $result = $fn($m);
+    if ($result === false) { flock($lock, LOCK_UN); fclose($lock); return false; }
+    $json = json_encode($m, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    if ($json === false) sb_fail(500, 'Data menu tidak bisa disimpan.');
+    $live = $dir . '/menu-live.json';
+    if (is_file($live)) @copy($live, $dir . '/menu-live.bak.json');
+    $tmp = $live . '.tmp';
+    if (@file_put_contents($tmp, $json) === false || !@rename($tmp, $live)) {
+        @unlink($tmp);
+        sb_fail(500, 'Perubahan belum tersimpan. Pastikan folder storage bisa ditulis.');
+    }
+    flock($lock, LOCK_UN);
+    fclose($lock);
+    return $result;
 }
 
 /* ---------- Respons ---------- */
@@ -94,7 +139,7 @@ function sb_store_check() {
 }
 
 function sb_store_empty() {
-    return ['seq' => 0, 'orders' => [], 'attempts' => [], 'users' => [], 'useq' => 0];
+    return ['seq' => 0, 'orders' => [], 'attempts' => [], 'users' => [], 'useq' => 0, 'stock' => []];
 }
 
 function sb_store_load($path) {
@@ -110,6 +155,7 @@ function sb_store_load($path) {
     if (!isset($d['attempts']) || !is_array($d['attempts'])) $d['attempts'] = [];
     if (!isset($d['users']) || !is_array($d['users'])) $d['users'] = [];
     if (!isset($d['useq'])) $d['useq'] = 0;
+    if (!isset($d['stock']) || !is_array($d['stock'])) $d['stock'] = [];
     return $d;
 }
 

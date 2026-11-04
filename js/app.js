@@ -33,6 +33,12 @@ function toggleTheme() {
   paintThemeBtn();
 }
 
+/* Owner menutup toko sementara: tampilkan pemberitahuan di bawah menu atas. */
+function closedBarHtml() {
+  if (CONFIG.acceptOrders !== false) return '';
+  return '<div class="closedbar" role="status"><b>Toko tutup sementara, belum menerima pesanan.</b>' + (CONFIG.closedNote ? ' <span>' + esc(CONFIG.closedNote) + '</span>' : '') + '</div>';
+}
+
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
 function mountShell() {
   if (PAGE === 'checkout') {
@@ -45,6 +51,7 @@ function mountShell() {
           '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></a></div>' +
       '</header><div class="notice" id="notice" role="status" hidden></div>');
     document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
+    document.querySelector('.wrap').insertAdjacentHTML('afterbegin', closedBarHtml());
     return;
   }
   const cur = n => ((PAGE === n || (n === 'products' && PAGE === 'product')) ? ' aria-current="page"' : '');
@@ -62,6 +69,7 @@ function mountShell() {
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 7H6"/></svg>' +
           '<span class="cn" id="cartN" hidden>0</span></button></div>' +
     '</header></div>');
+  document.getElementById('topbar').insertAdjacentHTML('beforeend', closedBarHtml());
   document.querySelector('.wrap').insertAdjacentHTML('afterbegin', '<div class="notice" id="notice" role="status" hidden></div>');
   document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
 }
@@ -137,6 +145,7 @@ function photo(src, name, label) {
 
 /* ---- Info toko ---- */
 function storeStatus() {
+  if (CONFIG.acceptOrders === false) return { open: false, text: 'Tutup sementara' };
   const now = new Date(), closedDay = CONFIG.closedDays.includes(now.getDay());
   const open = !closedDay && now.getHours() >= CONFIG.open && now.getHours() < CONFIG.close;
   return { open, text: open ? 'Buka sekarang' : (closedDay ? 'Tutup hari ini' : 'Sedang tutup') };
@@ -160,9 +169,11 @@ function initInfo() {
 }
 
 /* ---- Menu ---- */
+// label di pojok foto: label buatan owner, atau "Sisa N" kalau stok tinggal sedikit
+const tagOf = it => it.tag || (it.stock != null && it.stock > 0 && it.stock <= 5 ? 'Sisa ' + it.stock : '');
 function itemHtml(it, withDesc) {
   return '<a class="item" href="product.html?id=' + encodeURIComponent(it.id) + '" data-item="' + it.id + '"><div class="ph">' + photo(it.img, it.name, 'Foto segera hadir') +
-    (it.tag ? '<span class="tag">' + esc(it.tag) + '</span>' : '') +
+    (tagOf(it) ? '<span class="tag">' + esc(tagOf(it)) + '</span>' : '') +
     (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</div>' +
     '<span class="nm">' + esc(it.name) + '</span><span class="price">' + rp(it.price) + '</span>' +
     (withDesc ? '<p>' + esc(it.desc) + '</p>' : '') + '</a>';
@@ -275,7 +286,7 @@ function renderProduct() {
   $('crumbName').textContent = it.name;
   const cat = CATS.find(c => c.id === it.cat), closed = CONFIG.closedDays.map(d => DAYS[d]).join(', ');
   box.innerHTML = '<div class="pd-img ph">' + photo(it.img, it.name, 'Foto segera hadir') +
-    (it.tag ? '<span class="tag">' + esc(it.tag) + '</span>' : '') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</div>' +
+    (tagOf(it) ? '<span class="tag">' + esc(tagOf(it)) + '</span>' : '') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</div>' +
     '<div class="pd-info"><p class="label">' + esc(cat ? cat.name : '') + '</p><h1>' + esc(it.name) + '</h1><p class="pd-price">' + rp(it.price) + '</p>' +
     (it.soldOut ? '<p class="soldout">Habis hari ini. Coba lagi besok atau pilih produk lain.</p>' :
       '<div class="qtyrow"><span class="label">Jumlah</span><div class="stepper q"><button type="button" data-qty="-1" aria-label="Kurangi jumlah">−</button><output id="qty" aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Tambah jumlah">+</button></div></div>' +
@@ -424,6 +435,7 @@ function syncMode() {
 function showErr(m) { const e = $('err'); e.textContent = m; e.hidden = !m; }
 
 function validate() {
+  if (CONFIG.acceptOrders === false) return 'Toko sedang tutup sementara dan belum menerima pesanan.' + (CONFIG.closedNote ? ' ' + CONFIG.closedNote : '');
   const t = totals();
   if (t.count === 0) return 'Pilih minimal satu pastry dari menu.';
   if (!$('name').value.trim()) return 'Isi nama kamu.';

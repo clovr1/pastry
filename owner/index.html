@@ -10,8 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&family=Petit+Formal+Script&display=swap">
-<link rel="stylesheet" href="../css/style.css?v=20261104184545">
-<link rel="stylesheet" href="owner.css?v=20261104184545">
+<link rel="stylesheet" href="../css/style.css?v=20261104185144">
+<link rel="stylesheet" href="owner.css?v=20261104185144">
 </head>
 <body data-page="owner">
 <div class="wrap">
@@ -45,6 +45,13 @@
 
   <main id="dash" hidden>
     <p class="o-net" id="net" role="status" hidden>Koneksi terputus. Mencoba lagi otomatis…</p>
+    <div class="o-store" id="storeBar" hidden></div>
+    <nav class="o-tabs" id="mainTabs" aria-label="Bagian owner">
+      <button type="button" data-tab="orders" aria-current="page">Pesanan<small id="tabNew" hidden></small></button>
+      <button type="button" data-tab="products">Produk &amp; stok</button>
+      <button type="button" data-tab="settings">Pengaturan toko</button>
+    </nav>
+    <div id="tabOrders">
     <section class="o-stats" aria-label="Ringkasan">
       <div><span>Pesanan baru</span><b id="stNew">0</b></div>
       <div><span>Pesanan hari ini</span><b id="stToday">0</b></div>
@@ -57,8 +64,12 @@
     </section>
     <section id="olist" aria-live="polite"></section>
     <p class="o-muted o-foot" id="foot"></p>
+    </div>
+    <div id="tabProducts" hidden></div>
+    <div id="tabSettings" hidden></div>
   </main>
 </div>
-<script src="owner.js?v=20261104184545"></script>
+<script src="owner.js?v=20261104185144"></script>
+<script src="manage.js?v=20261104185144"></script>
 </body>
 </html>

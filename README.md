@@ -145,3 +145,13 @@ php tools/bump-version.php
 Slider di beranda dibagi jadi beberapa bagian lewat `config.home` di `data/menu.json`. Tiap bagian punya `label` (teks kecil di atas judul), `title`, `items` (daftar id produk), dan `link` (opsional, tautan di kanan judul). Tambah, hapus, atau urutkan bagian sesuka hati.
 
 **Paket / bundle** ditulis sebagai produk biasa di kategori `paket`: isi `price` dengan harga paket, `tag` dengan tulisan seperti "Hemat Rp 15.000", dan `includes` dengan daftar isinya (tampil sebagai "Isi paket" di halaman produk). Harga tetap dihitung server dari file ini, jadi aman.
+
+## Dashboard owner: kelola produk, stok, dan toko
+
+Buka `owner/` lalu masuk. Selain tab **Pesanan**, ada:
+
+- **Bilah status di atas**: tombol **Tutup sementara** / **Buka kembali**. Saat ditutup, pembeli tetap bisa melihat menu tapi tidak bisa memesan (server juga menolak), dan muncul pemberitahuan di semua halaman beserta pesan dari kamu.
+- **Produk & stok**: tambah, ubah, hapus produk, unggah foto langsung dari browser (JPG/PNG/WebP, maks. 8 MB), atur harga, label, alergen, isi paket, dan pilih produk tampil di bagian beranda mana. Kolom **Stok** di tiap baris bisa langsung diisi: kosong (∞) = tidak dibatasi; angka = berkurang otomatis tiap ada pesanan, jadi "Habis" saat 0, dan **dikembalikan kalau pesanan dibatalkan**. Pembeli melihat label "Sisa N" saat stok tinggal 5 atau kurang. Kategori juga bisa ditambah, diganti nama, dan dihapus di bagian bawah tab ini.
+- **Pengaturan toko**: buka/tutup sementara, nama/alamat/kontak, jam dan hari buka, minimal pesanan antar dan area+ongkir, serta rekening transfer.
+
+**Di mana datanya disimpan?** `data/menu.json` hanyalah data awal. Begitu owner mengubah sesuatu, menu yang berlaku pindah ke `storage/menu-live.json` (bukan bagian dari Git, jadi tidak bentrok saat `git pull`; salinan sebelumnya ada di `storage/menu-live.bak.json`). Stok disimpan di file pesanan. Kalau ingin mengulang dari data awal, hapus `storage/menu-live.json`. Foto yang diunggah masuk ke folder `images/` (nama `u-xxxx`), jadi folder itu harus bisa ditulis PHP; foto ini ikut tercatat di Git kalau kamu melakukan `git add`.

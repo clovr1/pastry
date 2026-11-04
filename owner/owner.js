@@ -112,6 +112,7 @@
     $('stToday').textContent = d.today.orders;
     $('stRev').textContent = rp(d.today.revenue);
     $('stUnpaid').textContent = d.unpaid;
+    const tn = $('tabNew'); if (tn) { tn.hidden = !(d.counts.baru > 0); tn.textContent = d.counts.baru || ''; }
     document.title = ((d.counts.baru || 0) ? '(' + d.counts.baru + ') ' : '') + 'Owner · ' + SHOP;
   }
 
@@ -228,6 +229,7 @@
     show('dash');
     $('logoutBtn').hidden = false; $('soundBtn').hidden = false;
     paintSound();
+    if (window.SBO && window.SBO.onDash) window.SBO.onDash();
     clearInterval(state.timer);
     state.first = true;
     load();
@@ -318,5 +320,7 @@
     update(Number(sel.closest('.o-card').dataset.id), { status: sel.value });
   });
 
+  // dipakai manage.js (produk, stok, pengaturan toko)
+  window.SBO = { $, esc, rp, toast, api, onLoggedOut: showLogin, onDash: null };
   start();
 })();

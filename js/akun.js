@@ -103,10 +103,28 @@
 
   function orderRow(o) {
     const n = o.items.reduce((t, i) => t + i.qty, 0);
+    const thumbs = o.items.slice(0, 4).map(i => {
+      const it = byId(i.id);
+      return '<span class="acc-th ph">' + photo(it && it.img, i.name, '') + '</span>';
+    }).join('') + (o.items.length > 4 ? '<span class="acc-th more">+' + (o.items.length - 4) + '</span>' : '');
     return '<a class="acc-order" href="pesanan.html?id=' + encodeURIComponent(o.publicId) + '">' +
       '<span class="acc-o-top"><b>' + esc(o.code) + '</b><span class="ord-chip' + (o.status === 'dibatalkan' ? ' warn' : '') + '">' + esc(LABEL[o.status] || o.status) + '</span></span>' +
-      '<span class="acc-o-mid">' + n + ' produk · ' + (o.mode === 'delivery' ? 'Delivery' : 'Ambil di tempat') + ' · ' + esc(fmtDate(o.date)) + ', ' + esc(o.slot) + '</span>' +
+      '<span class="acc-thumbs">' + thumbs + '</span>' +
+      '<span class="acc-o-mid">' + o.items.map(i => i.qty + '× ' + esc(i.name)).join(', ') + '</span>' +
+      '<span class="acc-o-mid">' + (o.mode === 'delivery' ? 'Delivery' : 'Ambil di tempat') + ' · ' + esc(fmtDate(o.date)) + ', ' + esc(o.slot) + '</span>' +
       '<span class="acc-o-bot"><b>' + rp(o.total) + '</b><span>' + (o.paid ? 'Lunas' : 'Belum dibayar') + ' ›</span></span></a>';
+  }
+
+  // katalog: produk yang pernah dipesan (dari semua pesanan), dengan tombol pesan lagi
+  function boughtCatalog(list) {
+    const seen = {};
+    list.forEach(o => { if (o.status === 'dibatalkan') return; o.items.forEach(i => { seen[i.id] = (seen[i.id] || 0) + i.qty; }); });
+    const items = Object.keys(seen).map(byId).filter(Boolean).sort((a, b) => seen[b.id] - seen[a.id]);
+    if (!items.length) return '';
+    return '<section aria-labelledby="hBuy"><h2 class="acc-h" id="hBuy">Yang pernah kamu pesan</h2><div class="acc-cat">' +
+      items.map(it => '<div class="acc-tile">' + itemHtml(it, false) + '<span class="acc-n">Dipesan ' + seen[it.id] + '×</span>' +
+        '<button type="button" class="btn ghost" data-again="' + esc(it.id) + '"' + (it.soldOut ? ' disabled' : '') + '>' + (it.soldOut ? 'Habis' : 'Pesan lagi') + '</button></div>').join('') +
+      '</div></section>';
   }
 
   /* Halaman akun: hanya pesanan. Data diri ada di halaman sendiri (profil.html). */
@@ -119,7 +137,7 @@
           '<div class="acc-who"><span class="label">Akun saya</span><h1>Halo, <span id="aName"></span></h1><p id="aMail"></p></div>' +
           '<div class="acc-btns"><a class="btn ghost" href="profil.html">Data diri</a><button class="btn ghost" type="button" id="outBtn">Keluar</button></div>' +
         '</header>' +
-        '<div class="acc-stats" id="aStats" hidden></div>' +
+        '<div id="aBought"></div>' +
         '<section aria-labelledby="hOrd"><h2 class="acc-h" id="hOrd">Riwayat pesanan</h2><div id="aOrders"><p class="ord-load">Memuat…</p></div></section>' +
       '</div>';
     const $q = id => document.getElementById(id);
@@ -142,10 +160,14 @@
       box.innerHTML = '<div class="acc-empty"><b>Belum ada pesanan</b><p>Pesanan yang kamu buat saat masuk akan muncul di sini, lengkap dengan statusnya.</p><a class="btn" href="products.html">Lihat produk</a></div>';
       return;
     }
-    const active = list.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan').length;
-    const spent = list.filter(o => o.status !== 'dibatalkan').reduce((t, o) => t + o.total, 0);
-    $q('aStats').innerHTML = '<div><span>Total pesanan</span><b>' + list.length + '</b></div><div><span>Sedang diproses</span><b>' + active + '</b></div><div><span>Total belanja</span><b>' + rp(spent) + '</b></div>';
-    $q('aStats').hidden = false;
+    $q('aBought').innerHTML = boughtCatalog(list);
+    $q('aBought').addEventListener('click', e => {
+      const b = e.target.closest('[data-again]');
+      if (!b) return;
+      change(b.dataset.again, 1);
+      b.textContent = 'Ditambahkan ✓';
+      setTimeout(() => { b.textContent = 'Pesan lagi'; }, 1600);
+    });
     box.innerHTML = '<div class="acc-orders">' + list.map(orderRow).join('') + '</div>';
   }
 

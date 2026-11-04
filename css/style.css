@@ -571,3 +571,19 @@ a.backcart { text-decoration: none; color: inherit; }
 .pd-incl li { padding-left: 18px; position: relative; }
 .pd-incl li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
 @media (max-width: 520px) { .hsec-head { align-items: flex-start; flex-direction: column; gap: 10px; } }
+
+/* Pemberitahuan toko tutup sementara (diatur owner) */
+.closedbar { background: var(--accent); color: #fff; text-align: center; font-size: 14px; padding: 9px 16px; line-height: 1.4; }
+.closedbar span { opacity: .92; }
+.wrap > .closedbar { border-radius: 8px; margin-bottom: 16px; }
+
+/* Akun: katalog produk yang pernah dipesan + foto di kartu pesanan */
+.acc-cat { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 22px 18px; margin-bottom: 40px; }
+.acc-tile { display: grid; gap: 8px; align-content: start; }
+.acc-tile .item { width: auto; }
+.acc-n { text-align: center; font-size: 13px; color: var(--muted); }
+.acc-tile .btn { padding: 9px 16px; font-size: 14px; text-align: center; }
+.acc-thumbs { display: flex; gap: 6px; }
+.acc-th { width: 44px; height: 44px; border-radius: 8px; flex: none; }
+.acc-th .noimg { display: none; }
+.acc-th.more { display: grid; place-items: center; background: var(--tile); font-size: 13px; font-weight: 600; color: var(--muted); }
