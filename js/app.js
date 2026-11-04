@@ -478,23 +478,99 @@ function renderCheckout() {
   mh.hidden = !low;
   if (low) mh.textContent = 'Minimal pesanan antar ' + rp(CONFIG.minDelivery) + '. Tambah ' + rp(CONFIG.minDelivery - t.sub) + ' lagi atau pilih Ambil di tempat.';
 }
+const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const slotPast = (s, dateStr) => dateStr === isoDate(new Date()) && s.start <= new Date().getHours() + new Date().getMinutes() / 60 + 1;
+const hasSlotOn = dateStr => CONFIG.slots.some(s => !slotPast(s, dateStr));
 function buildSlots() {
-  const val = $('date').value, now = new Date();
-  const today = val === isoDate(now), cur = $('slot').value;
+  const val = $('date').value, cur = $('slot').value;
   $('slot').innerHTML = '<option value="">Pilih jam</option>' + CONFIG.slots.map(s => {
-    const past = today && s.start <= now.getHours() + now.getMinutes() / 60 + 1;
+    const past = slotPast(s, val);
     return '<option value="' + s.label + '"' + (past ? ' disabled' : '') + '>' + s.label + (past ? ' (sudah lewat)' : '') + '</option>';
   }).join('');
   if ([...$('slot').options].some(o => o.value === cur && !o.disabled)) $('slot').value = cur;
+  paintSlots();
+}
+// pilihan jam berupa tombol bulat; nilainya disimpan di <select id="slot"> yang disembunyikan
+function paintSlots() {
+  const val = $('date').value, sel = $('slot').value;
+  $('slotChips').innerHTML = CONFIG.slots.map(s => {
+    const past = slotPast(s, val);
+    return '<button type="button" class="chip" role="radio" aria-checked="' + (s.label === sel) + '" data-slot="' + esc(s.label) + '"' + (past ? ' disabled title="Sudah lewat"' : '') + '>' + esc(s.label) + '</button>';
+  }).join('');
+}
+// area antar: kartu pilihan; nilainya disimpan di <select id="zone"> yang disembunyikan
+function paintZones() {
+  const cur = $('zone').value;
+  $('zoneCards').innerHTML = CONFIG.zones.map(z => '<label class="pay"><input type="radio" name="zonepick" value="' + esc(z.id) + '"' + (z.id === cur ? ' checked' : '') + '><b>' + esc(z.label) + '</b><span>' + rp(z.fee) + '</span></label>').join('');
+}
+// tanggal pertama yang bisa dipesan: hari ini kalau toko buka dan masih ada jam, kalau tidak hari berikutnya
+function firstOrderDate() {
+  const d = new Date();
+  for (let i = 0; i < 14; i++, d.setDate(d.getDate() + 1)) {
+    if (CONFIG.closedDays.includes(d.getDay())) continue;
+    if (hasSlotOn(isoDate(d))) return isoDate(d);
+  }
+  return isoDate(new Date());
+}
+function setDate(iso, fire) {
+  $('date').value = iso;
+  const [y, m, dd] = iso.split('-').map(Number), d = new Date(y, m - 1, dd);
+  $('dateTxt').textContent = DAYS[d.getDay()] + ', ' + dd + ' ' + MONTHS_ID[m - 1] + ' ' + y;
+  if (fire) $('date').dispatchEvent(new Event('change'));
+}
+/* ---- kalender buatan sendiri (menggantikan pemilih tanggal bawaan browser) ---- */
+function initDatePicker() {
+  const pop = $('dpPop'), btn = $('dateBtn');
+  let view = null;   // bulan yang sedang ditampilkan
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const maxD = new Date(today); maxD.setDate(maxD.getDate() + 60);
+  const parse = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+  const okDay = d => d >= today && d <= maxD && !CONFIG.closedDays.includes(d.getDay()) && hasSlotOn(isoDate(d));
+  function draw() {
+    const y = view.getFullYear(), m = view.getMonth(), sel = $('date').value, todayIso = isoDate(today);
+    const first = new Date(y, m, 1), lead = (first.getDay() + 6) % 7, days = new Date(y, m + 1, 0).getDate();   // pekan mulai Senin
+    const prevOk = new Date(y, m, 0) >= today, nextOk = new Date(y, m + 1, 1) <= maxD;
+    let cells = '';
+    for (let i = 0; i < lead; i++) cells += '<span></span>';
+    for (let d = 1; d <= days; d++) {
+      const dt = new Date(y, m, d), iso = isoDate(dt), ok = okDay(dt);
+      cells += '<button type="button" class="dp-d' + (iso === sel ? ' sel' : '') + (iso === todayIso ? ' today' : '') + '" data-iso="' + iso + '"' + (ok ? '' : ' disabled') +
+        ' aria-label="' + DAYS[dt.getDay()] + ', ' + d + ' ' + MONTHS_ID[m] + ' ' + y + (ok ? '' : ', tidak tersedia') + '"' + (iso === sel ? ' aria-pressed="true"' : '') + '>' + d + '</button>';
+    }
+    pop.innerHTML = '<div class="dp-head"><button type="button" class="dp-nav" data-nav="-1" aria-label="Bulan sebelumnya"' + (prevOk ? '' : ' disabled') + '>‹</button>' +
+      '<b>' + MONTHS_ID[m] + ' ' + y + '</b><button type="button" class="dp-nav" data-nav="1" aria-label="Bulan berikutnya"' + (nextOk ? '' : ' disabled') + '>›</button></div>' +
+      '<div class="dp-w">' + ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'].map(x => '<span>' + x + '</span>').join('') + '</div><div class="dp-g">' + cells + '</div>' +
+      '<p class="dp-hint">Tanggal yang dicoret tidak tersedia (toko libur atau jam hari itu sudah lewat).</p>';
+  }
+  function open() {
+    view = parse($('date').value || isoDate(today)); view.setDate(1);
+    draw(); pop.hidden = false; btn.setAttribute('aria-expanded', 'true');
+  }
+  function close() { pop.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+  btn.addEventListener('click', () => (pop.hidden ? open() : close()));
+  pop.addEventListener('click', e => {
+    const n = e.target.closest('[data-nav]'), d = e.target.closest('[data-iso]');
+    if (n) { view.setMonth(view.getMonth() + Number(n.dataset.nav)); draw(); }
+    if (d && !d.disabled) { setDate(d.dataset.iso, true); close(); btn.focus(); }
+  });
+  document.addEventListener('click', e => { if (!pop.hidden && !e.target.closest('#dp')) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) { close(); btn.focus(); } });
 }
 function initForm() {
   $('pays').innerHTML = CONFIG.payments.map((p, i) => '<label class="pay"><input type="radio" name="pay" value="' + esc(p.id) + '"' + (i === 0 ? ' checked' : '') + '><b>' + esc(p.label) + '</b><span>' + esc(p.desc) + '</span></label>').join('');
   $('zone').innerHTML = CONFIG.zones.map(z => '<option value="' + z.id + '">' + z.label + ' · ' + rp(z.fee) + '</option>').join('');
-  const today = isoDate(new Date());
-  $('date').min = today; $('date').value = today;
+  paintZones();
+  setDate(firstOrderDate(), false);
+  initDatePicker();
   $('pickupInfo').innerHTML = 'Ambil sendiri di <b>' + esc(CONFIG.address) + '</b>. Jam buka ' + hoursText() + '. Tidak ada minimal pesanan.';
   buildSlots();
   syncPayBtn();
+  $('slotChips').addEventListener('click', e => {
+    const c = e.target.closest('[data-slot]');
+    if (!c || c.disabled) return;
+    $('slot').value = c.dataset.slot; paintSlots(); $('slot').dispatchEvent(new Event('change'));
+  });
+  $('zoneCards').addEventListener('change', e => { $('zone').value = e.target.value; $('zone').dispatchEvent(new Event('change')); });
 }
 function syncMode() {
   const d = mode() === 'delivery';

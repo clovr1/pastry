@@ -185,3 +185,7 @@ Kalau ingin mematikan satu efek, hapus aturannya di bagian `/* Animasi */`; kala
 - **Menyiapkan QRIS**: di dashboard owner, tab **Pengaturan toko**, kartu **Pembayaran**, unggah gambar QRIS tokomu dan isi data rekening. Selama belum diisi, pembeli yang memilih metode itu mendapat pesan bahwa metodenya belum siap.
 - Bukti pembayaran disimpan di `storage/proofs/` (tidak bisa dibuka lewat web, hanya lewat dashboard owner yang sudah login).
 - Kalau suatu saat ingin pembayaran terverifikasi otomatis, situs ini bisa disambungkan ke payment gateway seperti Midtrans atau Xendit (butuh akun merchant).
+
+## Pilihan tanggal, jam, dan area antar
+
+Di halaman detail pesanan, tanggal memakai kalender buatan sendiri (hari libur toko, hari yang jamnya sudah lewat, dan tanggal lebih dari 60 hari ke depan otomatis tidak bisa dipilih), jam berupa tombol, dan area antar berupa kartu pilihan. Tampilannya mengikuti mode terang/gelap. Gayanya ada di bagian `/* Pemilih tanggal, jam, ... */` pada `css/style.css`.
