@@ -172,7 +172,16 @@ Situs memakai animasi ringan tanpa library (CSS di bagian `/* Animasi */` pada `
 - Banner: foto perlahan mengecil saat halaman dibuka, teks naik bertahap, lalu foto bergeser pelan (paralaks) dan teks memudar saat digulir.
 - Garis merah tipis di paling atas layar menunjukkan seberapa jauh halaman sudah digulir.
 - Kartu produk, judul, footer, riwayat pesanan, dan lainnya muncul bertahap saat digulir ke layar. Foto memudar masuk setelah selesai dimuat, dan membesar sedikit saat disorot.
-- Tombol terangkat saat disorot dan menekan saat diklik, garis bawah menu menyapu, angka keranjang membesar sebentar saat produk ditambah, dan perpindahan antarhalaman memudar halus (Chrome/Edge/Safari terbaru).
+- Tombol terangkat saat disorot dan menekan saat diklik, garis bawah menu menyapu saat disorot, angka keranjang membesar sebentar saat produk ditambah.
 - Semua animasi mati otomatis kalau perangkat pembeli memakai pengaturan "kurangi gerakan".
 
 Kalau ingin mematikan satu efek, hapus aturannya di bagian `/* Animasi */`; kalau ingin mematikan semuanya, hapus tag `js/fx.js` dari halaman dan bagian CSS itu.
+
+## Alur pembayaran: bayar dulu, pesanan dibuat setelahnya
+
+- **Transfer bank dan QRIS**: tombol di halaman detail pesanan bertuliskan **Lanjutkan pembayaran**. Pesanan belum dibuat; yang muncul jendela pembayaran berisi total, nomor rekening (atau gambar QRIS), dan kolom bukti pembayaran (opsional). Pesanan baru dibuat setelah pembeli menekan **Saya sudah bayar**. Server memeriksa ulang harga, stok, dan jadwal, jadi total di jendela itu pasti sama dengan total pesanan.
+- **Bayar tunai**: tombolnya **Kirim pesanan** dan pesanan langsung dibuat (bayar saat terima). Pesanan tunai otomatis lunas saat statusnya Selesai.
+- **Verifikasi**: situs ini tidak tersambung ke bank atau payment gateway, jadi pembayaran tidak bisa dicek otomatis. Pesanan dari transfer/QRIS masuk dengan tanda **Cek pembayaran** dan tombol **Pembayaran sesuai, tandai lunas**. Cek mutasi rekening atau QRIS-mu dulu (dan bukti yang diunggah pembeli kalau ada: tombol **Lihat bukti pembayaran**), baru tandai lunas. Pembeli melihat "Menunggu verifikasi" sampai kamu menandainya.
+- **Menyiapkan QRIS**: di dashboard owner, tab **Pengaturan toko**, kartu **Pembayaran**, unggah gambar QRIS tokomu dan isi data rekening. Selama belum diisi, pembeli yang memilih metode itu mendapat pesan bahwa metodenya belum siap.
+- Bukti pembayaran disimpan di `storage/proofs/` (tidak bisa dibuka lewat web, hanya lewat dashboard owner yang sudah login).
+- Kalau suatu saat ingin pembayaran terverifikasi otomatis, situs ini bisa disambungkan ke payment gateway seperti Midtrans atau Xendit (butuh akun merchant).

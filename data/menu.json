@@ -58,12 +58,12 @@
       {
         "id": "transfer",
         "label": "Transfer bank",
-        "desc": "Nomor rekening tampil setelah pesananmu terkirim."
+        "desc": "Nomor rekening tampil di langkah berikutnya. Bayar dulu, pesanan dibuat setelahnya."
       },
       {
         "id": "qris",
         "label": "QRIS",
-        "desc": "Kode QRIS tampil setelah pesananmu terkirim."
+        "desc": "Kode QRIS tampil di langkah berikutnya. Bayar dulu, pesanan dibuat setelahnya."
       },
       {
         "id": "tunai",

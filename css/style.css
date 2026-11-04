@@ -629,7 +629,6 @@ body.has-foot > .wrap + * { margin-top: 0; }
 
 /* ============ Animasi ============ */
 :root { --ease: cubic-bezier(.22, .61, .36, 1); }
-@view-transition { navigation: auto; }
 /* peralihan tema melingkar: hanya saat tombol tema ditekan (kelas vt-theme); perpindahan halaman memakai efek pudar bawaan browser */
 html.vt-theme::view-transition-old(root), html.vt-theme::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 html.vt-theme::view-transition-old(root) { z-index: 1; }
@@ -666,7 +665,6 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
   /* menu atas dan kartu */
-  .topbar { animation: dropIn .7s var(--ease) backwards; }
   @keyframes dropIn { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
   .item .ph img { transition: opacity .7s var(--ease), transform .9s var(--ease); }
   .item:hover .ph img { transform: scale(1.06); }
@@ -693,3 +691,31 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .progress { display: none; }
 }
+
+/* Jendela pembayaran (transfer / QRIS) */
+.paymodal { position: fixed; inset: 0; z-index: 80; background: rgba(10, 8, 8, .55); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.pm-card { position: relative; width: min(480px, 100%); background: var(--surface); border-radius: 16px; padding: 28px 26px; display: grid; gap: 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, .3); margin: auto; }
+.pm-card h2 { font-family: var(--font-display); font-weight: 500; font-size: 26px; line-height: 1.1; letter-spacing: -.01em; padding-right: 28px; }
+.pm-card .label { margin: 0; }
+.pm-x { position: absolute; top: 14px; right: 14px; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 50%; background: transparent; }
+.pm-total { display: flex; justify-content: space-between; align-items: baseline; border-block: 1px solid var(--line); padding: 12px 0; }
+.pm-total b { font-family: var(--font-display); font-weight: 500; font-size: 28px; }
+.pm-acc { display: grid; gap: 4px; background: var(--tile); border-radius: 12px; padding: 16px 18px; }
+.pm-acc b { font-size: 26px; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.pm-qris { display: grid; gap: 8px; justify-items: center; }
+.pm-qris img { width: min(260px, 100%); max-height: 52vh; object-fit: contain; border-radius: 12px; background: #fff; padding: 8px; border: 1px solid var(--line); }
+.pm-note { margin: 0; color: var(--muted); font-size: 14.5px; text-align: center; }
+@media (prefers-reduced-motion: no-preference) { .pm-card { animation: pmIn .35s var(--ease) both; } .paymodal { animation: fadeIn .25s ease both; } @keyframes pmIn { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: none; } } }
+
+/* ganti kategori di halaman Product: daftar lama memudar, produk baru muncul bertahap */
+#plist { transition: opacity .17s ease, transform .17s ease; }
+#plist.swap-out { opacity: 0; transform: translateY(8px); }
+.fx .pgrid .rv { transition-duration: .5s; }
+.tab { transition: background-color .25s ease, color .25s ease, border-color .25s ease, transform .2s var(--ease); }
+@media (prefers-reduced-motion: reduce) { #plist, #plist.swap-out { transition: none; transform: none; } }
+
+/* Panel keranjang: tombol ke halaman keranjang di sebelah "Lanjut ke detail pesanan" */
+.dbtns { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; }
+.dbtns .btn { text-align: center; padding: 15px 22px; font-size: 16px; }
+.dbtns .btn:last-child { padding-inline: 14px; }
+@media (max-width: 380px) { .dbtns .btn { padding-inline: 14px; font-size: 15px; } }

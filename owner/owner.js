@@ -147,7 +147,7 @@
         '<span class="o-name">' + esc(o.name) + '</span>' +
         '<span class="o-total">' + rp(o.total) + '</span>' +
         '<span class="o-ago">' + esc(ago(o.createdAt)) + '</span>' +
-        '<span class="o-line2"><span class="o-pay ' + (o.paid ? 'ok' : 'no') + '">' + (o.paid ? 'Lunas' : 'Belum lunas') + '</span> ' + where + ' · ' + esc(shortDate(o.date)) + ', ' + esc(o.slot) + ' · ' + brief + '</span>' +
+        '<span class="o-line2"><span class="o-pay ' + (o.paid ? 'ok' : 'no') + '">' + (o.paid ? 'Lunas' : (o.payClaim ? 'Cek pembayaran' : 'Belum lunas')) + '</span> ' + where + ' · ' + esc(shortDate(o.date)) + ', ' + esc(o.slot) + ' · ' + brief + '</span>' +
       '</button>' +
       (open ? '<div class="o-body">' +
         '<div><h3>Pesanan</h3><ul class="o-items">' + items + '</ul>' +
@@ -159,13 +159,14 @@
           '<div><dt>No. HP</dt><dd>' + esc(o.phone) + ' · <a href="' + esc(waLink(o.phone)) + '" target="_blank" rel="noopener">Chat WhatsApp</a></dd></div>' +
           '<div><dt>' + where + '</dt><dd>' + esc(shortDate(o.date)) + ', ' + esc(o.slot) + '</dd></div>' +
           (o.mode === 'delivery' ? '<div><dt>Alamat</dt><dd>' + esc(o.address || '') + '</dd></div>' : '') +
-          '<div><dt>Pembayaran</dt><dd>' + esc(o.paymentLabel) + ' · ' + (o.paid ? 'Lunas' : 'Belum lunas') + '</dd></div>' +
+          '<div><dt>Pembayaran</dt><dd>' + esc(o.paymentLabel) + ' · ' + (o.paid ? 'Lunas' : (o.payClaim ? 'Pembeli mengaku sudah bayar, cek dulu' : 'Belum lunas')) + '</dd></div>' +
+          (o.proof ? '<div><dt>Bukti bayar</dt><dd><a href="../api/owner.php?action=proof&file=' + encodeURIComponent(o.proof) + '" target="_blank" rel="noopener">Lihat bukti pembayaran</a></dd></div>' : '') +
           (o.note ? '<div><dt>Catatan</dt><dd>' + esc(o.note) + '</dd></div>' : '') +
           '<div><dt>Masuk</dt><dd>' + new Date(o.createdAt * 1000).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '</dd></div>' +
         '</dl></div>' +
         '<div class="o-act">' +
           (nextLabel && !final ? '<button class="btn" type="button" data-do="next">' + esc(nextLabel) + '</button>' : '') +
-          '<button class="o-btn" type="button" data-do="paid">' + (o.paid ? 'Tandai belum lunas' : 'Tandai lunas') + '</button>' +
+          '<button class="' + (!o.paid && o.payClaim ? 'btn' : 'o-btn') + '" type="button" data-do="paid">' + (o.paid ? 'Tandai belum lunas' : (o.payClaim ? 'Pembayaran sesuai, tandai lunas' : 'Tandai lunas')) + '</button>' +
           sel + cancel +
         '</div>' +
       '</div>' : '') +

@@ -169,7 +169,7 @@ const SHELL_PANEL = `
   </div>
   <div class="dfoot" id="dfoot" hidden>
     <div class="sum" id="sum"></div>
-    <a class="btn block" href="checkout.html" id="toForm">Lanjut ke detail pesanan</a>
+    <div class="dbtns"><a class="btn ghost" href="keranjang.html" id="toCart">Keranjang</a><a class="btn" href="checkout.html" id="toForm">Lanjut ke detail pesanan</a></div>
   </div>
 </aside>
 `;
@@ -242,12 +242,27 @@ function renderHome() {
   setupCars();
 }
 function renderProducts() {
-  const all = [{ id: 'all', name: 'Semua' }].concat(CATS);
-  $('tabs').innerHTML = all.map(c => '<button type="button" class="tab" data-cat="' + c.id + '" aria-pressed="' + (state.filter === c.id) + '">' + c.name + '</button>').join('');
-  $('plist').innerHTML = CATS.filter(c => state.filter === 'all' || state.filter === c.id).map(c => {
+  const tabs = $('tabs'), list = $('plist');
+  if (!tabs.children.length) {
+    // tombol kategori dibuat sekali; selanjutnya hanya status tekannya yang berganti, jadi warnanya beralih halus
+    tabs.innerHTML = [{ id: 'all', name: 'Semua' }].concat(CATS).map(c => '<button type="button" class="tab" data-cat="' + c.id + '" aria-pressed="false">' + c.name + '</button>').join('');
+  }
+  tabs.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-pressed', String(t.dataset.cat === state.filter)));
+  const html = CATS.filter(c => state.filter === 'all' || state.filter === c.id).map(c => {
     const items = ITEMS.filter(i => i.cat === c.id);
     return items.length ? '<div class="cat"><h2>' + c.name + '</h2></div><div class="pgrid">' + items.map(it => itemHtml(it, true)).join('') + '</div>' : '';
   }).join('');
+  const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!list.dataset.ready || reduced) { list.innerHTML = html; list.dataset.ready = '1'; return; }
+  // ganti kategori: daftar lama memudar dulu, lalu produk baru muncul bertahap; tinggi dijaga supaya halaman tidak melompat
+  clearTimeout(list._t);
+  list.style.minHeight = list.offsetHeight + 'px';
+  list.classList.add('swap-out');
+  list._t = setTimeout(() => {
+    list.innerHTML = html;
+    list.classList.remove('swap-out');
+    list._t = setTimeout(() => { list.style.minHeight = ''; }, 600);
+  }, 170);
 }
 /* ---- Carousel ---- */
 function setupCars() {
@@ -479,12 +494,15 @@ function initForm() {
   $('date').min = today; $('date').value = today;
   $('pickupInfo').innerHTML = 'Ambil sendiri di <b>' + esc(CONFIG.address) + '</b>. Jam buka ' + hoursText() + '. Tidak ada minimal pesanan.';
   buildSlots();
+  syncPayBtn();
 }
 function syncMode() {
   const d = mode() === 'delivery';
   $('deliveryFields').hidden = !d; $('pickupInfo').hidden = d;
   hideDone(); renderCart();
 }
+// label tombol di ringkasan: transfer/QRIS bayar dulu, tunai langsung kirim
+function syncPayBtn() { const b = $('submitBtn'); if (b) b.textContent = payVal() === 'tunai' ? 'Kirim pesanan' : 'Lanjutkan pembayaran'; }
 function showErr(m) { const e = $('err'); e.textContent = m; e.hidden = !m; }
 
 function validate() {
@@ -548,33 +566,112 @@ if (PAGE === 'checkout') {
   document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', syncMode));
   $('zone').addEventListener('change', () => { hideDone(); renderCart(); });
   $('date').addEventListener('change', buildSlots);
-  $('form').addEventListener('submit', async e => {
-    e.preventDefault();
-    const m = validate(); showErr(m);
-    if (m) return;
-    const btn = $('submitBtn');
-    btn.disabled = true; btn.textContent = 'Mengirim…';
+  $('pays').addEventListener('change', syncPayBtn);
+
+  const headers = { 'Content-Type': 'application/json', 'X-Requested-With': 'sb' };
+  const orderBody = () => {
     const body = {
       name: $('name').value.trim(), phone: $('phone').value.trim(), mode: mode(),
       date: $('date').value, slot: $('slot').value, payment: payVal(), note: $('note').value.trim(),
       items: Object.keys(state.cart).map(id => ({ id, qty: state.cart[id] }))
     };
     if (mode() === 'delivery') { body.zone = $('zone').value; body.address = $('addr').value.trim(); }
-    let sent = false;
+    return body;
+  };
+  const post = async (action, body) => {
+    const r = await fetch('api/order.php?action=' + action, { method: 'POST', headers, body: JSON.stringify(body) });
+    return { ok: r.ok, data: await r.json().catch(() => null) };
+  };
+  const done = data => {
+    state.cart = {}; save();
+    try { localStorage.setItem('sweetbite-last-order', data.id); } catch (err) {}
+    location.href = 'pesanan.html?id=' + encodeURIComponent(data.id);
+  };
+
+  $('form').addEventListener('submit', async e => {
+    e.preventDefault();
+    const m = validate(); showErr(m);
+    if (m) return;
+    const btn = $('submitBtn'), body = orderBody(), cash = payVal() === 'tunai';
+    btn.disabled = true; btn.textContent = cash ? 'Mengirim…' : 'Memeriksa…';
+    let go = false;
     try {
-      const r = await fetch('api/order.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'sb' }, body: JSON.stringify(body) });
-      const data = await r.json().catch(() => null);
-      if (!r.ok || !data || !data.id) { showErr((data && data.error) || 'Pesanan belum terkirim. Coba lagi sebentar lagi.'); return; }
-      sent = true;
-      state.cart = {}; save();
-      try { localStorage.setItem('sweetbite-last-order', data.id); } catch (err) {}
-      location.href = 'pesanan.html?id=' + encodeURIComponent(data.id);
+      if (cash) {
+        // bayar tunai: pesanan langsung dibuat
+        const r = await post('create', body);
+        if (!r.ok || !r.data || !r.data.id) { showErr((r.data && r.data.error) || 'Pesanan belum terkirim. Coba lagi sebentar lagi.'); return; }
+        go = true; done(r.data);
+      } else {
+        // transfer / QRIS: periksa pesanan, tampilkan cara bayar, pesanan baru dibuat setelah pembeli membayar
+        const r = await post('prepare', body);
+        if (!r.ok || !r.data || !r.data.info) { showErr((r.data && r.data.error) || 'Belum bisa menampilkan pembayaran. Coba lagi sebentar lagi.'); return; }
+        openPay(r.data, body);
+      }
     } catch (err) {
       showErr('Tidak bisa terhubung ke server. Periksa koneksi lalu coba lagi.');
     } finally {
-      if (!sent) { btn.disabled = false; btn.textContent = 'Kirim pesanan'; }
+      if (!go) { btn.disabled = false; syncPayBtn(); }
     }
   });
+
+  /* ---- jendela pembayaran (transfer bank / QRIS) ---- */
+  function closePay() {
+    const m = $('payModal');
+    if (m) m.remove();
+    document.body.style.overflow = '';
+  }
+  function openPay(prep, body) {
+    closePay();
+    const isQ = prep.method === 'qris', info = prep.info;
+    const how = isQ
+      ? '<div class="pm-qris">' + (info.image ? '<img src="' + esc(info.image) + '" alt="Kode QRIS ' + esc(CONFIG.shop) + '"><a class="linkbtn" href="' + esc(info.image) + '" download>Simpan gambar QRIS</a>' : '') + '</div>' +
+        '<p class="pm-note">Scan dengan aplikasi bank atau e-wallet, lalu bayar <b>tepat ' + rp(prep.total) + '</b>.</p>'
+      : '<div class="pm-acc"><span>' + esc(info.bank) + '</span><b id="pmNo">' + esc(info.number) + '</b><span>a.n. ' + esc(info.holder) + '</span>' +
+        '<button type="button" class="linkbtn" id="pmCopy">Salin nomor rekening</button></div>' +
+        '<p class="pm-note">Transfer <b>tepat ' + rp(prep.total) + '</b> ke rekening di atas.</p>';
+    document.body.insertAdjacentHTML('beforeend',
+      '<div class="paymodal" id="payModal" role="dialog" aria-modal="true" aria-labelledby="pmT"><div class="pm-card">' +
+        '<button type="button" class="pm-x" id="pmX" aria-label="Tutup">✕</button>' +
+        '<span class="label">Langkah terakhir · ' + esc(prep.label) + '</span><h2 id="pmT">Bayar dulu, pesananmu dibuat setelahnya</h2>' +
+        '<div class="pm-total"><span>Total yang dibayar</span><b>' + rp(prep.total) + '</b></div>' + how +
+        '<div class="field"><label for="pmProof">Bukti pembayaran (opsional)</label><input id="pmProof" type="file" accept="image/jpeg,image/png,image/webp"></div>' +
+        '<p class="err" id="pmErr" role="alert" hidden></p>' +
+        '<button type="button" class="btn block" id="pmOk">Saya sudah bayar</button>' +
+        '<button type="button" class="btn ghost block" id="pmBack">Kembali</button>' +
+        '<p class="hint">Pesanan baru dibuat setelah kamu menekan "Saya sudah bayar". Toko akan memeriksa pembayaranmu sebelum mengonfirmasi pesanan.</p>' +
+      '</div></div>');
+    document.body.style.overflow = 'hidden';
+    const err = m => { $('pmErr').textContent = m || ''; $('pmErr').hidden = !m; };
+    $('pmX').addEventListener('click', closePay);
+    $('pmBack').addEventListener('click', closePay);
+    $('payModal').addEventListener('click', e => { if (e.target.id === 'payModal') closePay(); });
+    document.addEventListener('keydown', function esc1(e) { if (e.key === 'Escape') { closePay(); document.removeEventListener('keydown', esc1); } });
+    const copy = $('pmCopy');
+    if (copy) copy.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(info.number); copy.textContent = 'Tersalin ✓'; } catch (e) { copy.textContent = 'Tekan lama untuk menyalin'; }
+      setTimeout(() => { copy.textContent = 'Salin nomor rekening'; }, 1800);
+    });
+    $('pmOk').addEventListener('click', async () => {
+      const ok = $('pmOk'), file = $('pmProof').files[0];
+      err(''); ok.disabled = true; ok.textContent = 'Membuat pesanan…';
+      try {
+        let proof = '';
+        if (file) {
+          const fd = new FormData(); fd.append('photo', file);
+          const r = await fetch('api/order.php?action=proof', { method: 'POST', headers: { 'X-Requested-With': 'sb' }, body: fd });
+          const d = await r.json().catch(() => null);
+          if (!r.ok || !d || !d.proof) { err((d && d.error) || 'Bukti belum terunggah. Coba lagi atau kosongkan.'); ok.disabled = false; ok.textContent = 'Saya sudah bayar'; return; }
+          proof = d.proof;
+        }
+        const r = await post('confirm', Object.assign({}, body, { expectTotal: prep.total, proof }));
+        if (!r.ok || !r.data || !r.data.id) { err((r.data && r.data.error) || 'Pesanan belum terkirim. Coba lagi sebentar lagi.'); ok.disabled = false; ok.textContent = 'Saya sudah bayar'; return; }
+        done(r.data);
+      } catch (e) {
+        err('Tidak bisa terhubung ke server. Periksa koneksi lalu coba lagi.'); ok.disabled = false; ok.textContent = 'Saya sudah bayar';
+      }
+    });
+    $('pmOk').focus();
+  }
 }
 
 initInfo();

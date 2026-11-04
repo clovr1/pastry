@@ -19,7 +19,7 @@ $view = sb_order_view($row, false);
 // Petunjuk pembayaran hanya ditampilkan setelah pesanan ada, dan hilang kalau sudah lunas atau dibatalkan.
 $info = sb_menu()['config']['paymentInfo'] ?? [];
 $view['paymentInfo'] = null;
-if (!$row['paid'] && $row['status'] !== 'dibatalkan' && isset($info[$row['payment']])) {
+if (!$row['paid'] && empty($row['pay_claim']) && $row['status'] !== 'dibatalkan' && isset($info[$row['payment']])) {
     $view['paymentInfo'] = $info[$row['payment']];
 }
 $view['contact'] = sb_menu()['config']['contact'] ?? '';

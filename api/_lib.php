@@ -251,10 +251,13 @@ function sb_order_view(array $o, $owner) {
             return ['id' => $i['id'], 'name' => $i['name'], 'price' => (int)$i['price'], 'qty' => (int)$i['qty']];
         }, $o['items']),
         'name' => $o['name'],
+        'payClaim' => !empty($o['pay_claim']),
     ];
     if ($owner) {
         $view['id'] = (int)$o['id'];
         $view['phone'] = $o['phone'];
+        $view['proof'] = $o['proof'] ?? null;
+        $view['payClaimAt'] = (int)($o['pay_claim'] ?? 0);
     }
     return $view;
 }

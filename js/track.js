@@ -20,8 +20,8 @@
   function message(o) {
     const where = o.mode === 'delivery' ? 'diantar' : 'diambil';
     return {
-      baru: 'Pesananmu sudah masuk. Tunggu toko mengonfirmasi. Halaman ini diperbarui otomatis.',
-      dikonfirmasi: o.paid ? 'Pesananmu dikonfirmasi dan pembayaran sudah kami terima.' : 'Pesananmu dikonfirmasi. Silakan selesaikan pembayaran di bawah.',
+      baru: o.payClaim && !o.paid ? 'Pesananmu sudah masuk dan pembayaranmu sedang diperiksa toko. Halaman ini diperbarui otomatis.' : 'Pesananmu sudah masuk. Tunggu toko mengonfirmasi. Halaman ini diperbarui otomatis.',
+      dikonfirmasi: o.paid ? 'Pesananmu dikonfirmasi dan pembayaran sudah kami terima.' : (o.payClaim ? 'Pesananmu dikonfirmasi. Pembayaranmu sedang diperiksa toko.' : 'Pesananmu dikonfirmasi. Silakan selesaikan pembayaran di bawah.'),
       disiapkan: 'Pesananmu sedang disiapkan.',
       siap: o.mode === 'delivery' ? 'Pesananmu sedang dalam pengantaran.' : 'Pesananmu sudah siap ' + where + ' di toko.',
       selesai: 'Pesanan selesai. Terima kasih sudah memesan!',
@@ -33,6 +33,7 @@
     if (o.status === 'dibatalkan') return '<p class="ord-muted">Tidak ada pembayaran yang perlu dilakukan.</p>';
     if (o.paid) return '<p class="ord-paid">✓ Lunas</p>';
     const total = '<p>Total yang dibayar: <b>' + rp(o.total) + '</b></p>';
+    if (o.payClaim) return '<p class="ord-chip warn">Menunggu verifikasi</p>' + total + '<p class="ord-muted">Kamu sudah menandai pesanan ini dibayar. Toko akan memeriksa pembayaranmu, lalu status berubah jadi Lunas. Sebut kode <b>' + esc(o.code) + '</b> kalau toko menghubungimu.</p>';
     const info = o.paymentInfo;
     if (o.payment === 'transfer' && info) {
       return '<p class="ord-chip warn">Belum dibayar</p>' + total +

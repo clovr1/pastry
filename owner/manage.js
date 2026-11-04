@@ -260,11 +260,16 @@
         '<button type="button" class="o-btn" data-set-act="zone-add">＋ Tambah area</button>' +
         '<button class="btn" type="submit">Simpan</button></form>' +
 
-      '<form class="o-card2" data-set="pay" novalidate><h2>Rekening transfer</h2>' +
-        '<p class="o-hint">Ditampilkan ke pembeli setelah pesanannya terkirim.</p>' +
+      '<form class="o-card2" data-set="pay" novalidate><h2>Pembayaran (transfer &amp; QRIS)</h2>' +
+        '<p class="o-hint">Ditampilkan ke pembeli di langkah pembayaran, sebelum pesanannya dibuat. Pembeli yang sudah bayar menekan "Saya sudah bayar", lalu kamu memeriksanya di tab Pesanan.</p>' +
         '<div class="field"><label for="sBank">Bank</label><input id="sBank" maxlength="40" value="' + esc(tr.bank) + '"></div>' +
         '<div class="field"><label for="sNo">Nomor rekening</label><input id="sNo" inputmode="numeric" maxlength="40" value="' + esc(tr.number) + '"></div>' +
         '<div class="field"><label for="sHolder">Atas nama</label><input id="sHolder" maxlength="60" value="' + esc(tr.holder) + '"></div>' +
+        '<div class="field"><label>Kode QRIS</label><div class="o-ph"><div class="o-pimg big" id="qrPrev">' + (s.qris ? '<img src="../' + esc(s.qris) + '" alt="QRIS" style="object-fit:contain;background:#fff">' : '<span class="o-noimg">Belum ada</span>') + '</div>' +
+          '<div class="o-phbtns"><label class="o-btn o-file">' + (s.qris ? 'Ganti gambar QRIS' : 'Unggah gambar QRIS') + '<input type="file" id="qrFile" accept="image/jpeg,image/png,image/webp" hidden></label>' +
+          (s.qris ? '<button type="button" class="o-btn danger" id="qrDel">Hapus</button>' : '') +
+          '<span class="o-muted" id="qrMsg">Unggah screenshot atau foto kode QRIS tokomu (JPG/PNG/WebP).</span></div></div>' +
+          '<input type="hidden" id="sQris" value="' + esc(s.qris || '') + '"></div>' +
         '<button class="btn" type="submit">Simpan</button></form>' +
       '</div>';
   }
@@ -278,6 +283,25 @@
     if (b.dataset.setAct === 'zone-add') $('zones').insertAdjacentHTML('beforeend', zoneRow({ id: '', label: '', fee: '' }));
     if (b.dataset.setAct === 'zone-del') b.closest('.o-zone').remove();
   });
+  // unggah / hapus gambar QRIS (baru tersimpan setelah menekan Simpan)
+  $('tabSettings').addEventListener('change', async e => {
+    if (e.target.id !== 'qrFile') return;
+    const f = e.target.files[0];
+    if (!f) return;
+    $('qrMsg').textContent = 'Mengunggah…';
+    const fd = new FormData(); fd.append('photo', f);
+    let r = null, data = null;
+    try { r = await fetch('../api/owner.php?action=upload', { method: 'POST', headers: { 'X-Requested-With': 'sb' }, body: fd, credentials: 'same-origin' }); data = await r.json(); } catch (x) {}
+    if (r && r.status === 401) { S.onLoggedOut(); return; }
+    if (!r || !r.ok || !data || !data.path) { $('qrMsg').textContent = (data && data.error) || 'Gagal mengunggah.'; return; }
+    $('sQris').value = data.path;
+    $('qrPrev').innerHTML = '<img src="../' + esc(data.path) + '" alt="QRIS" style="object-fit:contain;background:#fff">';
+    $('qrMsg').textContent = 'Terunggah. Tekan Simpan supaya dipakai.';
+  });
+  $('tabSettings').addEventListener('click', e => {
+    if (!e.target.closest('#qrDel')) return;
+    $('sQris').value = ''; $('qrPrev').innerHTML = '<span class="o-noimg">Belum ada</span>'; $('qrMsg').textContent = 'Dihapus. Tekan Simpan untuk menyimpan.';
+  });
   $('tabSettings').addEventListener('submit', async e => {
     e.preventDefault();
     const f = e.target, kind = f.dataset.set, v = id => $(id).value;
@@ -285,7 +309,7 @@
     if (kind === 'info') body = { shop: v('sShop'), address: v('sAddr'), contact: v('sContact'), social: { instagram: v('sIg'), tiktok: v('sTt'), facebook: v('sFb') } };
     if (kind === 'hours') body = { open: Number(v('sOpen')), close: Number(v('sClose')), closedDays: Array.from(f.querySelectorAll('input[name="cday"]:checked')).map(x => Number(x.value)) };
     if (kind === 'delivery') body = { minDelivery: v('sMin'), zones: Array.from(f.querySelectorAll('.o-zone')).map(r => ({ id: r.dataset.zid, label: r.querySelector('[data-z="label"]').value, fee: r.querySelector('[data-z="fee"]').value })) };
-    if (kind === 'pay') body = { transfer: { bank: v('sBank'), number: v('sNo'), holder: v('sHolder') } };
+    if (kind === 'pay') body = { transfer: { bank: v('sBank'), number: v('sNo'), holder: v('sHolder') }, qris: v('sQris') };
     const btn = f.querySelector('button[type="submit"]'); btn.disabled = true;
     const d = take(await call('settings_save', body));
     btn.disabled = false;

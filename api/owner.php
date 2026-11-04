@@ -57,6 +57,18 @@ if ($action === 'logout') {
     sb_json(['ok' => true]);
 }
 
+if ($action === 'proof') {
+    sb_require_owner();
+    $f = $_GET['file'] ?? '';
+    if (!is_string($f) || !preg_match('/^pf-[a-f0-9]{12}\.(jpg|png|webp)$/', $f) || !is_file(SB_ROOT . '/storage/proofs/' . $f)) sb_fail(404, 'Bukti tidak ditemukan.');
+    $mime = ['jpg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'][pathinfo($f, PATHINFO_EXTENSION)];
+    header('Content-Type: ' . $mime);
+    header('Cache-Control: private, max-age=3600');
+    header('X-Content-Type-Options: nosniff');
+    readfile(SB_ROOT . '/storage/proofs/' . $f);
+    exit;
+}
+
 if ($action === 'list') {
     sb_require_owner();
     $all = sb_store_read()['orders'];
@@ -139,6 +151,7 @@ function sb_catalog_view() {
             'open' => (int)$c['open'], 'close' => (int)$c['close'], 'closedDays' => array_values($c['closedDays']),
             'minDelivery' => (int)$c['minDelivery'], 'zones' => $c['zones'],
             'transfer' => $c['paymentInfo']['transfer'] ?? ['bank' => '', 'number' => '', 'holder' => ''],
+            'qris' => (string)($c['paymentInfo']['qris']['image'] ?? ''),
         ],
     ];
 }
@@ -382,14 +395,23 @@ if ($action === 'settings_save') {
         $t = $in['transfer'];
         $set['transfer'] = ['bank' => sb_text($t['bank'] ?? '', 40), 'number' => sb_text($t['number'] ?? '', 40), 'holder' => sb_text($t['holder'] ?? '', 60)];
     }
+    if (array_key_exists('qris', $in)) {
+        $q = is_string($in['qris']) ? $in['qris'] : '';
+        if ($q !== '' && !preg_match('#^images/[A-Za-z0-9._-]+$#', $q)) sb_fail(422, 'Alamat gambar QRIS tidak valid.');
+        $set['qris'] = $q;
+    }
+    $oldQris = (string)(sb_menu(true)['config']['paymentInfo']['qris']['image'] ?? '');
     sb_menu_update(function (&$m) use ($set) {
         foreach ($set as $k => $v) {
-            if ($k === 'transfer') $m['config']['paymentInfo']['transfer'] = $v; else $m['config'][$k] = $v;
+            if ($k === 'transfer') $m['config']['paymentInfo']['transfer'] = $v;
+            elseif ($k === 'qris') $m['config']['paymentInfo']['qris'] = ['image' => $v];
+            else $m['config'][$k] = $v;
         }
         $fees = array_column($m['config']['zones'], 'fee');
         $m['config']['deliveryText'] = 'Ongkir mulai Rp ' . number_format($fees ? min($fees) : 0, 0, ',', '.') . '. Minimal pesanan Rp ' . number_format((int)$m['config']['minDelivery'], 0, ',', '.') . '.';
         return true;
     });
+    if (isset($set['qris']) && $oldQris !== '' && $oldQris !== $set['qris']) sb_remove_upload($oldQris);
     sb_json(sb_catalog_view());
 }
 
