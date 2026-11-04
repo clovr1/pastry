@@ -13,6 +13,8 @@ function brandHtml(name) {
 
 /* ---- Mode terang / gelap ---- */
 const THEME_KEY = 'sweetbite-theme';
+const ACCT_BTN_HTML = '<a class="acctbtn" id="loginLink" href="masuk.html" aria-label="Login" title="Login"' + (['masuk', 'akun', 'profil'].includes(document.body.dataset.page) ? ' aria-current="page"' : '') +
+  '><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></a>';
 const THEME_BTN_HTML = '<button class="themebtn" type="button" id="themeBtn"></button>';
 const ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
 const ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
@@ -34,16 +36,26 @@ function toggleTheme() {
 }
 
 /* Footer: dibuat dari data toko (nama, alamat, kontak, jam buka, cara bayar) di data/menu.json. */
+const SOCIAL_ICONS = {
+  instagram: '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/>',
+  tiktok: '<path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.3 2.6 2 4.1 4.5 4.3"/>',
+  facebook: '<path d="M15 8h-2a1 1 0 0 0-1 1v3h3l-.5 3H12v6H9v-6H7v-3h2V9a4 4 0 0 1 4-4h2z"/>'
+};
+const SOCIAL_NAMES = { instagram: 'Instagram', tiktok: 'TikTok', facebook: 'Facebook' };
+function socialHtml() {
+  const soc = CONFIG.social || {};
+  const links = Object.keys(SOCIAL_NAMES).filter(k => /^https?:\/\//.test(soc[k] || '')).map(k =>
+    '<a class="foot-soc" href="' + esc(soc[k]) + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + SOCIAL_ICONS[k] + '</svg>' + SOCIAL_NAMES[k] + '</a>');
+  return links.length ? links.join('') : '<p>Akun media sosial segera hadir.</p>';
+}
 function footerHtml() {
-  const pays = (CONFIG.payments || []).map(p => esc(p.label)).join(', ');
   return '<footer class="foot"><div class="foot-in">' +
     '<div class="foot-brand"><a class="brand" href="index.html">' + brandHtml(CONFIG.shop) + '</a>' +
       '<p>' + esc(CONFIG.tagline || 'Pastry dibuat dengan tangan dan dipanggang segar setiap pagi.') + '</p></div>' +
     '<nav class="foot-col" aria-label="Jelajahi"><h2>Jelajahi</h2><a href="index.html">Home</a><a href="products.html">Product</a><a href="keranjang.html">Keranjang</a><a href="masuk.html">Akun</a></nav>' +
     '<div class="foot-col"><h2>Kunjungi kami</h2><p>' + esc(CONFIG.address) + '</p>' +
       '<p>Jam buka ' + esc(hoursText()) + '</p></div>' +
-    '<div class="foot-col"><h2>Cara pesan</h2><p>Ambil di tempat atau delivery (minimal pesanan antar ' + rp(CONFIG.minDelivery) + ').</p>' +
-      (pays ? '<p>Pembayaran: ' + pays + '.</p>' : '') + '</div>' +
+    '<div class="foot-col"><h2>Ikuti kami</h2>' + socialHtml() + '</div>' +
     '</div><div class="foot-bot"><span>© ' + new Date().getFullYear() + ' ' + esc(CONFIG.shop) + '. Semua hak dilindungi.</span>' +
       '<span>Kami mengolah gluten, susu, telur, kacang, dan kedelai di dapur yang sama.</span></div></footer>';
 }
@@ -78,9 +90,8 @@ function mountShell() {
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
-        '<a href="' + (PAGE === 'akun' || PAGE === 'profil' ? 'akun.html' : 'masuk.html') + '" id="loginLink"' + (PAGE === 'masuk' || PAGE === 'akun' || PAGE === 'profil' ? ' aria-current="page"' : '') + '>Login</a>' +
       '</nav>' +
-      '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML +
+      '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML + ACCT_BTN_HTML +
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 7H6"/></svg>' +
           '<span class="cn" id="cartN" hidden>0</span></button></div>' +
@@ -492,8 +503,10 @@ const USER_HINT = 'sweetbite-user';
 function paintLogin(user) {
   const a = $('loginLink');
   if (!a) return;
-  a.textContent = user ? 'Akun' : 'Login';
   a.href = user ? 'akun.html' : 'masuk.html';
+  a.setAttribute('aria-label', user ? 'Akun saya' : 'Login');
+  a.title = user ? 'Akun saya' : 'Login';
+  a.classList.toggle('on', !!user);
 }
 function rememberUser(user) { try { user ? sessionStorage.setItem(USER_HINT, '1') : sessionStorage.removeItem(USER_HINT); } catch (e) {} paintLogin(user); }
 try { if (sessionStorage.getItem(USER_HINT)) paintLogin({}); } catch (e) {}   // tebakan awal supaya tautan tidak berkedip

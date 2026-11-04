@@ -135,6 +135,7 @@ function sb_catalog_view() {
         'settings' => [
             'acceptOrders' => !empty($c['acceptOrders']), 'closedNote' => $c['closedNote'] ?? '',
             'shop' => $c['shop'], 'address' => $c['address'], 'contact' => $c['contact'],
+            'social' => $c['social'] ?? ['instagram' => '', 'tiktok' => '', 'facebook' => ''],
             'open' => (int)$c['open'], 'close' => (int)$c['close'], 'closedDays' => array_values($c['closedDays']),
             'minDelivery' => (int)$c['minDelivery'], 'zones' => $c['zones'],
             'transfer' => $c['paymentInfo']['transfer'] ?? ['bank' => '', 'number' => '', 'holder' => ''],
@@ -336,6 +337,19 @@ if ($action === 'settings_save') {
     if (array_key_exists('shop', $in)) { $v = sb_text($in['shop'], 40); if (sb_len($v) < 2) sb_fail(422, 'Isi nama toko.'); $set['shop'] = $v; }
     if (array_key_exists('address', $in)) { $v = sb_text($in['address'], 200); if ($v === '') sb_fail(422, 'Isi alamat toko.'); $set['address'] = $v; }
     if (array_key_exists('contact', $in)) $set['contact'] = sb_text($in['contact'], 40);
+    if (array_key_exists('social', $in) && is_array($in['social'])) {
+        // boleh diisi tautan lengkap (https://…) atau cukup nama akun (@namaakun)
+        $bases = ['instagram' => 'https://instagram.com/', 'tiktok' => 'https://www.tiktok.com/@', 'facebook' => 'https://facebook.com/'];
+        $soc = [];
+        foreach ($bases as $k => $base) {
+            $v = sb_text($in['social'][$k] ?? '', 150);
+            if ($v === '') { $soc[$k] = ''; continue; }
+            if (preg_match('#^https?://[^\s]+$#i', $v)) { $soc[$k] = $v; continue; }
+            if (preg_match('/^@?([A-Za-z0-9._]{1,50})$/', $v, $mm)) { $soc[$k] = $base . $mm[1]; continue; }
+            sb_fail(422, 'Isi ' . ucfirst($k) . ' dengan tautan lengkap (https://…) atau nama akun, mis. @sweetbite.');
+        }
+        $set['social'] = $soc;
+    }
     if (array_key_exists('open', $in) || array_key_exists('close', $in)) {
         $o = sb_int($in['open'] ?? null, 0, 23, 'Jam buka tidak valid.');
         $c = sb_int($in['close'] ?? null, 1, 24, 'Jam tutup tidak valid.');

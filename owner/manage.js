@@ -243,6 +243,9 @@
         '<div class="field"><label for="sShop">Nama toko</label><input id="sShop" maxlength="40" value="' + esc(s.shop) + '"></div>' +
         '<div class="field"><label for="sAddr">Alamat</label><input id="sAddr" maxlength="200" value="' + esc(s.address) + '"></div>' +
         '<div class="field"><label for="sContact">Kontak (WhatsApp)</label><input id="sContact" maxlength="40" value="' + esc(s.contact) + '"></div>' +
+        '<div class="field"><label for="sIg">Instagram</label><input id="sIg" maxlength="150" value="' + esc((s.social || {}).instagram || '') + '" placeholder="@namaakun atau tautan lengkap"></div>' +
+        '<div class="field"><label for="sTt">TikTok</label><input id="sTt" maxlength="150" value="' + esc((s.social || {}).tiktok || '') + '" placeholder="@namaakun atau tautan lengkap"></div>' +
+        '<div class="field"><label for="sFb">Facebook</label><input id="sFb" maxlength="150" value="' + esc((s.social || {}).facebook || '') + '" placeholder="namahalaman atau tautan lengkap"></div>' +
         '<button class="btn" type="submit">Simpan</button></form>' +
 
       '<form class="o-card2" data-set="hours" novalidate><h2>Jam &amp; hari buka</h2>' +
@@ -279,7 +282,7 @@
     e.preventDefault();
     const f = e.target, kind = f.dataset.set, v = id => $(id).value;
     let body = {};
-    if (kind === 'info') body = { shop: v('sShop'), address: v('sAddr'), contact: v('sContact') };
+    if (kind === 'info') body = { shop: v('sShop'), address: v('sAddr'), contact: v('sContact'), social: { instagram: v('sIg'), tiktok: v('sTt'), facebook: v('sFb') } };
     if (kind === 'hours') body = { open: Number(v('sOpen')), close: Number(v('sClose')), closedDays: Array.from(f.querySelectorAll('input[name="cday"]:checked')).map(x => Number(x.value)) };
     if (kind === 'delivery') body = { minDelivery: v('sMin'), zones: Array.from(f.querySelectorAll('.o-zone')).map(r => ({ id: r.dataset.zid, label: r.querySelector('[data-z="label"]').value, fee: r.querySelector('[data-z="fee"]').value })) };
     if (kind === 'pay') body = { transfer: { bank: v('sBank'), number: v('sNo'), holder: v('sHolder') } };
