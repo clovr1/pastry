@@ -4,19 +4,19 @@ img { max-width: 100%; }
 /* Layout: banner foto lebar dengan judul besar di atas foto, lalu menu per kategori sebagai deretan kotak krem yang tinggi
    (nama huruf besar renggang, harga di bawah) yang bisa digeser dengan panah dan titik. Keranjang ada di panel dari kanan. */
 :root {
-  --bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --ink: #1A1716;
-  --muted: #6F6862;
-  --line: #E6E0D8;
+  --bg: #F5EEDF;
+  --surface: #FBF7EE;
+  --ink: #211B16;
+  --muted: #6E6354;
+  --line: #DFD3BD;
   --accent: #B3213B;
-  --accent-soft: #F8E4E7;
+  --accent-soft: #F3DDD6;
   --warn: #9A3412;
   --ok: #2F6B3F;
-  --ok-soft: #E3EFE5;
-  --tile: #F8F4EC;
+  --ok-soft: #E2E9D4;
+  --tile: #EBE0CB;
   --bn-ink: #B3213B;
-  --bn-scrim: rgba(255, 255, 255, .8);
+  --bn-scrim: rgba(245, 238, 223, .82);
   color-scheme: light;
   --font-display: "Instrument Serif", "Times New Roman", Georgia, serif;
   --font-name: "Cormorant Garamond", "Times New Roman", Georgia, serif;
