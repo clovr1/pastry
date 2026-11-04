@@ -10,7 +10,8 @@ Dibuat dengan HTML, CSS, JavaScript, dan **PHP biasa**. Tidak butuh MySQL atau e
 ```
 index.html       Home (banner dan slider pastry)
 masuk.html       Masuk dan daftar akun pembeli
-akun.html        Akun pembeli: riwayat pesanan dan data diri
+akun.html        Akun pembeli: riwayat pesanan
+profil.html      Data diri pembeli (lihat dan ubah, ganti kata sandi)
 products.html    Semua produk, filter kategori
 product.html     Detail satu produk (product.html?id=cr1)
 keranjang.html   Halaman keranjang: ubah jumlah, hapus barang, lanjut ke detail pesanan
@@ -133,8 +134,14 @@ php tools/bump-version.php
 
 ## Akun pembeli
 
-- Pembeli bisa **daftar** (nama, email, nomor HP, kata sandi minimal 8 karakter) dan **masuk** lewat menu **Login** di `masuk.html`. Setelah masuk, menu berubah jadi **Akun** (`akun.html`) yang berisi riwayat pesanan, ubah data diri, ganti kata sandi, dan keluar.
+- Pembeli bisa **daftar** (nama, email, nomor HP, kata sandi minimal 8 karakter) dan **masuk** lewat menu **Login** di `masuk.html`. Setelah masuk, menu berubah jadi **Akun** (`akun.html`) yang berisi riwayat pesanan dan tombol **Data diri** (halaman `profil.html` untuk melihat dan mengubah nama, nomor HP, dan kata sandi) serta **Keluar**.
 - Akun itu **tidak wajib**: pembeli tanpa akun tetap bisa memesan. Kalau sudah masuk, nama dan nomor HP di halaman detail pesanan terisi otomatis dan pesanan tersimpan di akunnya.
 - Data akun disimpan di file yang sama dengan pesanan (`storage/store-*.json`). Kata sandi disimpan sebagai hash (tidak bisa dibaca balik). Login dibatasi 8 percobaan per 10 menit per perangkat.
 - Belum ada fitur "lupa kata sandi" lewat email. Kalau pembeli lupa, ganti dari terminal: `php tools/reset-user-password.php email@pembeli.com`.
 - Sesi login tersimpan di `storage/sessions/` (ikut terlindungi oleh `storage/.htaccess`).
+
+## Bagian di beranda (favorit, paket, dll.)
+
+Slider di beranda dibagi jadi beberapa bagian lewat `config.home` di `data/menu.json`. Tiap bagian punya `label` (teks kecil di atas judul), `title`, `items` (daftar id produk), dan `link` (opsional, tautan di kanan judul). Tambah, hapus, atau urutkan bagian sesuka hati.
+
+**Paket / bundle** ditulis sebagai produk biasa di kategori `paket`: isi `price` dengan harga paket, `tag` dengan tulisan seperti "Hemat Rp 15.000", dan `includes` dengan daftar isinya (tampil sebagai "Isi paket" di halaman produk). Harga tetap dihitung server dari file ini, jadi aman.

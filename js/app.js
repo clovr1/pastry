@@ -55,7 +55,7 @@ function mountShell() {
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
-        '<a href="' + (PAGE === 'akun' ? 'akun.html' : 'masuk.html') + '" id="loginLink"' + (PAGE === 'masuk' || PAGE === 'akun' ? ' aria-current="page"' : '') + '>Login</a>' +
+        '<a href="' + (PAGE === 'akun' || PAGE === 'profil' ? 'akun.html' : 'masuk.html') + '" id="loginLink"' + (PAGE === 'masuk' || PAGE === 'akun' || PAGE === 'profil' ? ' aria-current="page"' : '') + '>Login</a>' +
       '</nav>' +
       '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML +
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
@@ -168,9 +168,16 @@ function itemHtml(it, withDesc) {
     (withDesc ? '<p>' + esc(it.desc) + '</p>' : '') + '</a>';
 }
 function renderHome() {
-  $('list').innerHTML = '<div class="car"><button type="button" class="arr prev" aria-label="Sebelumnya">‹</button>' +
-    '<div class="track">' + ITEMS.map(it => itemHtml(it, false)).join('') + '</div>' +
-    '<button type="button" class="arr next" aria-label="Berikutnya">›</button><div class="dots" aria-hidden="true"></div></div>';
+  // Bagian beranda diatur di data/menu.json (config.home): tiap bagian punya judul dan daftar id produk.
+  let secs = (CONFIG.home || []).map(sec => Object.assign({}, sec, { list: (sec.items || []).map(byId).filter(Boolean) })).filter(sec => sec.list.length);
+  if (!secs.length) secs = [{ title: 'Pastry kami', list: ITEMS }];
+  $('list').innerHTML = secs.map(sec =>
+    '<section class="hsec" aria-label="' + esc(sec.title) + '"><div class="hsec-head"><div>' +
+      (sec.label ? '<span class="label">' + esc(sec.label) + '</span>' : '') + '<h2>' + esc(sec.title) + '</h2></div>' +
+      (sec.link ? '<a class="hsec-link" href="' + esc(sec.link.href) + '">' + esc(sec.link.text) + ' →</a>' : '') + '</div>' +
+      '<div class="car"><button type="button" class="arr prev" aria-label="Sebelumnya">‹</button>' +
+      '<div class="track">' + sec.list.map(it => itemHtml(it, false)).join('') + '</div>' +
+      '<button type="button" class="arr next" aria-label="Berikutnya">›</button><div class="dots" aria-hidden="true"></div></div></section>').join('');
   setupCars();
 }
 function renderProducts() {
@@ -273,7 +280,8 @@ function renderProduct() {
     (it.soldOut ? '<p class="soldout">Habis hari ini. Coba lagi besok atau pilih produk lain.</p>' :
       '<div class="qtyrow"><span class="label">Jumlah</span><div class="stepper q"><button type="button" data-qty="-1" aria-label="Kurangi jumlah">−</button><output id="qty" aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Tambah jumlah">+</button></div></div>' +
       '<p class="incart" id="inCart" hidden></p><button class="btn block" type="button" id="addBtn">Tambah ke keranjang</button>') +
-    hoursLine() + '<p class="pd-desc">' + esc(it.desc) + '</p>' + accordion(it) +
+    hoursLine() + '<p class="pd-desc">' + esc(it.desc) + '</p>' +
+    (it.includes && it.includes.length ? '<div class="pd-incl"><span class="label">Isi paket</span><ul>' + it.includes.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' : '') + accordion(it) +
     '<p class="hint">Toko mengonfirmasi pesananmu sebelum kamu membayar.</p></div>';
   const others = ITEMS.filter(i => i.id !== it.id);
   const rel = others.filter(i => i.cat === it.cat).concat(others.filter(i => i.cat !== it.cat)).slice(0, 4);

@@ -534,6 +534,8 @@ a.backcart { text-decoration: none; color: inherit; }
 .acc-stats > div + div { border-left: 1px solid var(--line); }
 .acc-stats span { font-size: 13px; color: var(--muted); }
 .acc-stats b { font-family: var(--font-display); font-weight: 500; font-size: clamp(22px, 3vw, 30px); line-height: 1.1; }
+.acc-btns { display: flex; gap: 10px; }
+.acc-wrap.prof { width: min(100%, 560px); margin: 0 auto; }
 .acc-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; }
 .acc-h { font-family: var(--font-name); font-weight: 600; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
 .acc-side { background: var(--tile); border-radius: 14px; padding: 24px; display: grid; gap: 16px; }
@@ -541,7 +543,7 @@ a.backcart { text-decoration: none; color: inherit; }
 .acc-dl { margin: 0; display: grid; gap: 14px; }
 .acc-dl dt { font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
 .acc-dl dd { margin: 2px 0 0; font-weight: 500; overflow-wrap: anywhere; }
-.acc-orders { display: grid; gap: 12px; }
+.acc-orders { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)); gap: 14px; }
 .acc-order { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; background: var(--surface); color: inherit; text-decoration: none; transition: border-color .15s ease, transform .15s ease; }
 .acc-order:hover { border-color: var(--ink); transform: translateY(-1px); }
 .acc-o-top, .acc-o-bot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -554,4 +556,18 @@ a.backcart { text-decoration: none; color: inherit; }
 .acc-empty p { margin: 0 0 8px; color: var(--muted); max-width: 34ch; }
 .acc-pw summary { cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
 .acc-pw[open] { display: grid; gap: 12px; }
-@media (max-width: 800px) { .acc-cols { grid-template-columns: 1fr; gap: 32px; } .acc-hero { gap: 12px; } .acc-hero .btn { padding: 9px 16px; font-size: 14px; } .acc-av { width: 52px; height: 52px; font-size: 22px; } .acc-stats > div { padding: 14px 14px; } }
+@media (max-width: 800px) { .acc-hero { flex-wrap: wrap; gap: 12px; } .acc-who { flex-basis: calc(100% - 70px); } .acc-btns { flex-basis: 100%; } .acc-btns .btn { flex: 1; text-align: center; padding: 10px 16px; font-size: 14px; } .acc-av { width: 52px; height: 52px; font-size: 22px; } .acc-stats > div { padding: 14px; } }
+
+/* Beranda: beberapa bagian (favorit, paket, baru), tiap bagian satu slider */
+.hsec { padding-top: 56px; }
+.hsec:first-child { padding-top: 40px; }
+.hsec-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 22px; }
+.hsec-head .label { display: block; margin-bottom: 8px; color: var(--accent); }
+.hsec-head h2 { font-family: var(--font-display); font-weight: 500; font-size: clamp(28px, 3.6vw, 40px); line-height: 1.05; letter-spacing: -.015em; }
+.hsec-link { color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 600; white-space: nowrap; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
+.hsec-link:hover { color: var(--accent); border-color: var(--accent); }
+.pd-incl { display: grid; gap: 8px; }
+.pd-incl ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.pd-incl li { padding-left: 18px; position: relative; }
+.pd-incl li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+@media (max-width: 520px) { .hsec-head { align-items: flex-start; flex-direction: column; gap: 10px; } }

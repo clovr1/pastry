@@ -80,7 +80,48 @@
       "qris": {
         "image": ""
       }
-    }
+    },
+    "home": [
+      {
+        "id": "favorit",
+        "label": "Pilihan pelanggan",
+        "title": "Favorit",
+        "items": [
+          "cr1",
+          "cr2",
+          "tt3",
+          "tt5",
+          "kk1",
+          "cr3"
+        ]
+      },
+      {
+        "id": "paket",
+        "label": "Lebih hemat",
+        "title": "Paket & bundle",
+        "items": [
+          "pk1",
+          "pk2",
+          "pk3",
+          "pk4"
+        ],
+        "link": {
+          "text": "Lihat semua paket",
+          "href": "products.html#paket"
+        }
+      },
+      {
+        "id": "baru",
+        "label": "Baru di etalase",
+        "title": "Baru & musiman",
+        "items": [
+          "cr5",
+          "cr7",
+          "tt4",
+          "tt1"
+        ]
+      }
+    ]
   },
   "cats": [
     {
@@ -98,6 +139,10 @@
     {
       "id": "utuh",
       "name": "Kue Utuh"
+    },
+    {
+      "id": "paket",
+      "name": "Paket & Bundle"
     }
   ],
   "items": [
@@ -316,6 +361,83 @@
         "Susu"
       ],
       "img": "images/palmier.jpg"
+    },
+    {
+      "id": "pk1",
+      "cat": "paket",
+      "name": "Paket Sarapan",
+      "desc": "Teman kopi pagi: dua croissant mentega dan dua pain au chocolat, lebih hemat dari beli satuan.",
+      "price": 105000,
+      "tag": "Hemat Rp 15.000",
+      "includes": [
+        "2 × Butter Croissant",
+        "2 × Pain au Chocolat"
+      ],
+      "allergens": [
+        "Gluten",
+        "Susu",
+        "Telur",
+        "Kedelai"
+      ],
+      "img": "images/butter-croissant.jpg"
+    },
+    {
+      "id": "pk2",
+      "cat": "paket",
+      "name": "Paket Berdua",
+      "desc": "Dua croissant, satu Berry Mousse Cake, dan satu Lemon Tart untuk dinikmati berdua.",
+      "price": 120000,
+      "tag": "Hemat Rp 16.000",
+      "includes": [
+        "2 × Butter Croissant",
+        "1 × Berry Mousse Cake (potong)",
+        "1 × Lemon Tart"
+      ],
+      "allergens": [
+        "Gluten",
+        "Susu",
+        "Telur"
+      ],
+      "img": "images/berry-mousse-cake.jpg"
+    },
+    {
+      "id": "pk3",
+      "cat": "paket",
+      "name": "Paket Kantor (12 pcs)",
+      "desc": "Untuk rapat, arisan, atau acara kecil. Tiga rasa croissant, masing-masing empat buah.",
+      "price": 335000,
+      "tag": "Hemat Rp 45.000",
+      "includes": [
+        "4 × Butter Croissant",
+        "4 × Pain au Chocolat",
+        "4 × Almond Croissant"
+      ],
+      "allergens": [
+        "Gluten",
+        "Susu",
+        "Telur",
+        "Kedelai",
+        "Kacang almond"
+      ],
+      "img": "images/pain-au-chocolat.jpg"
+    },
+    {
+      "id": "pk4",
+      "cat": "paket",
+      "name": "Hampers Kue Kering",
+      "desc": "Satu Cookie Box dan satu Nastar Toples, siap dihadiahkan. Pesan H-2 karena nastar dibuat khusus.",
+      "price": 145000,
+      "tag": "Hemat Rp 15.000",
+      "includes": [
+        "1 × Cookie Box isi 6",
+        "1 × Nastar Toples"
+      ],
+      "allergens": [
+        "Gluten",
+        "Susu",
+        "Telur"
+      ],
+      "img": "images/cookie-box.jpg"
     }
   ]
 }

@@ -6,7 +6,7 @@
   // Setelah masuk, kembali ke halaman asal kalau alamatnya salah satu halaman kita sendiri.
   function nextUrl() {
     const n = new URLSearchParams(location.search).get('next') || '';
-    return ['checkout.html', 'keranjang.html', 'akun.html', 'products.html', 'index.html'].indexOf(n) >= 0 ? n : 'akun.html';
+    return ['checkout.html', 'keranjang.html', 'akun.html', 'profil.html', 'products.html', 'index.html'].indexOf(n) >= 0 ? n : 'akun.html';
   }
 
   async function api(action, body) {
@@ -109,6 +109,7 @@
       '<span class="acc-o-bot"><b>' + rp(o.total) + '</b><span>' + (o.paid ? 'Lunas' : 'Belum dibayar') + ' ›</span></span></a>';
   }
 
+  /* Halaman akun: hanya pesanan. Data diri ada di halaman sendiri (profil.html). */
   async function showAccount(user) {
     document.title = 'Akun saya · ' + CONFIG.shop;
     root.innerHTML =
@@ -116,34 +117,63 @@
         '<header class="acc-hero">' +
           '<span class="acc-av" id="aAv" aria-hidden="true"></span>' +
           '<div class="acc-who"><span class="label">Akun saya</span><h1>Halo, <span id="aName"></span></h1><p id="aMail"></p></div>' +
-          '<button class="btn ghost" type="button" id="outBtn">Keluar</button>' +
+          '<div class="acc-btns"><a class="btn ghost" href="profil.html">Data diri</a><button class="btn ghost" type="button" id="outBtn">Keluar</button></div>' +
         '</header>' +
         '<div class="acc-stats" id="aStats" hidden></div>' +
-        '<div class="acc-cols">' +
-          '<section aria-labelledby="hOrd"><h2 class="acc-h" id="hOrd">Riwayat pesanan</h2><div id="aOrders"><p class="ord-load">Memuat…</p></div></section>' +
-          '<aside class="acc-side" aria-labelledby="hProf">' +
-            '<h2 class="acc-h" id="hProf">Data diri</h2>' +
-            '<dl class="acc-dl" id="aInfo"></dl>' +
-            '<button class="btn ghost block" type="button" id="editBtn" aria-expanded="false">Ubah data diri</button>' +
-            '<form id="fProf" class="auth-form" novalidate hidden>' +
-              field('pName', 'Nama lengkap', 'text', ' autocomplete="name"') +
-              field('pPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel"') +
-              '<details class="acc-pw"><summary>Ganti kata sandi</summary>' +
-                field('pOld', 'Kata sandi lama', 'password', ' autocomplete="current-password"') +
-                field('pNew', 'Kata sandi baru', 'password', ' autocomplete="new-password"') +
-              '</details>' +
-              '<p class="err" id="pErr" role="alert" hidden></p>' +
-              '<button class="btn block" type="submit" id="pBtn">Simpan</button>' +
-            '</form>' +
-            '<p class="acc-ok" id="pOk" role="status" hidden></p>' +
-          '</aside>' +
+        '<section aria-labelledby="hOrd"><h2 class="acc-h" id="hOrd">Riwayat pesanan</h2><div id="aOrders"><p class="ord-load">Memuat…</p></div></section>' +
+      '</div>';
+    const $q = id => document.getElementById(id);
+    $q('aName').textContent = user.name.split(' ')[0];
+    $q('aAv').textContent = user.name.trim().charAt(0).toUpperCase();
+    $q('aMail').textContent = user.email;
+
+    $q('outBtn').addEventListener('click', async () => {
+      busy($q('outBtn'), true);
+      await api('logout', {});
+      rememberUser(null);
+      location.href = 'index.html';
+    });
+
+    const r = await api('orders');
+    const box = $q('aOrders');
+    if (!r.ok) { box.innerHTML = '<p class="ord-muted">' + esc(r.data.error || 'Riwayat belum bisa dimuat.') + '</p>'; return; }
+    const list = r.data.orders;
+    if (!list.length) {
+      box.innerHTML = '<div class="acc-empty"><b>Belum ada pesanan</b><p>Pesanan yang kamu buat saat masuk akan muncul di sini, lengkap dengan statusnya.</p><a class="btn" href="products.html">Lihat produk</a></div>';
+      return;
+    }
+    const active = list.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan').length;
+    const spent = list.filter(o => o.status !== 'dibatalkan').reduce((t, o) => t + o.total, 0);
+    $q('aStats').innerHTML = '<div><span>Total pesanan</span><b>' + list.length + '</b></div><div><span>Sedang diproses</span><b>' + active + '</b></div><div><span>Total belanja</span><b>' + rp(spent) + '</b></div>';
+    $q('aStats').hidden = false;
+    box.innerHTML = '<div class="acc-orders">' + list.map(orderRow).join('') + '</div>';
+  }
+
+  /* Halaman data diri: tampilan data dan tombol untuk mengubahnya. */
+  function showProfile(user) {
+    document.title = 'Data diri · ' + CONFIG.shop;
+    root.innerHTML =
+      '<div class="acc-wrap prof">' +
+        '<nav class="steps" aria-label="Navigasi"><a href="akun.html">Akun saya</a><span aria-hidden="true">›</span><b aria-current="page">Data diri</b></nav>' +
+        '<div class="co-head"><h1>Data diri</h1><p>Data ini terisi otomatis saat kamu memesan.</p></div>' +
+        '<div class="acc-side">' +
+          '<dl class="acc-dl" id="aInfo"></dl>' +
+          '<p class="acc-ok" id="pOk" role="status" hidden></p>' +
+          '<button class="btn ghost block" type="button" id="editBtn" aria-expanded="false">Ubah data diri</button>' +
+          '<form id="fProf" class="auth-form" novalidate hidden>' +
+            field('pName', 'Nama lengkap', 'text', ' autocomplete="name"') +
+            field('pPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel"') +
+            '<details class="acc-pw"><summary>Ganti kata sandi</summary>' +
+              field('pOld', 'Kata sandi lama', 'password', ' autocomplete="current-password"') +
+              field('pNew', 'Kata sandi baru', 'password', ' autocomplete="new-password"') +
+            '</details>' +
+            '<p class="err" id="pErr" role="alert" hidden></p>' +
+            '<button class="btn block" type="submit" id="pBtn">Simpan</button>' +
+          '</form>' +
         '</div>' +
       '</div>';
     const $q = id => document.getElementById(id);
     function fill(u) {
-      $q('aName').textContent = u.name.split(' ')[0];
-      $q('aAv').textContent = u.name.trim().charAt(0).toUpperCase();
-      $q('aMail').textContent = u.email;
       $q('pName').value = u.name; $q('pPhone').value = u.phone;
       $q('aInfo').innerHTML = '<div><dt>Nama</dt><dd>' + esc(u.name) + '</dd></div><div><dt>Email</dt><dd>' + esc(u.email) + '</dd></div><div><dt>No. HP</dt><dd>' + esc(u.phone) + '</dd></div>';
     }
@@ -170,32 +200,12 @@
       $q('fProf').hidden = true; $q('editBtn').textContent = 'Ubah data diri'; $q('editBtn').setAttribute('aria-expanded', 'false');
       $q('pOk').textContent = 'Perubahan tersimpan.'; $q('pOk').hidden = false;
     });
-
-    $q('outBtn').addEventListener('click', async () => {
-      busy($q('outBtn'), true);
-      await api('logout', {});
-      rememberUser(null);
-      location.href = 'index.html';
-    });
-
-    const r = await api('orders');
-    const box = $q('aOrders');
-    if (!r.ok) { box.innerHTML = '<p class="ord-muted">' + esc(r.data.error || 'Riwayat belum bisa dimuat.') + '</p>'; return; }
-    const list = r.data.orders;
-    if (!list.length) {
-      box.innerHTML = '<div class="acc-empty"><b>Belum ada pesanan</b><p>Pesanan yang kamu buat saat masuk akan muncul di sini, lengkap dengan statusnya.</p><a class="btn" href="products.html">Lihat produk</a></div>';
-      return;
-    }
-    const active = list.filter(o => o.status !== 'selesai' && o.status !== 'dibatalkan').length;
-    const spent = list.filter(o => o.status !== 'dibatalkan').reduce((t, o) => t + o.total, 0);
-    $q('aStats').innerHTML = '<div><span>Total pesanan</span><b>' + list.length + '</b></div><div><span>Sedang diproses</span><b>' + active + '</b></div><div><span>Total belanja</span><b>' + rp(spent) + '</b></div>';
-    $q('aStats').hidden = false;
-    box.innerHTML = '<div class="acc-orders">' + list.map(orderRow).join('') + '</div>';
   }
 
   authReady.then(user => {
-    if (PAGE === 'akun') {
-      if (user) showAccount(user); else location.replace('masuk.html?next=akun.html');
+    if (PAGE === 'akun' || PAGE === 'profil') {
+      if (!user) location.replace('masuk.html?next=' + (PAGE === 'profil' ? 'profil.html' : 'akun.html'));
+      else if (PAGE === 'profil') showProfile(user); else showAccount(user);
     } else {
       if (user) location.replace(nextUrl());
       else showAuth(location.hash === '#daftar' ? 'up' : 'in');
