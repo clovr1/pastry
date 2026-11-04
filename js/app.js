@@ -241,11 +241,14 @@ function featuredHtml() {
     if (!it) return '';
     const lay = ['kiri', 'kanan', 'penuh', 'tengah'].includes(f.layout) ? f.layout : FEAT_AUTO[i % FEAT_AUTO.length];
     const headline = f.headline || it.name, text = f.text || it.desc || '', href = 'product.html?id=' + encodeURIComponent(it.id);
+    // label produk (mis. "Hemat Rp 15.000") ikut tampil di samping harga, kecuali kalau sama dengan label sorotan (mis. "Baru" dan "Baru launching")
+    const tg = (it.tag || '').trim().toLowerCase(), lb = (f.label || '').toLowerCase();
+    const extra = tg && tg !== 'baru' && !lb.includes(tg) ? it.tag : '';
     return '<section class="feat v-' + lay + '" aria-label="' + esc(headline) + '">' +
       '<a class="feat-img ph" href="' + href + '" aria-label="' + esc(it.name) + '">' + photo(it.img, it.name, 'Foto segera hadir') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</a>' +
       '<div class="feat-txt">' + (f.label ? '<span class="feat-label">' + esc(f.label) + '</span>' : '') +
         '<h2>' + esc(headline) + '</h2>' + (text ? '<p>' + esc(text) + '</p>' : '') +
-        '<div class="feat-price"><b>' + rp(it.price) + '</b>' + (it.tag ? '<span>' + esc(it.tag) + '</span>' : '') + '</div>' +
+        '<div class="feat-price"><b>' + rp(it.price) + '</b>' + (extra ? '<span>' + esc(extra) + '</span>' : '') + '</div>' +
         '<a class="btn feat-cta" href="' + href + '">Explore more</a></div></section>';
   }).join('');
 }
