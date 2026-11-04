@@ -41,7 +41,11 @@ Foto yang belum ada otomatis diganti tempat foto, jadi kamu bisa menambah satu p
 | `images/nastar-toples.jpg` | Nastar Toples |
 | `images/basque-cheesecake-15cm.jpg` | Basque Cheesecake 15 cm |
 | `images/lemon-tart-18cm.jpg` | Lemon Tart 18 cm |
+| `images/chocolate-eclair.jpg` | Chocolate Éclair |
+| `images/raspberry-tart.jpg` | Raspberry Tart |
+| `images/palmier.jpg` | Palmier |
 
+Jumlah produk sebaiknya kelipatan 4 supaya setiap geseran di desktop menampilkan 4 produk penuh.
 Foto produk paling cocok berbentuk tegak (sekitar 600 × 1000 px). Foto yang lebar akan terpotong di kiri dan kanan.
 Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` di `ITEMS` pada `index.html`.
 
