@@ -99,11 +99,17 @@ button { cursor: pointer; }
 .strip span.v { color: var(--muted); font-size: 15px; }
 
 /* Menu */
-.menuhead { display: flex; align-items: end; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-block: 64px 8px; }
+.menuhead { display: grid; gap: 22px; padding-block: 40px 8px; }
 .menuhead h1, .menuhead h2 { font-family: var(--font-display); font-size: clamp(40px, 6vw, 64px); line-height: 1; letter-spacing: -.02em; }
-.tabs { display: flex; gap: 24px; overflow-x: auto; max-width: 100%; border-bottom: 1px solid var(--line); }
-.tab { border: 0; background: none; padding: 10px 0; font-weight: 500; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
-.tab[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tabs { display: flex; flex-wrap: wrap; gap: 10px; }
+.tab { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 18px; font-size: 14px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.tab:hover { border-color: var(--ink); }
+.tab[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+@media (max-width: 900px) {
+  /* di HP satu baris yang bisa digeser, tanpa batang gulir */
+  .tabs { flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 3px; margin: -3px; }
+  .tabs::-webkit-scrollbar { display: none; }
+}
 .cat { margin: 44px 0 18px; text-align: center; }
 .cat h2, .cat h3 { font-family: var(--font-name); font-weight: 600; font-size: 15px; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); }
 
