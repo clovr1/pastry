@@ -64,16 +64,18 @@ button { cursor: pointer; }
 .label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
 
 /* Kop */
-.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; }
+.top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 20px; }
 .brand { font-family: var(--font-display); font-size: 32px; letter-spacing: -.01em; text-decoration: none; color: inherit; }
 .nav { display: flex; gap: 32px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; font-weight: 500; }
 .nav a { color: inherit; text-decoration: none; }
-.nav a:hover { color: var(--accent); }
+.nav a:hover, .nav a[aria-current] { color: var(--accent); }
+.notice { background: var(--ink); color: var(--bg); border-radius: 8px; padding: 10px 16px; margin: 0 0 12px; font-size: 14px; text-align: center; }
 .top-r { display: flex; align-items: center; justify-content: flex-end; gap: 16px; }
 .status { font-size: 13px; font-weight: 600; color: var(--ok); display: flex; align-items: center; gap: 7px; }
 .status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .status.closed { color: var(--warn); }
-.cartbtn { border: 1px solid var(--ink); background: transparent; border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.cartbtn { border: 1px solid var(--ink); background: transparent; border-radius: 999px; padding: 8px 16px; font-weight: 600; font-size: 14px; white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; }
+.cartbtn svg { width: 18px; height: 18px; flex: none; }
 .cartbtn:hover { background: var(--ink); color: var(--bg); }
 
 .btn { border: 0; border-radius: 999px; padding: 12px 24px; font-weight: 600; background: var(--ink); color: var(--bg); text-decoration: none; display: inline-block; }
@@ -205,8 +207,12 @@ form { display: grid; gap: 14px; }
   .item { flex-basis: calc((100% - 44px) / 3); }
 }
 @media (max-width: 900px) {
-  .top { grid-template-columns: 1fr auto; }
-  .nav, .status { display: none; }
+  .top { grid-template-columns: 1fr auto; grid-template-areas: "brand cart" "nav nav"; gap: 12px 16px; padding-block: 16px; }
+  .brand { grid-area: brand; }
+  .top-r { grid-area: cart; }
+  .nav { grid-area: nav; gap: 0; border-block: 1px solid var(--line); }
+  .nav a { flex: 1; text-align: center; padding: 12px 0; }
+  .status { display: none; }
   .banner { aspect-ratio: 4 / 5; }
   .bn-title { max-width: 10ch; }
   .strip { grid-template-columns: 1fr; }
@@ -224,18 +230,28 @@ form { display: grid; gap: 14px; }
   .drawer { transition: transform .28s ease, visibility 0s linear .28s; }
   .drawer.open { transition: transform .28s ease; }
   .track { scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; }
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <a class="brand" href="#" id="shopName">Senja Pastry</a>
+  <header class="top" id="top">
+    <a class="brand" href="#top" id="shopName">Senja Pastry</a>
+    <nav class="nav" aria-label="Menu utama">
+      <a href="#top" aria-current="page">Home</a>
+      <a href="#menu">Product</a>
+      <a href="#" id="loginLink">Login</a>
+    </nav>
     <div class="top-r">
       <span class="status" id="status">Memuat…</span>
-      <button class="cartbtn" type="button" id="cartBtn">Pesanan (<span id="cartN">0</span>)</button>
+      <button class="cartbtn" type="button" id="cartBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 7H6"/></svg>
+        <span>Shopping Cart (<span id="cartN">0</span>)</span>
+      </button>
     </div>
   </header>
+  <div class="notice" id="notice" role="status" hidden></div>
 
   <section class="banner ph" id="banner" aria-label="Menu unggulan">
     <div id="bnImg" style="position:absolute;inset:0"></div>
@@ -590,6 +606,14 @@ document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener(
 $('zone').addEventListener('change', () => { renderCart(); $('done').hidden = true; });
 $('date').addEventListener('change', buildSlots);
 $('cartBtn').addEventListener('click', openCart);
+let noticeTimer = 0;
+$('loginLink').addEventListener('click', e => {
+  e.preventDefault();
+  const n = $('notice');
+  n.textContent = 'Fitur login segera hadir. Kamu tetap bisa langsung memesan tanpa akun.';
+  n.hidden = false;
+  clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { n.hidden = true; }, 4500);
+});
 $('bar').addEventListener('click', openCart);
 $('closeCart').addEventListener('click', closeCart);
 $('scrim').addEventListener('click', closeCart);
