@@ -144,6 +144,7 @@ function sb_catalog_view() {
         'items' => $m['items'],
         'cats' => $m['cats'],
         'home' => $home,
+        'featured' => $c['featured'] ?? [],
         'settings' => [
             'acceptOrders' => !empty($c['acceptOrders']), 'closedNote' => $c['closedNote'] ?? '',
             'shop' => $c['shop'], 'address' => $c['address'], 'contact' => $c['contact'],
@@ -218,8 +219,11 @@ if ($action === 'item_save') {
     $stock = null;
     if (array_key_exists('stock', $in) && $in['stock'] !== null && $in['stock'] !== '') $stock = sb_int($in['stock'], 0, 99999, 'Stok harus berupa angka bulat, atau kosongkan kalau tidak dibatasi.');
     $homeIds = is_array($in['home'] ?? null) ? array_map('strval', $in['home']) : [];
+    $feat = is_array($in['feature'] ?? null) ? $in['feature'] : null;   // sorotan launching di beranda
+    $featOn = $feat && !empty($feat['on']);
+    $featRow = $featOn ? ['label' => sb_text($feat['label'] ?? '', 30), 'headline' => sb_text($feat['headline'] ?? '', 60), 'text' => sb_text($feat['text'] ?? '', 200, true)] : null;
 
-    $saved = sb_menu_update(function (&$m) use (&$id, $old, $name, $cat, $price, $desc, $tag, $allergens, $includes, $img, $soldOut, $homeIds) {
+    $saved = sb_menu_update(function (&$m) use (&$id, $old, $name, $cat, $price, $desc, $tag, $allergens, $includes, $img, $soldOut, $homeIds, $feat, $featRow) {
         if ($id === '') {
             $used = array_column($m['items'], 'id');
             do { $id = 'p' . substr(bin2hex(random_bytes(4)), 0, 6); } while (in_array($id, $used, true));
@@ -242,6 +246,12 @@ if ($action === 'item_save') {
             if (in_array($sec['id'], $homeIds, true)) $sec['items'][] = $id;
         }
         unset($sec);
+        if ($feat !== null) {
+            $list = isset($m['config']['featured']) && is_array($m['config']['featured']) ? $m['config']['featured'] : sb_auto_featured($m);
+            $list = array_values(array_filter($list, function ($f) use ($id) { return $f['id'] !== $id; }));
+            if ($featRow && count($list) < 4) $list[] = ['id' => $id] + $featRow;
+            $m['config']['featured'] = $list;
+        }
         return true;
     });
     // foto lama yang diganti tidak dipakai lagi
@@ -294,6 +304,9 @@ if ($action === 'item_delete') {
         $m['items'] = $keep;
         if (!isset($m['config']['home'])) $m['config']['home'] = [];
         foreach ($m['config']['home'] as &$sec) $sec['items'] = array_values(array_diff($sec['items'] ?? [], [$id]));
+        unset($sec);
+        $list = isset($m['config']['featured']) && is_array($m['config']['featured']) ? $m['config']['featured'] : sb_auto_featured($m);
+        $m['config']['featured'] = array_values(array_filter($list, function ($f) use ($id) { return $f['id'] !== $id; }));
         return true;
     });
     if ($res === false) sb_fail(404, 'Produk tidak ditemukan.');

@@ -32,6 +32,19 @@ function sb_config() {
     return $cfg;
 }
 
+// Sorotan launching di beranda: daftar yang diatur owner (config.featured); kalau belum pernah diatur,
+// otomatis memakai bundle pertama dan produk berlabel "Baru" pertama.
+function sb_auto_featured(array $m) {
+    $out = [];
+    foreach ($m['items'] as $it) {
+        if (($it['cat'] ?? '') === 'paket') { $out[] = ['id' => $it['id'], 'label' => 'Bundle baru', 'headline' => $it['name'], 'text' => $it['desc'] ?? '']; break; }
+    }
+    foreach ($m['items'] as $it) {
+        if (($it['tag'] ?? '') === 'Baru') { $out[] = ['id' => $it['id'], 'label' => 'Baru launching', 'headline' => $it['name'], 'text' => $it['desc'] ?? '']; break; }
+    }
+    return $out;
+}
+
 // Menu dibaca dari storage/menu-live.json kalau owner sudah pernah mengubahnya lewat dashboard,
 // kalau belum dari data/menu.json (data awal). Stok per produk disimpan di file pesanan dan digabungkan di sini.
 function sb_menu_path() {
@@ -50,6 +63,7 @@ function sb_menu($reload = false) {
     sb_config(); // pastikan zona waktu terpasang
     if (!isset($menu['config']['acceptOrders'])) $menu['config']['acceptOrders'] = true;
     if (!isset($menu['config']['closedNote'])) $menu['config']['closedNote'] = '';
+    if (!isset($menu['config']['featured']) || !is_array($menu['config']['featured'])) $menu['config']['featured'] = sb_auto_featured($menu);
     // dibaca tanpa kunci: file ditulis lewat rename, jadi isinya selalu utuh
     $stock = is_file(sb_config()['data_path']) ? sb_store_load(sb_config()['data_path'])['stock'] : [];
     foreach ($menu['items'] as &$it) {

@@ -197,3 +197,11 @@ Urutannya dihitung dari kecocokan dengan produk yang sedang dibuka: satu kategor
 Catatan teknis animasi: `js/fx.js` dimuat paling awal di tiap halaman (sebelum `app.js`) dan elemen statis disembunyikan lebih dulu lewat kelas `fx-pre` di `<html>`, supaya konten tidak sempat tampil lalu hilang lalu muncul lagi (kedip) saat pindah halaman.
 
 Performa gulir: paralaks banner dan garis kemajuan dijalankan CSS scroll-driven animation (di GPU) pada browser yang mendukung, JavaScript hanya cadangan; menu atas yang hilang/muncul tidak lagi menulis variabel di `<html>` (yang memaksa seluruh halaman dihitung ulang); foto dimuat `decoding="async"`.
+
+## Sorotan launching di beranda (gambar besar + Explore more)
+
+Bundle atau produk baru bisa tampil sebagai blok besar di bagian atas beranda: foto besar di satu sisi (bergantian kiri/kanan), di sisi lain label kecil, judul, kalimat promosi, isi paket, harga, dan tombol **Explore more** ke halaman produknya. Di HP foto di atas dan teks di bawahnya.
+
+- **Mengatur**: dashboard owner, tab **Produk & stok**, ubah produknya, bagian **Sorotan launching di beranda**. Centang, lalu isi label kecil, judul, dan kalimat promosi (kosong = pakai nama dan deskripsi produk). Maksimal 4 sorotan.
+- **Sebelum pernah diatur**: otomatis memakai bundle pertama dan produk berlabel "Baru" pertama. Setelah owner menyimpan pengaturan sorotan sekali, hanya yang dicentang yang tampil (kalau semua dimatikan, tidak ada sorotan).
+- Pakai foto yang tajam untuk produk sorotan, karena fotonya tampil besar.

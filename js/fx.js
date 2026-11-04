@@ -10,7 +10,7 @@
   const settleImgs = root => (root || document).querySelectorAll('.ph img:not(.in)').forEach(i => { if (i.complete && i.naturalWidth) i.classList.add('in'); });
 
   /* ---- muncul saat digulir ---- */
-  const SEL = ['.hsec-head', '.hsec .item', '.pgrid .item', '.menuhead', '.cat', '.strip > div', '.co-head', '.co-sec', '.kr-head',
+  const SEL = ['.feat-img', '.feat-txt > *', '.hsec-head', '.hsec .item', '.pgrid .item', '.menuhead', '.cat', '.strip > div', '.co-head', '.co-sec', '.kr-head',
     '.pd-img', '#rel .item', '.ord-head', '.ord-banner', '.ord-steps', '.ord-card', '.acc-hero', '.acc-h', '.acc-vrow', '.acc-order', '.acc-side',
     '.acc-empty', '.auth', '.foot-in > *', '.foot-bot', '.empty'].join(',');
   let io = null;
@@ -66,7 +66,12 @@
     if (bnImg) bnImg.style.transform = 'translate3d(0,' + Math.min(110, y * 0.22).toFixed(1) + 'px,0)';
     if (bnText) { bnText.style.opacity = String(Math.max(0, 1 - y / (h * 0.55))); bnText.style.transform = 'translate3d(0,' + (y * -0.08).toFixed(1) + 'px,0)'; }
   }
-  window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  let scrollTimer = 0;
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    html.classList.add('is-scrolling');
+    clearTimeout(scrollTimer); scrollTimer = setTimeout(() => html.classList.remove('is-scrolling'), 160);
+  }, { passive: true });
   window.addEventListener('resize', onScroll);
   onScroll();
 })();

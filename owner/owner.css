@@ -166,3 +166,8 @@
 .o-onoff button[aria-pressed="true"] { background: var(--ok); color: #fff; }
 .o-store.off .o-onoff button[aria-pressed="true"] { background: var(--accent); }
 @media (max-width: 560px) { .o-store-main { flex-wrap: wrap; } .o-onoff { margin-left: auto; } }
+
+.o-feat { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 12px; }
+.o-feat legend { font-size: 13px; font-weight: 600; padding: 0 6px; }
+.o-featbox { display: grid; gap: 12px; }
+.o-featbox[hidden] { display: none; }
