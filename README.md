@@ -36,7 +36,7 @@ Foto yang belum ada otomatis diganti tempat foto, jadi kamu bisa menambah satu p
 | `images/pain-aux-raisins.jpg` | Pain aux Raisins |
 | `images/lemon-tart.jpg` | Lemon Tart |
 | `images/pistachio-eclair.jpg` | Pistachio Éclair |
-| `images/basque-cheesecake-potong.jpg` | Basque Cheesecake (potong) |
+| `images/berry-mousse-cake.jpg` | Berry Mousse Cake (potong) |
 | `images/cookie-box.jpg` | Cookie Box isi 6 |
 | `images/nastar-toples.jpg` | Nastar Toples |
 | `images/basque-cheesecake-15cm.jpg` | Basque Cheesecake 15 cm |

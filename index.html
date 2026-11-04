@@ -85,6 +85,7 @@ button { cursor: pointer; }
 /* Foto dan tempat foto */
 .ph { position: relative; overflow: hidden; background: var(--tile); }
 .ph img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.banner .ph img, #bnImg img { object-position: 50% 52%; }
 .noimg { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; text-align: center; padding: 20px; }
 .noimg i { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); line-height: 1.1; color: var(--ink); opacity: .5; }
 .noimg span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
@@ -321,8 +322,8 @@ const CONFIG = {
   deliveryText: 'Ongkir mulai Rp 10.000. Minimal pesanan Rp 75.000.',
   banner: {
     img: 'images/banner.jpg',         // foto banner lebar, disarankan rasio 16:8 (contoh 1600×820)
-    badge: 'Menu baru kami',
-    title: 'Butter Croissant',
+    badge: 'Dipanggang hari ini',
+    title: 'Pastry segar tiap pagi',
     cta: 'Pesan sekarang'
   },
   open: 7, close: 18,
@@ -356,7 +357,7 @@ const ITEMS = [
   { id: 'cr6', cat: 'croissant', name: 'Pain aux Raisins', desc: 'Gulungan krim custard dan kismis.', price: 31000, img: 'images/pain-aux-raisins.jpg' },
   { id: 'tt1', cat: 'tart', name: 'Lemon Tart', desc: 'Kulit tart rapuh, krim lemon yang asam segar.', price: 38000, img: 'images/lemon-tart.jpg' },
   { id: 'tt2', cat: 'tart', name: 'Pistachio Éclair', desc: 'Choux isi krim pistachio dengan glasir hijau.', price: 36000, img: 'images/pistachio-eclair.jpg' },
-  { id: 'tt3', cat: 'tart', name: 'Basque Cheesecake (potong)', desc: 'Bagian atas gosong, tengah lembut creamy.', price: 42000, img: 'images/basque-cheesecake-potong.jpg' },
+  { id: 'tt3', cat: 'tart', name: 'Berry Mousse Cake (potong)', desc: 'Sponge lembut, mousse vanila, selai berry.', price: 42000, img: 'images/berry-mousse-cake.jpg' },
   { id: 'kk1', cat: 'kering', name: 'Cookie Box isi 6', desc: 'Choco chip, oat raisin, dan brown butter.', price: 65000, img: 'images/cookie-box.jpg' },
   { id: 'kk2', cat: 'kering', name: 'Nastar Toples', desc: 'Selai nanas buatan sendiri, mentega Wisman.', price: 95000, tag: 'Pre-order H-2', img: 'images/nastar-toples.jpg' },
   { id: 'ku1', cat: 'utuh', name: 'Basque Cheesecake 15 cm', desc: 'Cukup untuk 6–8 potong.', price: 185000, tag: 'Pre-order H-2', img: 'images/basque-cheesecake-15cm.jpg' },
