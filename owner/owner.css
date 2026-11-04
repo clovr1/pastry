@@ -155,3 +155,14 @@
 
 .o-prod > .o-btn { width: 100%; padding-inline: 8px; text-align: center; }
 @media (max-width: 900px) { .o-prod > [data-act="out"] { width: auto; padding-inline: 16px; } }
+
+/* Satu tombol buka/tutup di bilah atas */
+.o-store { display: grid; gap: 12px; }
+.o-store-main { display: flex; align-items: center; gap: 12px; }
+.o-store-note { display: flex; gap: 10px; }
+.o-store-note input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 9px 16px; }
+.o-onoff { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px; background: var(--bg); }
+.o-onoff button { border: 0; background: transparent; border-radius: 999px; padding: 8px 20px; font-weight: 600; font-size: 14px; color: var(--muted); }
+.o-onoff button[aria-pressed="true"] { background: var(--ok); color: #fff; }
+.o-store.off .o-onoff button[aria-pressed="true"] { background: var(--accent); }
+@media (max-width: 560px) { .o-store-main { flex-wrap: wrap; } .o-onoff { margin-left: auto; } }

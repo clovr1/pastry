@@ -33,10 +33,11 @@ function toggleTheme() {
   paintThemeBtn();
 }
 
-/* Owner menutup toko sementara: tampilkan pemberitahuan di bawah menu atas. */
+/* Owner menutup toko: pemberitahuan di halaman keranjang dan detail pesanan. */
 function closedBarHtml() {
-  if (CONFIG.acceptOrders !== false) return '';
-  return '<div class="closedbar" role="status"><b>Toko tutup sementara, belum menerima pesanan.</b>' + (CONFIG.closedNote ? ' <span>' + esc(CONFIG.closedNote) + '</span>' : '') + '</div>';
+  // cukup di halaman keranjang dan detail pesanan, tempat pembeli akan mengirim pesanan; di halaman lain label di menu atas sudah cukup
+  if (CONFIG.acceptOrders !== false || (PAGE !== 'cart' && PAGE !== 'checkout')) return '';
+  return '<div class="closedbar" role="status"><b>Toko sedang tutup, belum menerima pesanan.</b>' + (CONFIG.closedNote ? ' <span>' + esc(CONFIG.closedNote) + '</span>' : '') + '</div>';
 }
 
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
@@ -145,10 +146,9 @@ function photo(src, name, label) {
 
 /* ---- Info toko ---- */
 function storeStatus() {
-  if (CONFIG.acceptOrders === false) return { open: false, text: 'Tutup sementara' };
-  const now = new Date(), closedDay = CONFIG.closedDays.includes(now.getDay());
-  const open = !closedDay && now.getHours() >= CONFIG.open && now.getHours() < CONFIG.close;
-  return { open, text: open ? 'Buka sekarang' : (closedDay ? 'Tutup hari ini' : 'Sedang tutup') };
+  // buka/tutup diatur owner lewat satu tombol di dashboard; jam buka hanya informasi
+  const open = CONFIG.acceptOrders !== false;
+  return { open, text: open ? 'Toko buka' : 'Toko tutup' };
 }
 function hoursText() {
   const closed = CONFIG.closedDays.map(d => DAYS[d]).join(', ');
@@ -435,7 +435,7 @@ function syncMode() {
 function showErr(m) { const e = $('err'); e.textContent = m; e.hidden = !m; }
 
 function validate() {
-  if (CONFIG.acceptOrders === false) return 'Toko sedang tutup sementara dan belum menerima pesanan.' + (CONFIG.closedNote ? ' ' + CONFIG.closedNote : '');
+  if (CONFIG.acceptOrders === false) return 'Toko sedang tutup dan belum menerima pesanan.' + (CONFIG.closedNote ? ' ' + CONFIG.closedNote : '');
   const t = totals();
   if (t.count === 0) return 'Pilih minimal satu pastry dari menu.';
   if (!$('name').value.trim()) return 'Isi nama kamu.';

@@ -346,7 +346,7 @@ if ($action === 'settings_save') {
         $days = [];
         foreach (is_array($in['closedDays']) ? $in['closedDays'] : [] as $d) { $d = (int)$d; if ($d >= 0 && $d <= 6 && !in_array($d, $days, true)) $days[] = $d; }
         sort($days);
-        if (count($days) >= 7) sb_fail(422, 'Tidak bisa menutup semua hari. Pakai tombol "Tutup sementara" kalau mau libur total.');
+        if (count($days) >= 7) sb_fail(422, 'Tidak bisa menutup semua hari. Pakai tombol Tutup di bagian atas kalau mau libur total.');
         $set['closedDays'] = $days;
     }
     if (array_key_exists('minDelivery', $in)) $set['minDelivery'] = sb_int($in['minDelivery'], 0, 10000000, 'Minimal pesanan antar harus berupa angka.');

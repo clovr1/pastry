@@ -40,15 +40,28 @@
     if (!s) { bar.hidden = true; return; }
     bar.hidden = false;
     bar.className = 'o-store' + (s.acceptOrders ? '' : ' off');
-    bar.innerHTML = '<span class="o-dot" aria-hidden="true"></span><span class="o-store-t">' +
-      (s.acceptOrders ? '<b>Toko menerima pesanan</b>' : '<b>Toko tutup sementara</b> <span class="o-muted">Pembeli tidak bisa memesan.</span>') + '</span>' +
-      '<button type="button" class="o-btn" id="storeToggle">' + (s.acceptOrders ? 'Tutup sementara' : 'Buka kembali') + '</button>';
+    const keepNote = $('closedNote') ? $('closedNote').value : s.closedNote;
+    bar.innerHTML =
+      '<div class="o-store-main"><span class="o-dot" aria-hidden="true"></span>' +
+        '<span class="o-store-t"><b>' + (s.acceptOrders ? 'Toko buka' : 'Toko tutup') + '</b> <span class="o-muted">' + (s.acceptOrders ? 'Pembeli bisa memesan.' : 'Pembeli tidak bisa memesan.') + '</span></span>' +
+        '<div class="o-onoff" role="group" aria-label="Status toko">' +
+          '<button type="button" data-open="1" aria-pressed="' + s.acceptOrders + '">Buka</button>' +
+          '<button type="button" data-open="0" aria-pressed="' + !s.acceptOrders + '">Tutup</button></div></div>' +
+      (s.acceptOrders ? '' : '<div class="o-store-note"><input id="closedNote" maxlength="200" value="' + esc(keepNote) + '" placeholder="Pesan untuk pembeli (opsional), mis. Libur sampai Senin" aria-label="Pesan untuk pembeli">' +
+        '<button type="button" class="o-btn" id="noteSave">Simpan pesan</button></div>');
   }
   $('storeBar').addEventListener('click', async e => {
-    if (!e.target.closest('#storeToggle')) return;
-    const next = !st.data.settings.acceptOrders;
-    const d = take(await call('settings_save', { acceptOrders: next }));
-    if (d) { toast(next ? 'Toko dibuka. Pembeli bisa memesan lagi.' : 'Toko ditutup sementara.'); if (st.tab === 'settings') renderSettings(); }
+    const t = e.target.closest('[data-open]'), n = e.target.closest('#noteSave');
+    if (!t && !n) return;
+    if (t) {
+      const next = t.dataset.open === '1';
+      if (next === st.data.settings.acceptOrders) return;
+      const d = take(await call('settings_save', { acceptOrders: next }));
+      if (d) toast(next ? 'Toko buka. Pembeli bisa memesan.' : 'Toko tutup. Pembeli tidak bisa memesan.');
+    } else {
+      const d = take(await call('settings_save', { closedNote: $('closedNote').value }));
+      if (d) toast('Pesan tersimpan.');
+    }
   });
 
   /* ---------- produk ---------- */
@@ -226,13 +239,6 @@
     const tr = s.transfer || {};
     $('tabSettings').innerHTML =
       '<div class="o-setgrid">' +
-      '<form class="o-card2" data-set="status" novalidate><h2>Buka / tutup toko</h2>' +
-        '<p class="o-hint">Saat ditutup, pembeli tetap bisa melihat menu tapi tidak bisa mengirim pesanan, dan muncul pemberitahuan di semua halaman.</p>' +
-        '<div class="seg o-seg"><label><input type="radio" name="accept" value="1"' + (s.acceptOrders ? ' checked' : '') + '><b>Menerima pesanan</b></label>' +
-          '<label><input type="radio" name="accept" value="0"' + (s.acceptOrders ? '' : ' checked') + '><b>Tutup sementara</b></label></div>' +
-        '<div class="field"><label for="sNote">Pesan untuk pembeli (opsional)</label><input id="sNote" maxlength="200" value="' + esc(s.closedNote) + '" placeholder="Contoh: Libur sampai Senin, buka lagi Selasa."></div>' +
-        '<button class="btn" type="submit">Simpan</button></form>' +
-
       '<form class="o-card2" data-set="info" novalidate><h2>Info toko</h2>' +
         '<div class="field"><label for="sShop">Nama toko</label><input id="sShop" maxlength="40" value="' + esc(s.shop) + '"></div>' +
         '<div class="field"><label for="sAddr">Alamat</label><input id="sAddr" maxlength="200" value="' + esc(s.address) + '"></div>' +
@@ -273,7 +279,6 @@
     e.preventDefault();
     const f = e.target, kind = f.dataset.set, v = id => $(id).value;
     let body = {};
-    if (kind === 'status') body = { acceptOrders: f.querySelector('input[name="accept"]:checked').value === '1', closedNote: v('sNote') };
     if (kind === 'info') body = { shop: v('sShop'), address: v('sAddr'), contact: v('sContact') };
     if (kind === 'hours') body = { open: Number(v('sOpen')), close: Number(v('sClose')), closedDays: Array.from(f.querySelectorAll('input[name="cday"]:checked')).map(x => Number(x.value)) };
     if (kind === 'delivery') body = { minDelivery: v('sMin'), zones: Array.from(f.querySelectorAll('.o-zone')).map(r => ({ id: r.dataset.zid, label: r.querySelector('[data-z="label"]').value, fee: r.querySelector('[data-z="fee"]').value })) };

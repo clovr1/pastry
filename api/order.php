@@ -11,10 +11,10 @@ $cfg = sb_config();
 $C = $menu['config'];
 $now = time();
 
-/* --- toko sedang tutup sementara (diatur owner) --- */
+/* --- toko sedang tutup (diatur owner) --- */
 if (empty($C['acceptOrders'])) {
     $note = trim((string)($C['closedNote'] ?? ''));
-    sb_fail(503, 'Toko sedang tutup sementara dan belum menerima pesanan.' . ($note !== '' ? ' ' . $note : ''));
+    sb_fail(503, 'Toko sedang tutup dan belum menerima pesanan.' . ($note !== '' ? ' ' . $note : ''));
 }
 
 /* --- data pemesan --- */
