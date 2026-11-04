@@ -155,3 +155,5 @@ Buka `owner/` lalu masuk. Selain tab **Pesanan**, ada:
 - **Pengaturan toko**: buka/tutup sementara, nama/alamat/kontak, jam dan hari buka, minimal pesanan antar dan area+ongkir, serta rekening transfer.
 
 **Di mana datanya disimpan?** `data/menu.json` hanyalah data awal. Begitu owner mengubah sesuatu, menu yang berlaku pindah ke `storage/menu-live.json` (bukan bagian dari Git, jadi tidak bentrok saat `git pull`; salinan sebelumnya ada di `storage/menu-live.bak.json`). Stok disimpan di file pesanan. Kalau ingin mengulang dari data awal, hapus `storage/menu-live.json`. Foto yang diunggah masuk ke folder `images/` (nama `u-xxxx`), jadi folder itu harus bisa ditulis PHP; foto ini ikut tercatat di Git kalau kamu melakukan `git add`.
+
+Pesanan **bayar tunai** otomatis ditandai lunas saat statusnya diubah ke Selesai (transfer dan QRIS tetap harus kamu tandai lunas sendiri setelah uangnya masuk).

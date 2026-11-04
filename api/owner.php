@@ -108,6 +108,8 @@ if ($action === 'update') {
                     }
                 }
             }
+            // bayar tunai: pesanan yang diselesaikan otomatis dianggap lunas (kecuali owner mengatur sendiri)
+            if ($newStatus === 'selesai' && $o['payment'] === 'tunai' && !$hasPaid) $o['paid'] = 1;
             if ($newStatus !== null) $o['status'] = $newStatus;
             if ($hasPaid) $o['paid'] = $paid;
             $o['updated_at'] = time();

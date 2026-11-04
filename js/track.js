@@ -53,7 +53,7 @@
     const cancelled = o.status === 'dibatalkan';
     const idx = STEPS.indexOf(o.status);
     const steps = cancelled ? '' : '<ol class="ord-steps" aria-label="Tahap pesanan">' + STEPS.map((s, i) =>
-      '<li class="' + (i < idx ? 'done' : i === idx ? 'now' : '') + '"' + (i === idx ? ' aria-current="step"' : '') + '><span></span>' + stepLabel(s, o.mode) + '</li>').join('') + '</ol>';
+      '<li class="' + (i < idx ? 'is-done' : i === idx ? 'is-now' : '') + '"' + (i === idx ? ' aria-current="step"' : '') + '><span></span>' + stepLabel(s, o.mode) + '</li>').join('') + '</ol>';
     const lines = o.items.map(it => '<li><span>' + it.qty + ' × ' + esc(it.name) + '</span><b>' + rp(it.price * it.qty) + '</b></li>').join('');
     root.innerHTML =
       '<div class="ord-head"><p class="label">Status pesanan</p><h1>' + esc(o.code) + '</h1>' +
