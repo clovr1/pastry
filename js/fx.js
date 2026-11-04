@@ -36,14 +36,16 @@
       const p = el.parentElement, n = seen.get(p) || 0;
       seen.set(p, n + 1);
       el.style.setProperty('--d', String(n % 6));
+      el.style.transition = 'none';   // disembunyikan seketika, jangan dipudarkan keluar dulu (itu yang tampak sebagai kedip)
       el.classList.add('rv');
       io.observe(el);
     });
+    if (fresh.length) { void document.body.offsetWidth; fresh.forEach(el => { el.style.transition = ''; }); }
   }
-  let queued = false;
-  const queue = () => { if (queued) return; queued = true; requestAnimationFrame(() => { queued = false; scan(); }); };
-  new MutationObserver(queue).observe(document.body, { childList: true, subtree: true });
+  // dipindai langsung (bukan menunggu frame berikutnya) supaya elemen baru sudah tersembunyi sebelum sempat tergambar
+  new MutationObserver(scan).observe(document.body, { childList: true, subtree: true });
   scan();
+  html.classList.remove('fx-pre');
 
   /* ---- gulir: garis kemajuan di atas, paralaks dan pudar pada banner ---- */
   const bar = document.createElement('i');

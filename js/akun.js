@@ -61,6 +61,7 @@
       $q('aSub').textContent = up ? 'Daftar untuk menyimpan data dan melihat riwayat pesananmu.' : 'Masuk untuk melihat riwayat pesananmu dan memesan lebih cepat.';
       $q('swText').textContent = up ? 'Sudah punya akun?' : 'Belum punya akun?';
       $q('swBtn').textContent = up ? 'Masuk' : 'Buat akun baru';
+      const hd = document.querySelector('.auth-head'); hd.classList.remove('flip'); void hd.offsetWidth; hd.classList.add('flip');
       document.title = (up ? 'Daftar · ' : 'Masuk · ') + CONFIG.shop;
       try { history.replaceState(null, '', location.pathname + location.search + (up ? '#daftar' : '')); } catch (e) {}
       $q(up ? 'upName' : 'inEmail').focus();
