@@ -222,7 +222,7 @@ if ($action === 'item_save') {
     $homeIds = is_array($in['home'] ?? null) ? array_map('strval', $in['home']) : [];
     $feat = is_array($in['feature'] ?? null) ? $in['feature'] : null;   // sorotan launching di beranda
     $featOn = $feat && !empty($feat['on']);
-    $featRow = $featOn ? ['layout' => in_array($feat['layout'] ?? '', ['auto', 'kiri', 'kanan', 'penuh', 'tengah'], true) ? $feat['layout'] : 'auto', 'label' => sb_text($feat['label'] ?? '', 30), 'headline' => sb_text($feat['headline'] ?? '', 60), 'text' => sb_text($feat['text'] ?? '', 200, true)] : null;
+    $featRow = $featOn ? ['layout' => in_array($feat['layout'] ?? '', ['auto', 'kiri', 'kanan', 'penuh', 'tengah'], true) ? $feat['layout'] : 'auto', 'cta' => sb_text($feat['cta'] ?? '', 24), 'label' => sb_text($feat['label'] ?? '', 30), 'headline' => sb_text($feat['headline'] ?? '', 60), 'text' => sb_text($feat['text'] ?? '', 200, true)] : null;
 
     $saved = sb_menu_update(function (&$m) use (&$id, $old, $name, $cat, $price, $desc, $tag, $allergens, $includes, $img, $soldOut, $homeIds, $feat, $featRow) {
         if ($id === '') {

@@ -200,7 +200,7 @@ Performa gulir: paralaks banner dan garis kemajuan dijalankan CSS scroll-driven 
 
 ## Sorotan launching di beranda (gambar besar + Explore more)
 
-Bundle atau produk baru bisa tampil sebagai blok selebar layar di bagian atas beranda, tiap sorotan dengan gaya sendiri: **kiri** (foto kiri, teks kanan), **kanan** (foto kanan, teks kiri di atas pita berwarna), **penuh** (foto memenuhi layar, teks putih di atasnya), dan **tengah** (foto lebar, teks di tengah dengan huruf sambung). Tiap blok berisi label kecil, judul, kalimat promosi, harga, dan tombol garis **Explore more** ke halaman produknya. Kalau gaya tidak dipilih, gayanya bergantian otomatis. Di HP foto di atas dan teks di bawahnya.
+Bundle atau produk baru bisa tampil sebagai blok selebar layar di bagian atas beranda, tiap sorotan dengan gaya sendiri: **kiri** (foto kiri, teks kanan), **kanan** (foto kanan, teks kiri di atas pita berwarna), **penuh** (foto memenuhi layar, teks putih di atasnya), dan **tengah** (foto lebar, teks di tengah dengan huruf sambung). Tiap blok berisi label kecil, judul, kalimat promosi, harga, dan tombol garis **Order now** (teksnya bisa diubah per sorotan) ke halaman produknya. Kalau gaya tidak dipilih, gayanya bergantian otomatis. Di HP foto di atas dan teks di bawahnya.
 
 - **Mengatur**: dashboard owner, tab **Produk & stok**, ubah produknya, bagian **Sorotan launching di beranda**. Centang, pilih **Tampilan**, lalu isi label kecil, judul, dan kalimat promosi (kosong = pakai nama dan deskripsi produk). Maksimal 4 sorotan.
 - **Sebelum pernah diatur**: otomatis memakai bundle pertama dan produk berlabel "Baru" pertama. Setelah owner menyimpan pengaturan sorotan sekali, hanya yang dicentang yang tampil (kalau semua dimatikan, tidak ada sorotan).

@@ -119,11 +119,11 @@
     if (!b) return;
     if (b.dataset.cat) { st.cat = b.dataset.cat; renderProducts(); return; }
     const act = b.dataset.act, row = b.closest('.o-prod');
-    if (act === 'new') { st.edit = { isNew: true, item: { name: '', cat: (st.cat !== 'all' ? st.cat : st.data.cats[0] && st.data.cats[0].id) || '', price: '', desc: '', tag: '', allergens: [], includes: [], img: '', stock: null, soldOut: false }, home: [], feature: { on: false, layout: 'auto', label: 'Baru launching', headline: '', text: '' } }; renderProducts(); window.scrollTo(0, 0); return; }
+    if (act === 'new') { st.edit = { isNew: true, item: { name: '', cat: (st.cat !== 'all' ? st.cat : st.data.cats[0] && st.data.cats[0].id) || '', price: '', desc: '', tag: '', allergens: [], includes: [], img: '', stock: null, soldOut: false }, home: [], feature: { on: false, layout: 'auto', cta: 'Order now', label: 'Baru launching', headline: '', text: '' } }; renderProducts(); window.scrollTo(0, 0); return; }
     if (act === 'edit') {
       const it = st.data.items.find(i => i.id === row.dataset.id);
       const fr = (st.data.featured || []).find(f => f.id === it.id);
-      st.edit = { isNew: false, item: JSON.parse(JSON.stringify(it)), home: st.data.home.filter(h => h.items.includes(it.id)).map(h => h.id), feature: fr ? { on: true, layout: fr.layout || 'auto', label: fr.label || '', headline: fr.headline || '', text: fr.text || '' } : { on: false, layout: 'auto', label: 'Baru launching', headline: '', text: '' } };
+      st.edit = { isNew: false, item: JSON.parse(JSON.stringify(it)), home: st.data.home.filter(h => h.items.includes(it.id)).map(h => h.id), feature: fr ? { on: true, layout: fr.layout || 'auto', cta: fr.cta || 'Order now', label: fr.label || '', headline: fr.headline || '', text: fr.text || '' } : { on: false, layout: 'auto', cta: 'Order now', label: 'Baru launching', headline: '', text: '' } };
       renderProducts(); window.scrollTo(0, 0); return;
     }
     if (act === 'out') {
@@ -175,6 +175,7 @@
           '<div class="o-featbox" id="featBox"' + (e.feature.on ? '' : ' hidden') + '>' +
             '<div class="field"><label for="fFLay">Tampilan</label><select id="fFLay">' + [['auto', 'Otomatis (bergantian antar sorotan)'], ['kiri', 'Foto di kiri, teks di kanan'], ['kanan', 'Foto di kanan, teks di kiri (pita berwarna)'], ['penuh', 'Foto penuh, teks di atas foto'], ['tengah', 'Foto lebar, teks di tengah']].map(o => '<option value="' + o[0] + '"' + (e.feature.layout === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
             '<div class="field"><label for="fFLabel">Label kecil</label><input id="fFLabel" maxlength="30" value="' + esc(e.feature.label) + '" placeholder="Baru launching, Bundle hemat, Edisi terbatas"></div>' +
+            '<div class="field"><label for="fFCta">Teks tombol</label><input id="fFCta" maxlength="24" value="' + esc(e.feature.cta) + '" placeholder="Order now"></div>' +
             '<div class="field"><label for="fFHead">Judul sorotan (kosong = nama produk)</label><input id="fFHead" maxlength="60" value="' + esc(e.feature.headline) + '"></div>' +
             '<div class="field"><label for="fFText">Kalimat promosi (kosong = deskripsi produk)</label><textarea id="fFText" rows="2" maxlength="200">' + esc(e.feature.text) + '</textarea></div>' +
             '<p class="o-hint">Maksimal 4 sorotan. Foto produk dipakai sebagai gambar besar, jadi pakai foto yang tajam.</p>' +
@@ -206,7 +207,7 @@
     it.includes = $('fInc').value.split('\n').map(x => x.trim()).filter(Boolean);
     it.soldOut = $('fOut').checked; it.stock = $('fStock').value.trim() === '' ? null : Number($('fStock').value);
     st.edit.home = Array.from(document.querySelectorAll('input[name="home"]:checked')).map(x => x.value);
-    st.edit.feature = { on: $('fFeat').checked, layout: $('fFLay').value, label: $('fFLabel').value, headline: $('fFHead').value, text: $('fFText').value };
+    st.edit.feature = { on: $('fFeat').checked, layout: $('fFLay').value, cta: $('fFCta').value, label: $('fFLabel').value, headline: $('fFHead').value, text: $('fFText').value };
   }
   $('tabProducts').addEventListener('change', ev => { if (ev.target.id === 'fFeat') $('featBox').hidden = !ev.target.checked; });
   $('tabProducts').addEventListener('change', async ev => {

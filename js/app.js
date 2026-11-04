@@ -249,7 +249,7 @@ function featuredHtml() {
       '<div class="feat-txt">' + (f.label ? '<span class="feat-label">' + esc(f.label) + '</span>' : '') +
         '<h2>' + esc(headline) + '</h2>' + (text ? '<p>' + esc(text) + '</p>' : '') +
         '<div class="feat-price"><b>' + rp(it.price) + '</b>' + (extra ? '<span>' + esc(extra) + '</span>' : '') + '</div>' +
-        '<a class="btn feat-cta" href="' + href + '">Explore more</a></div></section>';
+        '<a class="btn feat-cta" href="' + href + '">' + esc(f.cta || 'Order now') + '</a></div></section>';
   }).join('');
 }
 /* Kutipan tokoh di bagian bawah beranda (config.quote; kosongkan teksnya untuk menyembunyikan). */
