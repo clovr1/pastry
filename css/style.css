@@ -102,12 +102,12 @@ button { cursor: pointer; }
   text-shadow: 0 2px 18px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .45); }
 .bn-script { font-family: var(--font-brand); font-weight: 400; color: #FFD9DF; text-shadow: 0 2px 16px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .45); font-size: 1.25em; line-height: .8; letter-spacing: 0; white-space: nowrap; }
 .bn-cta { margin-top: 6px; }
-/* Tingkat tembus pandang tombol: ubah angka 86% (makin kecil makin transparan; di bawah 80% tulisan putihnya mulai kurang jelas). */
-.bn-cta .btn { background: color-mix(in srgb, var(--bn-ink) 86%, transparent); color: #fff; font-size: 16px; padding: 14px 32px;
-  border: 1px solid rgba(255, 255, 255, .5); backdrop-filter: blur(8px) saturate(1.15); -webkit-backdrop-filter: blur(8px) saturate(1.15);
-  box-shadow: 0 8px 22px rgba(179, 33, 59, .28); transition: background .2s ease, transform .2s ease; }
+/* Tombol kaca: gelap transparan + blur + garis putih, supaya tetap jelas di atas foto yang merah. Hover: penuh merah. */
+.bn-cta .btn { background: rgba(24, 14, 9, .34); color: #fff; font-size: 16px; padding: 14px 32px;
+  border: 1.5px solid rgba(255, 255, 255, .85); backdrop-filter: blur(10px) saturate(1.2); -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .22); text-shadow: 0 1px 6px rgba(0, 0, 0, .35); transition: background .2s ease, border-color .2s ease, transform .2s ease; }
 .bn-cta .btn::after { content: "→"; margin-left: 8px; }
-.bn-cta .btn:hover { opacity: 1; background: var(--bn-ink); transform: translateY(-1px); }
+.bn-cta .btn:hover { opacity: 1; background: var(--bn-ink); border-color: var(--bn-ink); transform: translateY(-1px); }
 
 /* Info */
 .strip { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
