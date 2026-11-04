@@ -157,3 +157,7 @@ Buka `owner/` lalu masuk. Selain tab **Pesanan**, ada:
 **Di mana datanya disimpan?** `data/menu.json` hanyalah data awal. Begitu owner mengubah sesuatu, menu yang berlaku pindah ke `storage/menu-live.json` (bukan bagian dari Git, jadi tidak bentrok saat `git pull`; salinan sebelumnya ada di `storage/menu-live.bak.json`). Stok disimpan di file pesanan. Kalau ingin mengulang dari data awal, hapus `storage/menu-live.json`. Foto yang diunggah masuk ke folder `images/` (nama `u-xxxx`), jadi folder itu harus bisa ditulis PHP; foto ini ikut tercatat di Git kalau kamu melakukan `git add`.
 
 Pesanan **bayar tunai** otomatis ditandai lunas saat statusnya diubah ke Selesai (transfer dan QRIS tetap harus kamu tandai lunas sendiri setelah uangnya masuk).
+
+## Footer
+
+Footer di semua halaman pembeli (kecuali detail pesanan) dibuat otomatis dari data toko: nama, alamat, jam buka, kontak WhatsApp, minimal pesanan antar, dan metode bayar. Jadi cukup ubah di dashboard owner (Pengaturan toko) atau `data/menu.json`. Kalimat pendek di bawah logo bisa diganti lewat `config.tagline` di `data/menu.json` (opsional). Gayanya ada di bagian `/* Footer */` pada `css/style.css`.
