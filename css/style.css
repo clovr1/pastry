@@ -15,6 +15,7 @@ img { max-width: 100%; }
   --ok: #2F6B3F;
   --ok-soft: #E2E9D4;
   --tile: #EBE0CB;
+  --panel: #EDE4D1;
   --bn-ink: #B3213B;
   --bn-scrim: rgba(245, 238, 223, .82);
   color-scheme: light;
@@ -27,6 +28,7 @@ img { max-width: 100%; }
     --bg: #131211; --surface: #1D1B1A; --ink: #F3F0EB; --muted: #A8A19A; --line: #35312E;
     --accent: #F08BA0; --accent-soft: #3A1F26; --warn: #F5A47A; --ok: #8FD19E; --ok-soft: #1F3326;
     --tile: #25221F;
+    --panel: #1B1A18;
     color-scheme: dark;
   }
 }
@@ -34,6 +36,7 @@ img { max-width: 100%; }
   --bg: #131211; --surface: #1D1B1A; --ink: #F3F0EB; --muted: #A8A19A; --line: #35312E;
   --accent: #F08BA0; --accent-soft: #3A1F26; --warn: #F5A47A; --ok: #8FD19E; --ok-soft: #1F3326;
   --tile: #25221F;
+  --panel: #1B1A18;
   color-scheme: dark;
 }
 
@@ -342,7 +345,7 @@ a.item:hover .nm { color: var(--accent); }
 .linkbtn:hover { color: var(--ink); }
 @media (max-width: 900px) {
   .co { grid-template-columns: 1fr; gap: 32px; }
-  .co-sum { position: static; }
+  .co-sum { position: static; background: var(--panel); border-color: transparent; }
 }
 
 /* Header sederhana di halaman detail pesanan */
@@ -397,3 +400,14 @@ a.item:hover .nm { color: var(--accent); }
 
 /* angka lurus pada kode pesanan dan nama produk, supaya 0/o dan 1/l tidak membingungkan */
 .nm, .pd-info h1, .ord-head h1, .o-code, .cat h2, .cat h3 { font-variant-numeric: lining-nums; }
+
+/* Desktop: kolom kanan jadi panel penuh setinggi halaman dengan warna berbeda, isinya menempel saat form digulir.
+   Tepi kiri panel dihitung dari lebar halaman (maks 1280px) dikurangi kolom ringkasan 390px dan setengah jarak antarkolom. */
+@media (min-width: 901px) {
+  body[data-page="checkout"] {
+    background: linear-gradient(to right, var(--bg) calc(50vw + min(640px, 50vw - 16px) - 418px), var(--panel) calc(50vw + min(640px, 50vw - 16px) - 418px));
+  }
+  .co-sum { border: 0; border-radius: 0; padding: 0; background: transparent; }
+  .co-head { max-width: calc(100% - 446px); }
+  .co-sum .sum { border-top-color: color-mix(in srgb, var(--ink) 18%, transparent); }
+}
