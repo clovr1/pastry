@@ -55,7 +55,7 @@ function sb_default_collections(array $m) {
             ['t' => 'Porsi untuk berbagi', 'd' => 'Cukup untuk keluarga atau tamu yang datang.'],
             ['t' => 'Lebih hemat', 'd' => 'Paket hampers lebih murah daripada membeli satuan.'],
         ],
-        'img' => in_array('tt3', $ids, true) ? 'images/berry-mousse-cake.jpg' : '',
+        'img' => is_file(SB_ROOT . '/images/christmas.webp') ? 'images/christmas.webp' : '',
         'items' => $pick, 'cta' => 'Explore more', 'home' => true, 'layout' => 'auto',
     ]];
 }

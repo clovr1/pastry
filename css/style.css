@@ -902,7 +902,7 @@ html { overflow-x: clip; }
 
 .coll-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); min-height: clamp(380px, 38vw, 560px); display: grid; align-items: end; }
 .coll-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.coll-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(18, 10, 6, .72) 0%, rgba(18, 10, 6, .25) 55%, rgba(18, 10, 6, .1) 100%); pointer-events: none; }
+.coll-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(18, 10, 6, .55) 0%, rgba(18, 10, 6, .2) 55%, rgba(18, 10, 6, 0) 85%), linear-gradient(to top, rgba(18, 10, 6, .7) 0%, rgba(18, 10, 6, .2) 55%, rgba(18, 10, 6, .08) 100%); pointer-events: none; }
 .coll-hero .noimg { z-index: 0; }
 .coll-hero-txt { position: relative; z-index: 1; max-width: 1280px; width: 100%; margin: 0 auto; padding: 40px max(16px, 3vw) clamp(36px, 5vw, 72px); display: grid; gap: 14px; color: #fff; }
 .coll-hero-txt .feat-label { color: #fff; }
