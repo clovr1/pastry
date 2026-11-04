@@ -37,12 +37,27 @@ function sb_config() {
 function sb_auto_featured(array $m) {
     $out = [];
     foreach ($m['items'] as $it) {
-        if (($it['cat'] ?? '') === 'paket') { $out[] = ['id' => $it['id'], 'label' => 'Bundle baru', 'headline' => $it['name'], 'text' => $it['desc'] ?? '']; break; }
-    }
-    foreach ($m['items'] as $it) {
         if (($it['tag'] ?? '') === 'Baru') { $out[] = ['id' => $it['id'], 'label' => 'Baru launching', 'headline' => $it['name'], 'text' => $it['desc'] ?? '']; break; }
     }
     return $out;
+}
+
+// Koleksi bawaan (contoh): bisa diubah atau dihapus dari dashboard owner.
+function sb_default_collections(array $m) {
+    $ids = array_column($m['items'], 'id');
+    $pick = array_values(array_filter(['pk2', 'pk4', 'pk1', 'pk3'], function ($i) use ($ids) { return in_array($i, $ids, true); }));
+    if (!$pick) return [];
+    return [[
+        'id' => 'christmas', 'title' => 'Perfect for Christmas', 'label' => 'Edisi Natal',
+        'text' => 'Paket dan hampers pilihan untuk meja Natal, kantor, dan hadiah.',
+        'reasons' => [
+            ['t' => 'Pas untuk dihadiahkan', 'd' => 'Pilihan paket dan hampers yang praktis untuk dibagikan.'],
+            ['t' => 'Porsi untuk berbagi', 'd' => 'Isi paket cukup untuk keluarga atau satu tim kecil.'],
+            ['t' => 'Lebih hemat', 'd' => 'Harga paket lebih murah daripada membeli satuan.'],
+        ],
+        'img' => in_array('tt3', $ids, true) ? 'images/berry-mousse-cake.jpg' : '',
+        'items' => $pick, 'cta' => 'Order now', 'home' => true, 'layout' => 'auto',
+    ]];
 }
 
 // Menu dibaca dari storage/menu-live.json kalau owner sudah pernah mengubahnya lewat dashboard,
@@ -64,6 +79,7 @@ function sb_menu($reload = false) {
     if (!isset($menu['config']['acceptOrders'])) $menu['config']['acceptOrders'] = true;
     if (!isset($menu['config']['closedNote'])) $menu['config']['closedNote'] = '';
     if (!array_key_exists('quote', $menu['config'])) $menu['config']['quote'] = ['text' => "Il y a cinq beaux-arts : la peinture, la sculpture, la poésie, la musique, l’architecture, laquelle a pour branche principale la pâtisserie.", 'author' => 'Marie-Antoine Carême', 'role' => 'Pâtissier français, 1783–1833', 'lang' => 'fr'];
+    if (!isset($menu['config']['collections']) || !is_array($menu['config']['collections'])) $menu['config']['collections'] = sb_default_collections($menu);
     if (!isset($menu['config']['featured']) || !is_array($menu['config']['featured'])) $menu['config']['featured'] = sb_auto_featured($menu);
     // dibaca tanpa kunci: file ditulis lewat rename, jadi isinya selalu utuh
     $stock = is_file(sb_config()['data_path']) ? sb_store_load(sb_config()['data_path'])['stock'] : [];

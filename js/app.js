@@ -235,23 +235,54 @@ function itemHtml(it, withDesc) {
 /* Sorotan launching (bundle atau produk baru): gambar besar di satu sisi, teks dan tombol "Explore more" di sisi lain.
    Diatur owner di dashboard (config.featured). Posisi gambar bergantian kiri/kanan. */
 const FEAT_AUTO = ['kiri', 'penuh', 'kanan', 'tengah'];   // urutan gaya kalau owner tidak memilih sendiri
+const FEAT_LAYOUTS = ['kiri', 'kanan', 'penuh', 'tengah'];
+function featBlock(o, i) {
+  const lay = FEAT_LAYOUTS.includes(o.layout) ? o.layout : FEAT_AUTO[i % FEAT_AUTO.length];
+  return '<section class="feat v-' + lay + '" aria-label="' + esc(o.headline) + '">' +
+    '<a class="feat-img ph" href="' + o.href + '" aria-label="' + esc(o.headline) + '">' + photo(o.img, o.headline, 'Foto segera hadir') + (o.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</a>' +
+    '<div class="feat-txt">' + (o.label ? '<span class="feat-label">' + esc(o.label) + '</span>' : '') +
+      '<h2>' + esc(o.headline) + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') + (o.extra || '') +
+      '<a class="btn feat-cta" href="' + o.href + '">' + esc(o.cta || 'Order now') + '</a></div></section>';
+}
+/* Sorotan di beranda: koleksi/kampanye (mis. "Perfect for Christmas", dengan alasan-alasannya, menuju halaman koleksi)
+   lalu produk launching (menuju halaman produknya). Keduanya diatur owner di dashboard. */
 function featuredHtml() {
-  return (CONFIG.featured || []).map((f, i) => {
+  const blocks = [];
+  (CONFIG.collections || []).filter(c => c.home).forEach(c => {
+    const why = (c.reasons || []).length ? '<ol class="feat-why">' + c.reasons.map(r => '<li><b>' + esc(r.t) + '</b>' + (r.d ? '<span>' + esc(r.d) + '</span>' : '') + '</li>').join('') + '</ol>' : '';
+    blocks.push({ layout: c.layout, headline: c.title, label: c.label, text: c.text, extra: why, cta: c.cta, img: c.img || ((byId((c.items || [])[0]) || {}).img), href: 'koleksi.html?id=' + encodeURIComponent(c.id) });
+  });
+  (CONFIG.featured || []).forEach(f => {
     const it = byId(f.id);
-    if (!it) return '';
-    const lay = ['kiri', 'kanan', 'penuh', 'tengah'].includes(f.layout) ? f.layout : FEAT_AUTO[i % FEAT_AUTO.length];
-    const headline = f.headline || it.name, text = f.text || it.desc || '', href = 'product.html?id=' + encodeURIComponent(it.id);
+    if (!it) return;
     // label produk (mis. "Hemat Rp 15.000") ikut tampil di samping harga, kecuali kalau sama dengan label sorotan (mis. "Baru" dan "Baru launching")
     const tg = (it.tag || '').trim().toLowerCase(), lb = (f.label || '').toLowerCase();
     const extra = tg && tg !== 'baru' && !lb.includes(tg) ? it.tag : '';
-    return '<section class="feat v-' + lay + '" aria-label="' + esc(headline) + '">' +
-      '<a class="feat-img ph" href="' + href + '" aria-label="' + esc(it.name) + '">' + photo(it.img, it.name, 'Foto segera hadir') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</a>' +
-      '<div class="feat-txt">' + (f.label ? '<span class="feat-label">' + esc(f.label) + '</span>' : '') +
-        '<h2>' + esc(headline) + '</h2>' + (text ? '<p>' + esc(text) + '</p>' : '') +
-        '<div class="feat-price"><b>' + rp(it.price) + '</b>' + (extra ? '<span>' + esc(extra) + '</span>' : '') + '</div>' +
-        '<a class="btn feat-cta" href="' + href + '">' + esc(f.cta || 'Order now') + '</a></div></section>';
-  }).join('');
+    blocks.push({ layout: f.layout, headline: f.headline || it.name, label: f.label, text: f.text || it.desc || '', cta: f.cta, img: it.img, soldOut: it.soldOut, href: 'product.html?id=' + encodeURIComponent(it.id),
+      extra: '<div class="feat-price"><b>' + rp(it.price) + '</b>' + (extra ? '<span>' + esc(extra) + '</span>' : '') + '</div>' });
+  });
+  return blocks.map(featBlock).join('');
 }
+
+/* Halaman koleksi (koleksi.html?id=...): foto besar dengan judul, alasan-alasan, lalu produk yang cocok. */
+function renderCollection() {
+  const id = new URLSearchParams(location.search).get('id'), box = $('coll');
+  const c = (CONFIG.collections || []).find(x => x.id === id);
+  if (!c) {
+    document.title = 'Koleksi tidak ditemukan · ' + CONFIG.shop;
+    box.innerHTML = '<div class="nf"><h1>Koleksi tidak ditemukan</h1><p>Koleksi yang kamu cari tidak ada atau sudah tidak ditampilkan.</p><a class="btn" href="products.html">Lihat semua produk</a></div>';
+    return;
+  }
+  document.title = c.title + ' · ' + CONFIG.shop;
+  const items = (c.items || []).map(byId).filter(Boolean);
+  const img = c.img || (items[0] && items[0].img);
+  box.innerHTML =
+    '<section class="coll-hero ph">' + photo(img, c.title, '') + '<div class="coll-hero-txt">' + (c.label ? '<span class="feat-label">' + esc(c.label) + '</span>' : '') + '<h1>' + esc(c.title) + '</h1>' + (c.text ? '<p>' + esc(c.text) + '</p>' : '') + '</div></section>' +
+    ((c.reasons || []).length ? '<section class="coll-why" aria-label="Kenapa koleksi ini"><h2 class="cat-h">Kenapa ' + esc(c.title) + '</h2><ol>' + c.reasons.map((r, i) => '<li><span class="n">' + (i + 1) + '</span><b>' + esc(r.t) + '</b>' + (r.d ? '<p>' + esc(r.d) + '</p>' : '') + '</li>').join('') + '</ol></section>' : '') +
+    '<section aria-label="Pilihan produk"><div class="cat"><h2>Pilihan untuk ' + esc(c.title) + '</h2></div>' +
+    (items.length ? '<div class="pgrid">' + items.map(it => itemHtml(it, true)).join('') + '</div>' : '<p class="ord-muted" style="text-align:center">Produk untuk koleksi ini belum tersedia.</p>') + '</section>';
+}
+
 /* Kutipan tokoh di bagian bawah beranda (config.quote; kosongkan teksnya untuk menyembunyikan). */
 function quoteHtml() {
   const q = CONFIG.quote;
@@ -862,6 +893,7 @@ if (PAGE === 'checkout') authReady.then(user => {
 });
 if (PAGE === 'home') renderHome();
 if (PAGE === 'product') renderProduct();
+if (PAGE === 'koleksi') renderCollection();
 if (PAGE === 'products') {
   const h = location.hash.slice(1);
   if (CATS.some(c => c.id === h)) state.filter = h;

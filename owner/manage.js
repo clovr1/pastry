@@ -5,7 +5,7 @@
   if (!S) return;
   const { $, esc, rp, toast } = S;
   const DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const st = { data: null, tab: 'orders', edit: null, q: '', cat: 'all', loaded: false, upload: false };
+  const st = { data: null, tab: 'orders', edit: null, coll: null, q: '', cat: 'all', loaded: false, upload: false };
 
   /* ---------- API ---------- */
   async function call(action, body) {
@@ -23,12 +23,13 @@
   function setTab(t) {
     st.tab = t;
     document.querySelectorAll('#mainTabs [data-tab]').forEach(b => { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-    $('tabOrders').hidden = t !== 'orders'; $('tabProducts').hidden = t !== 'products'; $('tabSettings').hidden = t !== 'settings';
+    $('tabOrders').hidden = t !== 'orders'; $('tabProducts').hidden = t !== 'products'; $('tabCollections').hidden = t !== 'collections'; $('tabSettings').hidden = t !== 'settings';
     if (t !== 'orders' && !st.loaded) { load().then(() => render()); } else render();
   }
   async function load() { take(await call('catalog')); }
   function render() {
     if (st.tab === 'products') renderProducts();
+    if (st.tab === 'collections') renderCollections();
     if (st.tab === 'settings') renderSettings();
   }
   S.onDash = async function () { await load(); setTab(st.tab); };
@@ -238,6 +239,102 @@
     const d = take(await call('item_save', body));
     btn.disabled = false; btn.textContent = 'Simpan produk';
     if (d) { toast('Produk tersimpan.'); st.edit = null; renderProducts(); }
+  });
+
+
+  /* ---------- koleksi / kampanye ---------- */
+  const LAYOUTS = [['auto', 'Otomatis (bergantian antar sorotan)'], ['kiri', 'Foto di kiri, teks di kanan'], ['kanan', 'Foto di kanan, teks di kiri (pita berwarna)'], ['penuh', 'Foto penuh, teks di atas foto'], ['tengah', 'Foto lebar, teks di tengah']];
+  function renderCollections() {
+    const d = st.data;
+    if (!d) { $('tabCollections').innerHTML = '<p class="o-muted">Memuat…</p>'; return; }
+    if (st.coll) { renderCollForm(); return; }
+    const rows = (d.collections || []).map(c => '<div class="o-prod o-coll" data-cid="' + esc(c.id) + '">' +
+      '<div class="o-pimg">' + (c.img ? '<img src="../' + esc(c.img) + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' : '<span class="o-noimg">Foto</span>') + '</div>' +
+      '<div class="o-pinfo"><b>' + esc(c.title) + '</b><span class="o-muted">' + esc(c.label || 'Tanpa label') + ' · ' + (c.items || []).length + ' produk · ' + (c.home ? 'tampil di beranda' : 'tidak di beranda') + '</span></div>' +
+      '<a class="o-btn" href="../koleksi.html?id=' + encodeURIComponent(c.id) + '" target="_blank" rel="noopener">Lihat</a>' +
+      '<button type="button" class="o-btn" data-cact="edit">Ubah</button><button type="button" class="o-btn danger" data-cact="del">Hapus</button></div>').join('');
+    $('tabCollections').innerHTML =
+      '<div class="o-bar"><button type="button" class="btn" data-cact="new">＋ Tambah koleksi</button></div>' +
+      '<p class="o-hint">Koleksi adalah tema untuk beberapa produk sekaligus, misalnya "Perfect for Christmas": ada judul, alasan kenapa cocok, dan daftar produknya. Kalau dicentang tampil di beranda, pembeli yang menekan tombolnya masuk ke halaman koleksi itu.</p>' +
+      '<div class="o-plist">' + (rows || '<div class="o-empty">Belum ada koleksi.</div>') + '</div>';
+  }
+  $('tabCollections').addEventListener('click', async e => {
+    const b = e.target.closest('[data-cact]'), f = e.target.closest('[data-cf]');
+    if (f) {
+      if (f.dataset.cf === 'back') { st.coll = null; renderCollections(); }
+      else if (f.dataset.cf === 'noimg') { collKeep(); st.coll.img = ''; renderCollForm(); }
+      return;
+    }
+    if (!b) return;
+    const row = b.closest('.o-coll');
+    if (b.dataset.cact === 'new') { st.coll = { isNew: true, id: '', title: '', label: '', text: '', reasons: [{ t: '', d: '' }, { t: '', d: '' }, { t: '', d: '' }], img: '', items: [], cta: 'Order now', home: true, layout: 'auto' }; renderCollections(); window.scrollTo(0, 0); }
+    if (b.dataset.cact === 'edit') {
+      const c = JSON.parse(JSON.stringify(st.data.collections.find(x => x.id === row.dataset.cid)));
+      while ((c.reasons || []).length < 3) c.reasons.push({ t: '', d: '' });
+      st.coll = Object.assign({ isNew: false }, c); renderCollections(); window.scrollTo(0, 0);
+    }
+    if (b.dataset.cact === 'del') {
+      if (!confirm('Hapus koleksi ini? Produknya tidak ikut terhapus.')) return;
+      const d = take(await call('collection_delete', { id: row.dataset.cid }));
+      if (d) { toast('Koleksi dihapus.'); renderCollections(); }
+    }
+  });
+  function renderCollForm() {
+    const c = st.coll, d = st.data;
+    $('tabCollections').innerHTML =
+      '<form id="cform" class="o-form" novalidate>' +
+        '<div class="o-formhead"><button type="button" class="o-btn" data-cf="back">‹ Kembali</button><h2>' + (c.isNew ? 'Tambah koleksi' : 'Ubah koleksi') + '</h2></div>' +
+        '<div class="o-ph"><div class="o-pimg big" id="cImg">' + (c.img ? '<img src="../' + esc(c.img) + '" alt="">' : '<span class="o-noimg">Foto</span>') + '</div>' +
+          '<div class="o-phbtns"><label class="o-btn o-file">' + (c.img ? 'Ganti foto' : 'Pilih foto') + '<input type="file" id="cFile" accept="image/jpeg,image/png,image/webp" hidden></label>' +
+          (c.img ? '<button type="button" class="o-btn danger" data-cf="noimg">Hapus foto</button>' : '') +
+          '<span class="o-muted" id="cUp">Foto lebar yang tajam (minimal 1600 px). Kosong = pakai foto produk pertama.</span></div></div>' +
+        '<div class="field"><label for="cTitle">Judul (kalimat penawaran)</label><input id="cTitle" maxlength="60" value="' + esc(c.title) + '" placeholder="Perfect for Christmas"></div>' +
+        '<div class="two"><div class="field"><label for="cLabel">Label kecil</label><input id="cLabel" maxlength="30" value="' + esc(c.label) + '" placeholder="Edisi Natal"></div>' +
+          '<div class="field"><label for="cCta">Teks tombol</label><input id="cCta" maxlength="24" value="' + esc(c.cta) + '" placeholder="Order now"></div></div>' +
+        '<div class="field"><label for="cText">Kalimat pengantar</label><textarea id="cText" rows="2" maxlength="400">' + esc(c.text) + '</textarea></div>' +
+        '<fieldset class="o-feat"><legend>Alasan (kenapa cocok), maksimal 4</legend>' +
+          c.reasons.map((r, i) => '<div class="o-reason"><input data-r="t" value="' + esc(r.t) + '" maxlength="50" placeholder="Alasan ' + (i + 1) + ', mis. Pas untuk dihadiahkan" aria-label="Judul alasan ' + (i + 1) + '"><input data-r="d" value="' + esc(r.d) + '" maxlength="160" placeholder="Penjelasan singkat" aria-label="Penjelasan alasan ' + (i + 1) + '"></div>').join('') +
+        '</fieldset>' +
+        '<fieldset class="o-feat"><legend>Produk di koleksi ini</legend><div class="o-picks">' +
+          d.items.map(i => '<label class="o-pick"><input type="checkbox" name="citem" value="' + esc(i.id) + '"' + (c.items.includes(i.id) ? ' checked' : '') + '> <span>' + esc(i.name) + '</span> <small>' + rp(i.price) + '</small></label>').join('') + '</div></fieldset>' +
+        '<div class="field"><label for="cLay">Tampilan di beranda</label><select id="cLay">' + LAYOUTS.map(o => '<option value="' + o[0] + '"' + (c.layout === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
+        '<label class="o-checks one"><input type="checkbox" id="cHome"' + (c.home ? ' checked' : '') + '> Tampilkan sebagai sorotan di beranda</label>' +
+        '<p class="err" id="cErr" role="alert" hidden></p>' +
+        '<div class="o-formact"><button type="submit" class="btn" id="cSave">Simpan koleksi</button></div>' +
+      '</form>';
+  }
+  function collKeep() {
+    const c = st.coll;
+    if (!$('cTitle')) return;
+    c.title = $('cTitle').value; c.label = $('cLabel').value; c.cta = $('cCta').value; c.text = $('cText').value;
+    c.reasons = Array.from(document.querySelectorAll('.o-reason')).map(r => ({ t: r.querySelector('[data-r="t"]').value, d: r.querySelector('[data-r="d"]').value }));
+    c.items = Array.from(document.querySelectorAll('input[name="citem"]:checked')).map(x => x.value);
+    c.layout = $('cLay').value; c.home = $('cHome').checked;
+  }
+  $('tabCollections').addEventListener('change', async ev => {
+    if (ev.target.id !== 'cFile' || !st.coll) return;
+    const f = ev.target.files[0];
+    if (!f) return;
+    $('cUp').textContent = 'Mengunggah…';
+    const fd = new FormData(); fd.append('photo', f);
+    let data = null, r = null;
+    try { r = await fetch('../api/owner.php?action=upload', { method: 'POST', headers: { 'X-Requested-With': 'sb' }, body: fd, credentials: 'same-origin' }); data = await r.json(); } catch (x) {}
+    if (r && r.status === 401) { S.onLoggedOut(); return; }
+    if (!r || !r.ok || !data || !data.path) { $('cUp').textContent = (data && data.error) || 'Foto gagal diunggah.'; return; }
+    collKeep(); st.coll.img = data.path; renderCollForm();
+  });
+  $('tabCollections').addEventListener('submit', async ev => {
+    if (ev.target.id !== 'cform') return;
+    ev.preventDefault();
+    collKeep();
+    const c = st.coll, err = $('cErr');
+    err.hidden = true;
+    if (c.title.trim().length < 2) { err.textContent = 'Isi judul koleksi.'; err.hidden = false; return; }
+    if (!c.items.length) { err.textContent = 'Pilih minimal satu produk.'; err.hidden = false; return; }
+    const btn = $('cSave'); btn.disabled = true; btn.textContent = 'Menyimpan…';
+    const d = take(await call('collection_save', { id: c.isNew ? '' : c.id, title: c.title, label: c.label, text: c.text, reasons: c.reasons, img: c.img, items: c.items, cta: c.cta, home: c.home, layout: c.layout }));
+    btn.disabled = false; btn.textContent = 'Simpan koleksi';
+    if (d) { toast('Koleksi tersimpan.'); st.coll = null; renderCollections(); }
   });
 
   /* ---------- pengaturan toko ---------- */

@@ -171,3 +171,11 @@
 .o-feat legend { font-size: 13px; font-weight: 600; padding: 0 6px; }
 .o-featbox { display: grid; gap: 12px; }
 .o-featbox[hidden] { display: none; }
+
+.o-coll { grid-template-columns: 56px minmax(0, 1fr) auto auto auto; }
+.o-reason { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 8px; }
+.o-reason input { border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 9px 12px; min-width: 0; }
+.o-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px 14px; max-height: 280px; overflow: auto; }
+.o-pick { display: flex; align-items: center; gap: 8px; font-size: 14.5px; }
+.o-pick small { color: var(--muted); margin-left: auto; }
+@media (max-width: 900px) { .o-coll { grid-template-columns: 56px minmax(0, 1fr); } .o-coll > .o-btn { grid-column: 2; justify-self: start; } .o-reason { grid-template-columns: 1fr; } }

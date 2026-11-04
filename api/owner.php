@@ -145,6 +145,7 @@ function sb_catalog_view() {
         'cats' => $m['cats'],
         'home' => $home,
         'featured' => $c['featured'] ?? [],
+        'collections' => $c['collections'] ?? [],
         'settings' => [
             'acceptOrders' => !empty($c['acceptOrders']), 'closedNote' => $c['closedNote'] ?? '',
             'shop' => $c['shop'], 'address' => $c['address'], 'contact' => $c['contact'],
@@ -308,6 +309,9 @@ if ($action === 'item_delete') {
         unset($sec);
         $list = isset($m['config']['featured']) && is_array($m['config']['featured']) ? $m['config']['featured'] : sb_auto_featured($m);
         $m['config']['featured'] = array_values(array_filter($list, function ($f) use ($id) { return $f['id'] !== $id; }));
+        $cl = isset($m['config']['collections']) && is_array($m['config']['collections']) ? $m['config']['collections'] : sb_default_collections($m);
+        foreach ($cl as $k => $c) $cl[$k]['items'] = array_values(array_diff($c['items'] ?? [], [$id]));
+        $m['config']['collections'] = $cl;
         return true;
     });
     if ($res === false) sb_fail(404, 'Produk tidak ditemukan.');
@@ -351,6 +355,79 @@ if ($action === 'cat_delete') {
     });
     if ($res === 'used') sb_fail(409, 'Kategori ini masih dipakai produk. Pindahkan atau hapus produknya dulu.');
     if ($res === false) sb_fail(404, 'Kategori tidak ditemukan.');
+    sb_json(sb_catalog_view());
+}
+
+if ($action === 'collection_save') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $title = sb_text($in['title'] ?? '', 60);
+    if (sb_len($title) < 2) sb_fail(422, 'Isi judul koleksi, mis. "Perfect for Christmas".');
+    $label = sb_text($in['label'] ?? '', 30);
+    $text = sb_text($in['text'] ?? '', 400, true);
+    $reasons = [];
+    foreach (is_array($in['reasons'] ?? null) ? $in['reasons'] : [] as $r) {
+        if (!is_array($r)) continue;
+        $t = sb_text($r['t'] ?? '', 50); $d = sb_text($r['d'] ?? '', 160);
+        if ($t === '' && $d === '') continue;
+        if (count($reasons) < 4) $reasons[] = ['t' => $t, 'd' => $d];
+    }
+    $img = is_string($in['img'] ?? null) ? $in['img'] : '';
+    if ($img !== '' && !preg_match('#^images/[A-Za-z0-9._-]+$#', $img)) sb_fail(422, 'Alamat foto tidak valid.');
+    $known = array_column(sb_menu(true)['items'], 'id');
+    $items = [];
+    foreach (is_array($in['items'] ?? null) ? $in['items'] : [] as $i) { if (is_string($i) && in_array($i, $known, true) && !in_array($i, $items, true)) $items[] = $i; }
+    if (!$items) sb_fail(422, 'Pilih minimal satu produk untuk koleksi ini.');
+    $cta = sb_text($in['cta'] ?? '', 24);
+    $layout = in_array($in['layout'] ?? '', ['auto', 'kiri', 'kanan', 'penuh', 'tengah'], true) ? $in['layout'] : 'auto';
+    $home = !empty($in['home']);
+    $oldImg = null; $savedId = '';
+    $res = sb_menu_update(function (&$m) use ($id, $title, $label, $text, $reasons, $img, $items, $cta, $layout, $home, &$oldImg, &$savedId) {
+        $list = isset($m['config']['collections']) && is_array($m['config']['collections']) ? $m['config']['collections'] : sb_default_collections($m);
+        $row = ['id' => $id, 'title' => $title, 'label' => $label, 'text' => $text, 'reasons' => $reasons, 'img' => $img, 'items' => $items, 'cta' => $cta, 'home' => $home, 'layout' => $layout];
+        $found = false;
+        foreach ($list as $k => $c) {
+            if ($id !== '' && $c['id'] === $id) { $oldImg = $c['img'] ?? null; $list[$k] = $row; $found = true; }
+        }
+        if ($id !== '' && !$found) return false;
+        if ($id === '') {
+            if (count($list) >= 12) return 'full';
+            $ascii = function_exists('iconv') ? @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $title) : false;
+            $slug = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower($ascii ?: $title)), '-');
+            if ($slug === '') $slug = 'koleksi';
+            $slug = substr($slug, 0, 40); $used = array_column($list, 'id'); $base = $slug; $n = 2;
+            while (in_array($slug, $used, true)) $slug = $base . '-' . $n++;
+            $row['id'] = $slug; $list[] = $row;
+        }
+        $savedId = $row['id'];
+        $m['config']['collections'] = array_values($list);
+        return true;
+    });
+    if ($res === false) sb_fail(404, 'Koleksi tidak ditemukan.');
+    if ($res === 'full') sb_fail(422, 'Maksimal 12 koleksi. Hapus yang tidak dipakai dulu.');
+    if ($oldImg && $oldImg !== $img) sb_remove_upload($oldImg);
+    $v = sb_catalog_view(); $v['savedId'] = $savedId;
+    sb_json($v);
+}
+
+if ($action === 'collection_delete') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = is_string($in['id'] ?? null) ? $in['id'] : '';
+    $img = null;
+    $res = sb_menu_update(function (&$m) use ($id, &$img) {
+        $list = isset($m['config']['collections']) && is_array($m['config']['collections']) ? $m['config']['collections'] : sb_default_collections($m);
+        $keep = [];
+        foreach ($list as $c) { if ($c['id'] === $id) $img = $c['img'] ?? null; else $keep[] = $c; }
+        if (count($keep) === count($list)) return false;
+        $m['config']['collections'] = $keep;
+        return true;
+    });
+    if ($res === false) sb_fail(404, 'Koleksi tidak ditemukan.');
+    sb_remove_upload($img);
     sb_json(sb_catalog_view());
 }
 

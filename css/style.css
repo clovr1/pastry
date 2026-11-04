@@ -888,3 +888,31 @@ html { overflow-x: clip; }
 .quote figcaption { display: grid; gap: 4px; margin-top: 8px; }
 .quote figcaption b { font-size: 13px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
 .quote figcaption span { font-size: 14px; color: var(--muted); }
+
+/* Koleksi / kampanye: alasan di bawah judul pada sorotan beranda, dan halaman koleksi */
+.feat-why { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 14px; max-width: 46ch; counter-reset: why; }
+.feat-why li { display: grid; gap: 2px; padding-left: 40px; position: relative; counter-increment: why; }
+.feat-why li::before { content: counter(why); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; border: 1px solid currentColor; display: grid; place-items: center; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.feat-why b { font-weight: 600; font-size: 16px; }
+.feat-why span { color: var(--muted); font-size: 15px; line-height: 1.5; }
+.v-penuh .feat-why span { color: rgba(255, 255, 255, .85); }
+.v-tengah .feat-why { justify-items: center; text-align: center; }
+.v-tengah .feat-why li { padding-left: 0; padding-top: 38px; }
+.v-tengah .feat-why li::before { left: 50%; top: 0; transform: translateX(-50%); }
+
+.coll-hero { position: relative; width: 100vw; margin-left: calc(50% - 50vw); min-height: clamp(380px, 38vw, 560px); display: grid; align-items: end; }
+.coll-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.coll-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(18, 10, 6, .72) 0%, rgba(18, 10, 6, .25) 55%, rgba(18, 10, 6, .1) 100%); pointer-events: none; }
+.coll-hero .noimg { z-index: 0; }
+.coll-hero-txt { position: relative; z-index: 1; max-width: 1280px; width: 100%; margin: 0 auto; padding: 40px max(16px, 3vw) clamp(36px, 5vw, 72px); display: grid; gap: 14px; color: #fff; }
+.coll-hero-txt .feat-label { color: #fff; }
+.coll-hero-txt h1 { font-weight: 400; text-transform: uppercase; letter-spacing: .06em; font-size: clamp(34px, 5.4vw, 80px); line-height: 1.04; max-width: 18ch; }
+.coll-hero-txt p { margin: 0; font-size: 19px; line-height: 1.6; max-width: 52ch; color: rgba(255, 255, 255, .92); }
+.coll-why { padding-block: 72px 8px; display: grid; gap: 28px; }
+.cat-h { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .26em; text-transform: uppercase; color: var(--accent); text-align: center; }
+.coll-why ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px; }
+.coll-why li { display: grid; gap: 8px; justify-items: center; text-align: center; padding: 8px 12px; }
+.coll-why .n { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--ink); display: grid; place-items: center; font-family: var(--font-display); font-size: 18px; }
+.coll-why b { font-family: var(--font-display); font-weight: 500; font-size: 24px; }
+.coll-why p { margin: 0; color: var(--muted); max-width: 32ch; }
+@media (max-width: 900px) { .coll-why { padding-top: 48px; } .coll-hero-txt p { font-size: 17px; } }
