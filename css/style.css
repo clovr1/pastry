@@ -401,13 +401,32 @@ a.item:hover .nm { color: var(--accent); }
 /* angka lurus pada kode pesanan dan nama produk, supaya 0/o dan 1/l tidak membingungkan */
 .nm, .pd-info h1, .ord-head h1, .o-code, .cat h2, .cat h3 { font-variant-numeric: lining-nums; }
 
-/* Desktop: kolom kanan jadi panel penuh setinggi halaman dengan warna berbeda, isinya menempel saat form digulir.
-   Tepi kiri panel dihitung dari lebar halaman (maks 1280px) dikurangi kolom ringkasan 390px dan setengah jarak antarkolom. */
+/* Desktop: halaman checkout dibagi dua kolom seperti GAIL's. Logo, judul, dan form ada di kolom kiri; kolom kanan adalah panel
+   berwarna setinggi halaman yang isinya mulai dari paling atas dan selalu menempel. Halaman dibuat sempit (maks 1000px) dan terpusat,
+   sehingga pemisah kolom ada di dekat tengah layar.
+   Tepi kiri panel = tepi kanan halaman - kolom ringkasan (400px) - setengah jarak antarkolom (28px). */
 @media (min-width: 901px) {
-  body[data-page="checkout"] {
-    background: linear-gradient(to right, var(--bg) calc(50vw + min(640px, 50vw - 16px) - 418px), var(--panel) calc(50vw + min(640px, 50vw - 16px) - 418px));
+  body[data-page="checkout"] .wrap {
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    column-gap: 56px;
+    align-items: start;
   }
-  .co-sum { border: 0; border-radius: 0; padding: 0; background: transparent; }
-  .co-head { max-width: calc(100% - 446px); }
+  body[data-page="checkout"] .wrap > * { grid-column: 1; }
+  body[data-page="checkout"] .co { display: contents; }
+  body[data-page="checkout"] .co-form { padding-bottom: 56px; }
+  body[data-page="checkout"]:has(#coMain:not([hidden])) {
+    background: linear-gradient(to right, var(--bg) calc(50vw + min(500px, 50vw - 16px) - 428px), var(--panel) calc(50vw + min(500px, 50vw - 16px) - 428px));
+  }
+  .co-sum {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    align-self: start;
+    top: 20px;
+    margin-top: 20px;
+    border: 0; border-radius: 0; padding: 0; background: transparent;
+  }
+  .co-head { max-width: none; }
   .co-sum .sum { border-top-color: color-mix(in srgb, var(--ink) 18%, transparent); }
 }
