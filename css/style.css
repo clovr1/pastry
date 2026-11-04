@@ -879,3 +879,12 @@ html { overflow-x: clip; }
   .fx .item.rv, .fx .acc-vrow.rv, .fx .acc-order.rv { transform: none; transition: opacity .4s ease; transition-delay: 0s; }
   .fx .rv { transform: translateY(14px); }
 }
+
+/* Kutipan tokoh */
+.quote { margin: 0 auto; max-width: 860px; padding: 112px 16px 40px; text-align: center; display: grid; justify-items: center; gap: 18px; }
+.quote-mark { font-family: var(--font-brand); font-size: 96px; line-height: .6; color: var(--accent); height: 44px; }
+.quote blockquote { margin: 0; }
+.quote p { margin: 0; font-family: var(--font-display); font-style: italic; font-weight: 400; font-size: clamp(26px, 3.4vw, 44px); line-height: 1.3; letter-spacing: -.01em; text-wrap: balance; }
+.quote figcaption { display: grid; gap: 4px; margin-top: 8px; }
+.quote figcaption b { font-size: 13px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+.quote figcaption span { font-size: 14px; color: var(--muted); }

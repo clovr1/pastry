@@ -205,3 +205,7 @@ Bundle atau produk baru bisa tampil sebagai blok selebar layar di bagian atas be
 - **Mengatur**: dashboard owner, tab **Produk & stok**, ubah produknya, bagian **Sorotan launching di beranda**. Centang, pilih **Tampilan**, lalu isi label kecil, judul, dan kalimat promosi (kosong = pakai nama dan deskripsi produk). Maksimal 4 sorotan.
 - **Sebelum pernah diatur**: otomatis memakai bundle pertama dan produk berlabel "Baru" pertama. Setelah owner menyimpan pengaturan sorotan sekali, hanya yang dicentang yang tampil (kalau semua dimatikan, tidak ada sorotan).
 - Pakai foto yang tajam untuk produk sorotan, karena fotonya tampil besar.
+
+## Kutipan di beranda
+
+Di bagian bawah beranda (di atas footer) ada satu kutipan tokoh. Bawaannya kalimat yang sering dikaitkan dengan Marie-Antoine Carême, pâtissier Prancis (1783–1833), dalam terjemahan bebas bahasa Indonesia. Kutipan setua ini sering beredar dengan sedikit perbedaan kata, jadi kalau ingin memakai kutipan lain atau menyesuaikan kata-katanya, ganti dari dashboard owner: **Pengaturan toko**, kartu **Kutipan di beranda** (kalimat, nama tokoh, keterangan). Kosongkan kalimatnya untuk menyembunyikan bagian ini.

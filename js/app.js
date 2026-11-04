@@ -252,6 +252,13 @@ function featuredHtml() {
         '<a class="btn feat-cta" href="' + href + '">Explore more</a></div></section>';
   }).join('');
 }
+/* Kutipan tokoh di bagian bawah beranda (config.quote; kosongkan teksnya untuk menyembunyikan). */
+function quoteHtml() {
+  const q = CONFIG.quote;
+  if (!q || !q.text) return '';
+  return '<figure class="quote"><span class="quote-mark" aria-hidden="true">“</span><blockquote><p>' + esc(q.text) + '</p></blockquote>' +
+    (q.author ? '<figcaption><b>' + esc(q.author) + '</b>' + (q.role ? '<span>' + esc(q.role) + '</span>' : '') + '</figcaption>' : '') + '</figure>';
+}
 function renderHome() {
   // Bagian beranda diatur di data/menu.json (config.home): tiap bagian punya judul dan daftar id produk.
   let secs = (CONFIG.home || []).map(sec => Object.assign({}, sec, { list: (sec.items || []).map(byId).filter(Boolean) })).filter(sec => sec.list.length);
@@ -264,6 +271,8 @@ function renderHome() {
       '<div class="track">' + sec.list.map(it => itemHtml(it, false)).join('') + '</div>' +
       '<button type="button" class="arr next" aria-label="Berikutnya">›</button><div class="dots" aria-hidden="true"></div></div></section>').join('');
   setupCars();
+  document.querySelector('.quote')?.remove();
+  $('menu').insertAdjacentHTML('afterend', quoteHtml());
 }
 function renderProducts() {
   const tabs = $('tabs'), list = $('plist');
