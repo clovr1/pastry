@@ -71,7 +71,10 @@ function initHeaderHide() {
   const bar = document.getElementById('topbar');
   if (!bar) return;
   const root = document.documentElement;
-  const setOffset = () => root.style.setProperty('--hdr', (bar.classList.contains('is-hidden') ? 0 : bar.offsetHeight) + 'px');
+  const setOffset = () => {
+    root.style.setProperty('--hdr', (bar.classList.contains('is-hidden') ? 0 : bar.offsetHeight) + 'px');
+    root.style.setProperty('--hdr-h', bar.offsetHeight + 'px');   // tinggi menu yang tidak berubah walau menu bersembunyi (dipakai banner)
+  };
   const setHidden = h => { if (bar.classList.contains('is-hidden') === h) return; bar.classList.toggle('is-hidden', h); setOffset(); };
   let lastY = window.scrollY, acc = 0;
   function onScroll() {

@@ -67,7 +67,7 @@ Foto yang belum ada otomatis diganti tempat foto, jadi kamu bisa menambah satu p
 
 | File | Dipakai untuk |
 |---|---|
-| `images/banner.jpg` | Banner di atas (sekitar 1600 × 820 px, bagian atas agak kosong untuk judul) |
+| `images/banner.jpg` | Banner layar penuh di beranda. Pakai foto lanskap minimal 1920 × 1080 px; judul ada di bagian atas, jadi taruh kue/produk di tengah-bawah foto |
 | `images/butter-croissant.jpg` | Butter Croissant |
 | `images/pain-au-chocolat.jpg` | Pain au Chocolat |
 | `images/almond-croissant.jpg` | Almond Croissant |
@@ -93,7 +93,7 @@ Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` pada produk
 
 - **Judul dan nama produk:** Fraunces (lebar dan hangat). **Teks biasa:** Hanken Grotesk. **Nama toko:** kata pertama ("Sweet") memakai Petit Formal Script (tulisan tegak bersambung), sisanya ("BITE") huruf besar renggang Fraunces. Pemisahnya otomatis dari `shop` di `data/menu.json`.
 - Semuanya dimuat dari Google Fonts lewat tautan di bagian `<head>` tiap halaman.
-- Judul banner di beranda (`config.banner` di `data/menu.json`): `title` ditulis dengan huruf biasa dan `accent` dengan tulisan sambung berwarna merah. Kosongkan `accent` kalau tidak mau.
+- Judul banner di beranda (`config.banner` di `data/menu.json`): `title` ditulis dengan huruf biasa dan `accent` dengan tulisan sambung. Teks banner berwarna putih dengan bayangan gelap tipis supaya terbaca di atas foto. Kosongkan `accent` kalau tidak mau.
 - Tombol **Pesan sekarang** di banner berwarna merah agak transparan (efek kaca). Tingkat tembus pandangnya ada di `.bn-cta .btn` pada `css/style.css` (angka `86%`; makin kecil makin transparan, di bawah 80% tulisan putihnya mulai kurang jelas).
 - Untuk mengganti gaya nama toko, ubah `--font-brand` di bagian atas `css/style.css`, lalu ganti `Petit+Formal+Script` di tautan Google Fonts pada semua file `.html` (di `owner/index.html` juga). Contoh pengganti yang cocok: Sacramento, Rouge Script, Allison.
 

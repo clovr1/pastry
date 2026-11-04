@@ -18,7 +18,6 @@ img { max-width: 100%; }
   --panel: #EDE4D1;
   --bn-ink: #B3213B;
   --bn-text: #211B16;
-  --bn-scrim: rgba(245, 238, 223, .82);
   color-scheme: light;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-name: "Fraunces", Georgia, "Times New Roman", serif;
@@ -92,16 +91,19 @@ button { cursor: pointer; }
 .noimg span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
 /* Banner */
-.banner { aspect-ratio: 16 / 8.2; border-radius: 0; display: block; }
-.bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; padding: clamp(18px, 3vw, 34px) 24px clamp(28px, 4vw, 52px); text-align: center; display: grid; justify-items: center; gap: 10px;
-  background: linear-gradient(to bottom, var(--bn-scrim) 0%, var(--bn-scrim) 62%, transparent 100%); }
-.bn-badge { color: var(--bn-ink); font-size: 12px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; }
-.bn-title { font-family: var(--font-display); color: var(--bn-text); font-weight: 500; font-size: clamp(30px, 4.3vw, 58px); line-height: 1.06; letter-spacing: -.01em; max-width: 14ch; text-wrap: balance;
-  text-shadow: 0 0 22px rgba(245, 238, 223, .9), 0 0 8px rgba(245, 238, 223, .8); }
-.bn-script { font-family: var(--font-brand); font-weight: 400; color: var(--bn-ink); text-shadow: 0 0 12px rgba(245, 238, 223, .95), 0 0 4px rgba(245, 238, 223, .9); font-size: 1.25em; line-height: .8; letter-spacing: 0; white-space: nowrap; }
-.bn-cta { margin-top: 8px; }
+.banner { position: relative; border-radius: 0; display: block; min-height: 460px; max-height: 1100px;
+  height: calc(100vh - var(--hdr-h, 84px)); height: calc(100svh - var(--hdr-h, 84px));
+  margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px))); }
+.bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; height: 62%; padding: clamp(34px, 8vh, 96px) 24px 0; text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
+  background: linear-gradient(to bottom, rgba(24, 14, 9, .34) 0%, rgba(24, 14, 9, .16) 55%, rgba(24, 14, 9, 0) 100%); }
+.bn-badge { color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, .55); font-size: 12px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; }
+.bn-title { font-family: var(--font-display); color: #fff; font-weight: 500; font-size: clamp(36px, 5.4vw, 84px); line-height: 1.06; letter-spacing: -.01em; max-width: 14ch; text-wrap: balance;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .45); }
+.bn-script { font-family: var(--font-brand); font-weight: 400; color: #FFD9DF; text-shadow: 0 2px 16px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .45); font-size: 1.25em; line-height: .8; letter-spacing: 0; white-space: nowrap; }
+.bn-cta { margin-top: 6px; }
 /* Tingkat tembus pandang tombol: ubah angka 86% (makin kecil makin transparan; di bawah 80% tulisan putihnya mulai kurang jelas). */
-.bn-cta .btn { background: color-mix(in srgb, var(--bn-ink) 86%, transparent); color: #fff; font-size: 15px; padding: 12px 28px;
+.bn-cta .btn { background: color-mix(in srgb, var(--bn-ink) 86%, transparent); color: #fff; font-size: 16px; padding: 14px 32px;
   border: 1px solid rgba(255, 255, 255, .5); backdrop-filter: blur(8px) saturate(1.15); -webkit-backdrop-filter: blur(8px) saturate(1.15);
   box-shadow: 0 8px 22px rgba(179, 33, 59, .28); transition: background .2s ease, transform .2s ease; }
 .bn-cta .btn::after { content: "→"; margin-left: 8px; }
@@ -239,7 +241,6 @@ form { display: grid; gap: 14px; }
   .nav { grid-area: nav; gap: 0; border-block: 1px solid var(--line); }
   .nav a { flex: 1; text-align: center; padding: 12px 0; }
   .status { display: none; }
-  .banner { aspect-ratio: 4 / 5; }
   .bn-title { max-width: 12ch; }
   .strip { grid-template-columns: 1fr; }
   .strip > div, .strip > div + div { padding: 14px 0; border-left: 0; }
@@ -487,3 +488,13 @@ a.backcart { text-decoration: none; color: inherit; }
   .kr-th .th { width: 72px; height: 90px; }
   .kr-end { grid-column: 2; grid-template-columns: auto auto; justify-content: space-between; align-items: center; justify-items: start; }
 }
+
+/* Petunjuk "Lihat menu" di dasar banner layar penuh */
+.bn-scroll { position: absolute; z-index: 2; left: 50%; bottom: 22px; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px;
+  color: #fff; text-decoration: none; font-size: 12px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; text-shadow: 0 1px 8px rgba(0, 0, 0, .65); }
+.bn-scroll i { width: 10px; height: 10px; border-right: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(45deg); filter: drop-shadow(0 1px 4px rgba(0, 0, 0, .65)); }
+@media (prefers-reduced-motion: no-preference) {
+  .bn-scroll i { animation: bnBob 1.8s ease-in-out infinite; }
+  @keyframes bnBob { 0%, 100% { transform: translateY(0) rotate(45deg); } 50% { transform: translateY(5px) rotate(45deg); } }
+}
+@media (max-width: 900px) { .banner { min-height: 440px; height: calc(100vh - var(--hdr-h, 134px)); height: calc(100svh - var(--hdr-h, 134px)); } }
