@@ -437,24 +437,31 @@ function setupCars() {
     };
     const maxLeft = () => track.scrollWidth - track.clientWidth;
     let idx = 0, lockUntil = 0;
+    // satu halaman = sebanyak produk yang terlihat sekarang (4 di desktop, 3 di tablet, 2 di HP)
+    function geom() {
+      const st = stepOf(), gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      const vis = Math.max(1, Math.round((track.clientWidth + gap) / st));
+      return { page: vis * st, pages: Math.max(1, Math.ceil(track.children.length / vis)) };
+    }
+    const pageNow = g => track.scrollLeft >= maxLeft() - 2 ? g.pages - 1 : Math.min(g.pages - 1, Math.round(track.scrollLeft / g.page));
     function upd() {
       const over = maxLeft() > 2;
       prev.hidden = next.hidden = dots.hidden = !over;
       if (!over) return;
-      const st = stepOf(), n = Math.max(1, Math.round(maxLeft() / st) + 1);
+      const g = geom();
       // saat animasi dari tombol berjalan, titik mengikuti tujuan, bukan posisi sementara
-      const cur = Date.now() < lockUntil ? idx : (track.scrollLeft >= maxLeft() - 2 ? n - 1 : Math.min(n - 1, Math.round(track.scrollLeft / st)));
-      dots.innerHTML = Array.from({ length: n }, (_, i) => '<span class="dot' + (i === cur ? ' on' : '') + '"></span>').join('');
+      const cur = Date.now() < lockUntil ? idx : pageNow(g);
+      dots.innerHTML = Array.from({ length: g.pages }, (_, i) => '<span class="dot' + (i === cur ? ' on' : '') + '"></span>').join('');
     }
-    // geser satu produk per klik; di ujung kembali ke sisi sebaliknya
+    // geser satu halaman per klik; di ujung kembali ke sisi sebaliknya
     function go(dir) {
-      const st = stepOf(), n = Math.round(maxLeft() / st);
-      if (Date.now() >= lockUntil) idx = Math.round(track.scrollLeft / st);
+      const g = geom();
+      if (Date.now() >= lockUntil) idx = pageNow(g);
       idx += dir;
-      if (idx > n) idx = 0;
-      if (idx < 0) idx = n;
+      if (idx > g.pages - 1) idx = 0;
+      if (idx < 0) idx = g.pages - 1;
       lockUntil = Date.now() + 1000;
-      track.scrollTo({ left: idx === n ? maxLeft() : idx * st });
+      track.scrollTo({ left: Math.min(idx * g.page, maxLeft()) });
       setTimeout(upd, 1050);
     }
     prev.addEventListener('click', () => go(-1));
