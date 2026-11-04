@@ -218,3 +218,5 @@ Koleksi adalah tema yang mengumpulkan beberapa produk sekaligus. Bisa dipakai un
 - **Halaman koleksi** (`koleksi.html?id=...`): foto besar dengan judul, bagian "Kenapa ..." berisi alasan-alasannya, lalu daftar produk yang dipilih untuk koleksi itu.
 - **Mengatur**: dashboard owner, tab **Koleksi**. Isi judul, label, kalimat pengantar, sampai 4 alasan (judul + penjelasan singkat), foto, produk yang termasuk, gaya tampilan di beranda, dan teks tombol. Maksimal 12 koleksi.
 - Contoh "Perfect for Christmas" sudah dibuatkan sebagai bawaan; ubah atau hapus sesukamu. Sorotan produk launching (mis. Kouign-Amann) tetap diatur dari form produk.
+
+**Menemukan koleksi**: menu atas punya tautan **Collection** (di sebelah Product) yang membuka daftar semua koleksi, dan footer punya kolom **Koleksi** berisi tautan ke tiap koleksi. Keduanya otomatis muncul selama ada minimal satu koleksi, walaupun koleksinya tidak ditampilkan sebagai sorotan di beranda.

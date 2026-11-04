@@ -10,7 +10,7 @@
   const settleImgs = root => (root || document).querySelectorAll('.ph img:not(.in)').forEach(i => { if (i.complete && i.naturalWidth) i.classList.add('in'); });
 
   /* ---- muncul saat digulir ---- */
-  const SEL = ['.coll-hero-txt > *', '.coll-why li', '.cat-h', '.feat-img', '.feat-txt > *', '.hsec-head', '.hsec .item', '.pgrid .item', '.menuhead', '.cat', '.strip > div', '.co-head', '.co-sec', '.kr-head',
+  const SEL = ['.coll-card', '.coll-hero-txt > *', '.coll-why li', '.cat-h', '.feat-img', '.feat-txt > *', '.hsec-head', '.hsec .item', '.pgrid .item', '.menuhead', '.cat', '.strip > div', '.co-head', '.co-sec', '.kr-head',
     '.pd-img', '#rel .item', '.ord-head', '.ord-banner', '.ord-steps', '.ord-card', '.acc-hero', '.acc-h', '.acc-vrow', '.acc-order', '.acc-side',
     '.acc-empty', '.auth', '.quote > *', '.foot-in > *', '.foot-bot', '.empty'].join(',');
   let io = null;

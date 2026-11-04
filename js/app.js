@@ -75,6 +75,7 @@ function footerHtml() {
     '<div class="foot-brand"><a class="brand" href="index.html">' + brandHtml(CONFIG.shop) + '</a>' +
       '<p>' + esc(CONFIG.tagline || 'Pastry dibuat dengan tangan dan dipanggang segar setiap pagi.') + '</p></div>' +
     '<nav class="foot-col" aria-label="Jelajahi"><h2>Jelajahi</h2><a href="index.html">Home</a><a href="products.html">Product</a><a href="keranjang.html">Keranjang</a><a href="masuk.html">Akun</a></nav>' +
+    ((CONFIG.collections || []).length ? '<nav class="foot-col" aria-label="Koleksi"><h2>Koleksi</h2>' + CONFIG.collections.map(c => '<a href="koleksi.html?id=' + encodeURIComponent(c.id) + '">' + esc(c.title) + '</a>').join('') + '</nav>' : '') +
     '<div class="foot-col"><h2>Kunjungi kami</h2><p>' + esc(CONFIG.address) + '</p>' +
       '<p>Jam buka ' + esc(hoursText()) + '</p></div>' +
     '<div class="foot-col"><h2>Ikuti kami</h2>' + socialHtml() + '</div>' +
@@ -112,6 +113,7 @@ function mountShell() {
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
+        ((CONFIG.collections || []).length ? '<a href="koleksi.html"' + cur('koleksi') + '>Collection</a>' : '') +
       '</nav>' +
       '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML + ACCT_BTN_HTML +
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
@@ -265,8 +267,20 @@ function featuredHtml() {
 }
 
 /* Halaman koleksi (koleksi.html?id=...): foto besar dengan judul, alasan-alasan, lalu produk yang cocok. */
+/* Daftar semua koleksi (koleksi.html tanpa id), dibuka dari menu "Collection". */
+function renderCollectionIndex() {
+  const box = $('coll'), list = CONFIG.collections || [];
+  document.title = 'Collection · ' + CONFIG.shop;
+  box.innerHTML = '<section class="menuhead"><div><span class="label">Tema pilihan</span><h1>Collection</h1></div></section>' +
+    (list.length ? '<div class="coll-cards">' + list.map(c => {
+      const n = (c.items || []).map(byId).filter(Boolean), img = c.img || (n[0] && n[0].img);
+      return '<a class="coll-card" href="koleksi.html?id=' + encodeURIComponent(c.id) + '"><div class="coll-card-img ph">' + photo(img, c.title, 'Foto segera hadir') + '</div>' +
+        '<div class="coll-card-txt">' + (c.label ? '<span class="feat-label">' + esc(c.label) + '</span>' : '') + '<h2>' + esc(c.title) + '</h2>' + (c.text ? '<p>' + esc(c.text) + '</p>' : '') + '<span class="coll-card-n">' + n.length + ' produk →</span></div></a>';
+    }).join('') + '</div>' : '<div class="empty"><span>Belum ada koleksi.</span><a class="btn" href="products.html">Lihat produk</a></div>');
+}
 function renderCollection() {
   const id = new URLSearchParams(location.search).get('id'), box = $('coll');
+  if (!id) { renderCollectionIndex(); return; }
   const c = (CONFIG.collections || []).find(x => x.id === id);
   if (!c) {
     document.title = 'Koleksi tidak ditemukan · ' + CONFIG.shop;
