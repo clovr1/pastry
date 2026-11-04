@@ -96,7 +96,10 @@ button { cursor: pointer; }
   margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px))); }
 .bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; height: 62%; padding: clamp(34px, 8vh, 96px) 24px 0; text-align: center;
   display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 14px;
-  background: linear-gradient(to bottom, rgba(24, 14, 9, .34) 0%, rgba(24, 14, 9, .16) 55%, rgba(24, 14, 9, 0) 100%); }
+  background: linear-gradient(to bottom, rgba(24, 14, 9, .5) 0%, rgba(24, 14, 9, .3) 55%, rgba(24, 14, 9, 0) 100%); }
+/* Lapisan gelap tipis di atas foto (juga di bawah, untuk "Lihat menu"), supaya teks putih tetap terbaca di foto yang terang. */
+.banner::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(24, 14, 9, .5) 0%, rgba(24, 14, 9, 0) 22%), rgba(24, 14, 9, .2); }
 .bn-badge { color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, .55); font-size: 12px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; }
 .bn-title { font-family: var(--font-display); color: #fff; font-weight: 500; font-size: clamp(36px, 5.4vw, 84px); line-height: 1.06; letter-spacing: -.01em; max-width: 14ch; text-wrap: balance;
   text-shadow: 0 2px 18px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .45); }
@@ -502,7 +505,7 @@ a.backcart { text-decoration: none; color: inherit; }
 /* Layar lebar: teks banner di kiri (area gelap foto), kue tetap bebas di kanan. */
 @media (min-width: 901px) {
   .banner .bn-text { height: 100%; align-items: flex-start; justify-content: center; text-align: left; padding: 0 24px 6vh max(24px, 7vw);
-    background: linear-gradient(to right, rgba(24, 14, 9, .38) 0%, rgba(24, 14, 9, .16) 45%, rgba(24, 14, 9, 0) 70%); }
+    background: linear-gradient(to right, rgba(24, 14, 9, .62) 0%, rgba(24, 14, 9, .36) 45%, rgba(24, 14, 9, 0) 75%); }
   .banner .bn-title { max-width: none; font-size: clamp(36px, 4.6vw, 80px); }
   .banner .bn-script { display: block; margin-top: .06em; }
 }
