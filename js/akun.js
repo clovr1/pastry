@@ -121,9 +121,11 @@
     list.forEach(o => { if (o.status === 'dibatalkan') return; o.items.forEach(i => { seen[i.id] = (seen[i.id] || 0) + i.qty; }); });
     const items = Object.keys(seen).map(byId).filter(Boolean).sort((a, b) => seen[b.id] - seen[a.id]);
     if (!items.length) return '';
-    return '<section aria-labelledby="hBuy"><h2 class="acc-h" id="hBuy">Yang pernah kamu pesan</h2><div class="acc-cat">' +
-      items.map(it => '<div class="acc-tile">' + itemHtml(it, false) + '<span class="acc-n">Dipesan ' + seen[it.id] + '×</span>' +
-        '<button type="button" class="btn ghost" data-again="' + esc(it.id) + '"' + (it.soldOut ? ' disabled' : '') + '>' + (it.soldOut ? 'Habis' : 'Pesan lagi') + '</button></div>').join('') +
+    return '<section aria-labelledby="hBuy"><h2 class="acc-h" id="hBuy">Yang pernah kamu pesan</h2><div class="acc-vlist">' +
+      items.map(it => '<div class="acc-vrow' + (it.soldOut ? ' out' : '') + '">' +
+        '<a class="acc-vimg ph" href="product.html?id=' + encodeURIComponent(it.id) + '" aria-label="' + esc(it.name) + '">' + photo(it.img, it.name, '') + '</a>' +
+        '<div class="acc-vinfo"><a href="product.html?id=' + encodeURIComponent(it.id) + '">' + esc(it.name) + '</a><span>' + rp(it.price) + '</span><small>Dipesan ' + seen[it.id] + '×' + (it.soldOut ? ' · Habis hari ini' : '') + '</small></div>' +
+        '<button type="button" class="btn ghost" data-again="' + esc(it.id) + '"' + (it.soldOut ? ' disabled' : '') + '>Pesan lagi</button></div>').join('') +
       '</div></section>';
   }
 
@@ -137,8 +139,8 @@
           '<div class="acc-who"><span class="label">Akun saya</span><h1>Halo, <span id="aName"></span></h1><p id="aMail"></p></div>' +
           '<div class="acc-btns"><a class="btn ghost" href="profil.html">Data diri</a><button class="btn ghost" type="button" id="outBtn">Keluar</button></div>' +
         '</header>' +
-        '<div id="aBought"></div>' +
-        '<section aria-labelledby="hOrd"><h2 class="acc-h" id="hOrd">Riwayat pesanan</h2><div id="aOrders"><p class="ord-load">Memuat…</p></div></section>' +
+        '<div class="acc-cols two" id="aCols"><div id="aBought"></div>' +
+        '<section aria-labelledby="hOrd"><h2 class="acc-h" id="hOrd">Riwayat pesanan</h2><div id="aOrders"><p class="ord-load">Memuat…</p></div></section></div>' +
       '</div>';
     const $q = id => document.getElementById(id);
     $q('aName').textContent = user.name.split(' ')[0];
@@ -161,6 +163,7 @@
       return;
     }
     $q('aBought').innerHTML = boughtCatalog(list);
+    if (!$q('aBought').innerHTML) $q('aCols').classList.remove('two');
     $q('aBought').addEventListener('click', e => {
       const b = e.target.closest('[data-again]');
       if (!b) return;
