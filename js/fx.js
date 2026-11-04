@@ -66,12 +66,7 @@
     if (bnImg) bnImg.style.transform = 'translate3d(0,' + Math.min(110, y * 0.22).toFixed(1) + 'px,0)';
     if (bnText) { bnText.style.opacity = String(Math.max(0, 1 - y / (h * 0.55))); bnText.style.transform = 'translate3d(0,' + (y * -0.08).toFixed(1) + 'px,0)'; }
   }
-  let scrollTimer = 0;
-  window.addEventListener('scroll', () => {
-    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
-    html.classList.add('is-scrolling');
-    clearTimeout(scrollTimer); scrollTimer = setTimeout(() => html.classList.remove('is-scrolling'), 160);
-  }, { passive: true });
+  window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
   window.addEventListener('resize', onScroll);
   onScroll();
 })();

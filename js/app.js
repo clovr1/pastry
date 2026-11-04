@@ -239,11 +239,10 @@ function featuredHtml() {
     const it = byId(f.id);
     if (!it) return '';
     const headline = f.headline || it.name, text = f.text || it.desc || '', href = 'product.html?id=' + encodeURIComponent(it.id);
-    const inc = it.includes && it.includes.length ? '<ul class="feat-inc">' + it.includes.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul>' : '';
     return '<section class="feat' + (i % 2 ? ' flip' : '') + '" aria-label="' + esc(headline) + '">' +
       '<a class="feat-img ph" href="' + href + '" aria-label="' + esc(it.name) + '">' + photo(it.img, it.name, 'Foto segera hadir') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</a>' +
       '<div class="feat-txt">' + (f.label ? '<span class="feat-label">' + esc(f.label) + '</span>' : '') +
-        '<h2>' + esc(headline) + '</h2>' + (text ? '<p>' + esc(text) + '</p>' : '') + inc +
+        '<h2>' + esc(headline) + '</h2>' + (text ? '<p>' + esc(text) + '</p>' : '') +
         '<div class="feat-price"><b>' + rp(it.price) + '</b>' + (it.tag ? '<span>' + esc(it.tag) + '</span>' : '') + '</div>' +
         '<a class="btn feat-cta" href="' + href + '">Explore more</a></div></section>';
   }).join('');
