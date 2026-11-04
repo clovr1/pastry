@@ -116,7 +116,19 @@ function sb_db() {
     if ($pdo !== null) return $pdo;
     $path = sb_config()['db_path'];
     $dir = dirname($path);
+
+    // Periksa penyebab yang paling sering terjadi, supaya pesannya bisa langsung ditindaklanjuti.
+    if (!extension_loaded('pdo_sqlite')) {
+        sb_fail(500, 'Ekstensi PHP pdo_sqlite belum aktif. Di Laragon: klik kanan ikon Laragon > PHP > Extensions > centang pdo_sqlite dan sqlite3, lalu Stop All dan Start All.');
+    }
     if (!is_dir($dir)) @mkdir($dir, 0775, true);
+    if (!is_dir($dir)) {
+        sb_fail(500, 'Folder database tidak ada dan tidak bisa dibuat: ' . basename($dir) . '. Buat folder itu secara manual.');
+    }
+    if (!is_writable($dir) || (is_file($path) && !is_writable($path))) {
+        sb_fail(500, 'Folder ' . basename($dir) . ' tidak bisa ditulis oleh PHP. Beri izin tulis ke folder itu (klik kanan > Properties > Security) atau pindahkan proyek ke C:\\laragon\\www.');
+    }
+
     try {
         $pdo = new PDO('sqlite:' . $path);
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -127,7 +139,7 @@ function sb_db() {
         $pdo->exec(SB_SCHEMA);
     } catch (Exception $e) {
         error_log('[sweetbite] database: ' . $e->getMessage());
-        sb_fail(500, 'Database tidak bisa dibuka. Pastikan folder storage bisa ditulis.');
+        sb_fail(500, 'Database tidak bisa dibuka. Lihat log error PHP (di Laragon: Menu > Logs) untuk detailnya.');
     }
     return $pdo;
 }
