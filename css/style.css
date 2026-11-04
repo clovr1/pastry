@@ -93,13 +93,19 @@ button { cursor: pointer; }
 
 /* Banner */
 .banner { aspect-ratio: 16 / 8.2; border-radius: 0; display: block; }
-.bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; padding: clamp(18px, 3.5vw, 40px) 24px clamp(56px, 8.5vw, 124px); text-align: center; display: grid; justify-items: center; gap: 14px;
+.bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; padding: clamp(18px, 3.5vw, 40px) 24px clamp(36px, 5vw, 64px); text-align: center; display: grid; justify-items: center; gap: 12px;
   background: linear-gradient(to bottom, var(--bn-scrim) 0%, var(--bn-scrim) 62%, transparent 100%); }
-.bn-badge { background: var(--bn-ink); color: #FFFFFF; border-radius: 999px; padding: 6px 22px; font-size: clamp(15px, 2.2vw, 26px); font-weight: 500; }
+.bn-badge { color: var(--bn-ink); font-size: 13px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; }
 .bn-title { font-family: var(--font-display); color: var(--bn-text); font-weight: 500; font-size: clamp(34px, 5.2vw, 70px); line-height: 1.06; letter-spacing: -.01em; max-width: 14ch; text-wrap: balance;
   text-shadow: 0 0 22px rgba(245, 238, 223, .9), 0 0 8px rgba(245, 238, 223, .8); }
 .bn-script { font-family: var(--font-brand); font-weight: 400; color: var(--bn-ink); text-shadow: 0 0 12px rgba(245, 238, 223, .95), 0 0 4px rgba(245, 238, 223, .9); font-size: 1.3em; line-height: .8; letter-spacing: 0; white-space: nowrap; }
-.bn-cta { position: absolute; z-index: 1; left: 0; right: 0; bottom: clamp(16px, 3vw, 36px); display: grid; justify-items: center; }
+.bn-cta { margin-top: 8px; }
+/* Tingkat tembus pandang tombol: ubah angka 86% (makin kecil makin transparan; di bawah 80% tulisan putihnya mulai kurang jelas). */
+.bn-cta .btn { background: color-mix(in srgb, var(--bn-ink) 86%, transparent); color: #fff; font-size: 17px; padding: 15px 34px;
+  border: 1px solid rgba(255, 255, 255, .5); backdrop-filter: blur(8px) saturate(1.15); -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  box-shadow: 0 8px 22px rgba(179, 33, 59, .28); transition: background .2s ease, transform .2s ease; }
+.bn-cta .btn::after { content: "→"; margin-left: 10px; }
+.bn-cta .btn:hover { opacity: 1; background: var(--bn-ink); transform: translateY(-1px); }
 
 /* Info */
 .strip { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--line); }
