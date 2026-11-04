@@ -30,19 +30,21 @@ function toggleTheme() {
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
 function mountShell() {
   if (PAGE === 'checkout') {
+    // halaman detail pesanan: header sederhana; tombol kembali menuju halaman keranjang
     document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
       '<header class="top top-min" id="top">' +
         '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
         '<div class="top-r">' + THEME_BTN_HTML +
-        '<button class="backcart" type="button" id="cartBtn" aria-label="Kembali ke keranjang, 0 item">' +
-          '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></button></div>' +
+        '<a class="backcart" href="keranjang.html" id="cartBtn" aria-label="Kembali ke keranjang, 0 item">' +
+          '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></a></div>' +
       '</header><div class="notice" id="notice" role="status" hidden></div>');
     document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
     return;
   }
   const cur = n => ((PAGE === n || (n === 'products' && PAGE === 'product')) ? ' aria-current="page"' : '');
-  document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
-    '<header class="top" id="top">' +
+  // menu atas ditaruh di luar .wrap supaya latarnya bisa selebar layar; ia bersembunyi saat digulir ke bawah (lihat initHeaderHide)
+  document.body.insertAdjacentHTML('afterbegin',
+    '<div class="topbar" id="topbar"><header class="top" id="top">' +
       '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
@@ -53,8 +55,34 @@ function mountShell() {
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 7H6"/></svg>' +
           '<span class="cn" id="cartN" hidden>0</span></button></div>' +
-    '</header><div class="notice" id="notice" role="status" hidden></div>');
+    '</header></div>');
+  document.querySelector('.wrap').insertAdjacentHTML('afterbegin', '<div class="notice" id="notice" role="status" hidden></div>');
   document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
+}
+
+/* Menu atas: sembunyi saat digulir ke bawah, muncul lagi begitu digulir ke atas (tidak perlu sampai paling atas). */
+function initHeaderHide() {
+  const bar = document.getElementById('topbar');
+  if (!bar) return;
+  const root = document.documentElement;
+  const setOffset = () => root.style.setProperty('--hdr', (bar.classList.contains('is-hidden') ? 0 : bar.offsetHeight) + 'px');
+  const setHidden = h => { if (bar.classList.contains('is-hidden') === h) return; bar.classList.toggle('is-hidden', h); setOffset(); };
+  let lastY = window.scrollY, acc = 0;
+  function onScroll() {
+    const y = Math.max(0, window.scrollY), d = y - lastY;
+    lastY = y;
+    bar.classList.toggle('stuck', y > 4);
+    if ((d > 0 && acc < 0) || (d < 0 && acc > 0)) acc = 0;   // arah berubah: mulai hitung dari awal
+    acc += d;
+    if (y <= 4) { setHidden(false); acc = 0; }
+    else if (acc > 18) { setHidden(true); acc = 0; }
+    else if (acc < -18) { setHidden(false); acc = 0; }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', setOffset);
+  window.addEventListener('load', setOffset);
+  bar.addEventListener('focusin', () => setHidden(false));   // pengguna keyboard tidak kehilangan menu
+  setOffset(); onScroll();
 }
 const SHELL_PANEL = `
 <div class="scrim" id="scrim" hidden></div>
@@ -270,6 +298,27 @@ const sumRows = (t, withFee) => '<div><span>Subtotal</span><span>' + rp(t.sub) +
   (withFee ? '<div class="total"><span>Total</span><span>' + rp(t.total) + '</span></div>' : '');
 const TRUCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4h13v12H1zM14 8h4l4 4v4h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>';
 const thumb = it => '<div class="th">' + (it.img ? '<img src="' + esc(it.img) + '" alt="" onerror="this.hidden=true">' : '') + '</div>';
+function nudgeHtml(t) {
+  const left = CONFIG.minDelivery - t.sub, pct = Math.min(100, Math.round(t.sub / CONFIG.minDelivery * 100));
+  return '<div class="nrow">' + TRUCK + '<span>' + (left > 0
+    ? 'Tambah <b>' + rp(left) + '</b> lagi supaya pesanan bisa diantar. Ambil di tempat tanpa minimal.'
+    : 'Pesananmu sudah memenuhi minimal untuk diantar.') + '</span></div>' +
+    '<div class="pg" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
+}
+function renderCartPage() {
+  const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
+  $('krEmpty').hidden = has; $('krMain').hidden = !has;
+  if (!has) return;
+  $('krNudge').innerHTML = nudgeHtml(t);
+  $('krLines').innerHTML = ids.map(id => {
+    const it = byId(id), q = state.cart[id], href = 'product.html?id=' + encodeURIComponent(id);
+    return '<li><a class="kr-th" href="' + href + '" aria-label="' + esc(it.name) + '">' + thumb(it) + '</a>' +
+      '<div class="kr-info"><a class="kr-name" href="' + href + '">' + esc(it.name) + '</a><span class="kr-unit">' + rp(it.price) + ' per buah</span>' +
+      '<div class="stepper"><button type="button" data-act="dec" data-id="' + id + '" aria-label="Kurangi ' + esc(it.name) + '">−</button><output>' + q + '</output><button type="button" data-act="inc" data-id="' + id + '" aria-label="Tambah ' + esc(it.name) + '">+</button></div></div>' +
+      '<div class="kr-end"><span class="kr-total">' + rp(it.price * q) + '</span><button type="button" class="linkbtn" data-act="rm" data-id="' + id + '">Hapus</button></div></li>';
+  }).join('');
+  $('krSum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
+}
 function renderCart() {
   const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
   $('emptyMsg').hidden = has;
@@ -277,13 +326,7 @@ function renderCart() {
   // pengingat minimal pesanan antar
   const nd = $('nudge');
   nd.hidden = !has;
-  if (has) {
-    const left = CONFIG.minDelivery - t.sub, pct = Math.min(100, Math.round(t.sub / CONFIG.minDelivery * 100));
-    nd.innerHTML = '<div class="nrow">' + TRUCK + '<span>' + (left > 0
-      ? 'Tambah <b>' + rp(left) + '</b> lagi supaya pesanan bisa diantar. Ambil di tempat tanpa minimal.'
-      : 'Pesananmu sudah memenuhi minimal untuk diantar.') + '</span></div>' +
-      '<div class="pg" aria-hidden="true"><i style="width:' + pct + '%"></i></div>';
-  }
+  if (has) nd.innerHTML = nudgeHtml(t);
 
   $('lines').innerHTML = ids.map(id => {
     const it = byId(id), q = state.cart[id];
@@ -300,6 +343,7 @@ function renderCart() {
   $('cartBtn').setAttribute('aria-label', (PAGE === 'checkout' ? 'Kembali ke keranjang, ' : 'Shopping Cart, ') + t.count + ' item');
   updateInCart();
   if (PAGE === 'checkout') renderCheckout();
+  if (PAGE === 'cart') renderCartPage();
 }
 function change(id, d) {
   const it = byId(id); if (!it || it.soldOut) return;
@@ -391,7 +435,7 @@ document.addEventListener('click', e => {
   if (b) change(b.dataset.id, b.dataset.act === 'inc' ? 1 : (b.dataset.act === 'rm' ? -999 : -1));
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
-$('cartBtn').addEventListener('click', openCart);
+if (PAGE !== 'checkout') $('cartBtn').addEventListener('click', openCart);   // di checkout, tombol ini tautan ke halaman keranjang
 $('themeBtn').addEventListener('click', toggleTheme);
 paintThemeBtn();
 // jika pembeli belum memilih sendiri, ikuti perubahan pengaturan sistem
@@ -413,7 +457,6 @@ if (PAGE === 'checkout') {
   document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', syncMode));
   $('zone').addEventListener('change', () => { hideDone(); renderCart(); });
   $('date').addEventListener('change', buildSlots);
-  $('editCart').addEventListener('click', openCart);
   $('form').addEventListener('submit', async e => {
     e.preventDefault();
     const m = validate(); showErr(m);
@@ -444,6 +487,7 @@ if (PAGE === 'checkout') {
 }
 
 initInfo();
+initHeaderHide();
 if (PAGE === 'checkout') { initForm(); syncMode(); } else { renderCart(); }
 if (PAGE === 'home') renderHome();
 if (PAGE === 'product') renderProduct();

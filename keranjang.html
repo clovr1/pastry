@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<script>try{var t=localStorage.getItem("sweetbite-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Keranjang · Sweet Bite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="css/style.css?v=20261104172827">
+</head>
+<body data-page="cart">
+<div class="wrap">
+  <section class="kr-head">
+    <nav class="steps" aria-label="Langkah pemesanan"><b aria-current="step">Keranjang</b><span aria-hidden="true">›</span><span>Detail pesanan</span></nav>
+    <h1>Keranjang</h1>
+  </section>
+
+  <div class="empty co-empty" id="krEmpty" hidden>
+    <span>Keranjangmu masih kosong.</span>
+    <a class="btn" href="products.html">Lihat produk</a>
+  </div>
+
+  <div class="kr" id="krMain" hidden>
+    <section class="kr-list" aria-label="Isi keranjang">
+      <div class="nudge" id="krNudge"></div>
+      <ul class="kr-lines" id="krLines"></ul>
+      <a class="linkbtn kr-more" href="products.html">← Lanjut belanja</a>
+    </section>
+    <aside class="kr-sum" aria-labelledby="krT">
+      <h2 id="krT">Ringkasan</h2>
+      <div class="sum" id="krSum"></div>
+      <a class="btn block" href="checkout.html">Lanjut ke detail pesanan</a>
+      <p class="hint">Ongkir dihitung di langkah berikutnya, sesuai pilihan ambil di tempat atau delivery.</p>
+    </aside>
+  </div>
+</div>
+<script src="api/menu.php"></script>
+<script src="js/app.js?v=20261104172827"></script>
+</body>
+</html>

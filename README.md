@@ -11,6 +11,7 @@ Dibuat dengan HTML, CSS, JavaScript, dan **PHP biasa**. Tidak butuh MySQL atau e
 index.html       Home (banner dan slider pastry)
 products.html    Semua produk, filter kategori
 product.html     Detail satu produk (product.html?id=cr1)
+keranjang.html   Halaman keranjang: ubah jumlah, hapus barang, lanjut ke detail pesanan
 checkout.html    Detail pesanan: data diri, ambil di tempat atau delivery, pembayaran
 pesanan.html     Status pesanan untuk pembeli (pesanan.html?id=...)
 owner/           Halaman owner: pesanan masuk, ubah status, tandai lunas
@@ -57,7 +58,7 @@ Semua data toko dan menu ada di `data/menu.json`:
 - `allergens` per produk dan `allergyNote` tampil di dropdown **Peringatan alergi**. Isi awalnya hanya contoh, **periksa dan sesuaikan dengan resep aslimu** sebelum toko dibuka.
 - `id` produk dipakai di alamat halaman detail dan di pesanan, jadi jangan diubah setelah toko berjalan.
 
-Menu atas ada di fungsi `mountShell()` pada `js/app.js`. Login pembeli belum ada, hanya menampilkan pemberitahuan.
+Menu atas ada di fungsi `mountShell()` pada `js/app.js`. Menu itu bersembunyi saat halaman digulir ke bawah dan muncul lagi begitu digulir ke atas (`initHeaderHide()`). Di halaman Detail pesanan, menu diganti header sederhana dengan tombol **Kembali ke keranjang** yang menuju `keranjang.html`. Login pembeli belum ada, hanya menampilkan pemberitahuan.
 
 ## Foto
 

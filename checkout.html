@@ -9,11 +9,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
-<link rel="stylesheet" href="css/style.css?v=20261104171936">
+<link rel="stylesheet" href="css/style.css?v=20261104172827">
 </head>
 <body data-page="checkout">
 <div class="wrap">
   <div class="co-head">
+    <nav class="steps" aria-label="Langkah pemesanan"><a href="keranjang.html">Keranjang</a><span aria-hidden="true">›</span><b aria-current="step">Detail pesanan</b></nav>
     <h1>Detail pesanan</h1>
     <p>Isi data di bawah, lalu kirim pesananmu ke toko. Kamu baru membayar setelah toko mengonfirmasi, dan belum ada pembayaran yang diambil di halaman ini.</p>
   </div>
@@ -67,11 +68,11 @@
       <p class="err" id="err" role="alert" hidden></p>
       <button class="btn block" type="submit" form="form" id="submitBtn">Kirim pesanan</button>
       <p class="hint">Pesanan baru sah setelah toko mengonfirmasi. Kamu bisa memantau statusnya di halaman pesanan.</p>
-      <button class="linkbtn" type="button" id="editCart">Ubah pesanan</button>
+      <a class="linkbtn" href="keranjang.html" id="editCart">Ubah pesanan</a>
     </aside>
   </div>
 </div>
 <script src="api/menu.php"></script>
-<script src="js/app.js?v=20261104171936"></script>
+<script src="js/app.js?v=20261104172827"></script>
 </body>
 </html>
