@@ -355,3 +355,43 @@ a.item:hover .nm { color: var(--accent); }
 .themebtn:hover { border-color: var(--ink); }
 .themebtn svg { width: 20px; height: 20px; }
 .top-r { gap: 12px; }
+
+/* Halaman status pesanan */
+.ord-load { padding-block: 48px; color: var(--muted); }
+.ord-head { padding-block: 8px 20px; display: grid; gap: 6px; }
+.ord-head h1 { font-family: var(--font-name); font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: .12em; line-height: 1.1; }
+.ord-head .label { margin: 0; }
+.ord-sub { margin: 0; color: var(--muted); }
+.ord-banner { background: var(--tile); border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; }
+.ord-banner p { margin: 0; font-weight: 500; }
+.ord-banner.bad { background: var(--accent-soft); color: var(--warn); }
+.ord-steps { list-style: none; margin: 0 0 32px; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; counter-reset: s; }
+.ord-steps li { display: grid; gap: 8px; font-size: 13px; color: var(--muted); font-weight: 500; }
+.ord-steps li span { display: block; height: 6px; border-radius: 3px; background: var(--line); }
+.ord-steps li.done span, .ord-steps li.now span { background: var(--accent); }
+.ord-steps li.now { color: var(--ink); font-weight: 700; }
+.ord-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start; }
+.ord-card { border: 1px solid var(--line); border-radius: 8px; padding: 22px; display: grid; gap: 12px; background: var(--surface); }
+.ord-card h2 { font-family: var(--font-name); font-weight: 700; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.ord-card p { margin: 0; }
+.ord-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ord-lines li { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
+.ord-lines b { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+.ord-muted { color: var(--muted); font-size: 14px; }
+.ord-pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.ord-paid { color: var(--ok); font-weight: 700; font-size: 18px; }
+.ord-chip { display: inline-block; justify-self: start; border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; background: var(--tile); }
+.ord-chip.warn { background: var(--accent-soft); color: var(--warn); }
+.ord-acc { display: grid; gap: 2px; background: var(--tile); border-radius: 8px; padding: 14px 16px; font-size: 14px; }
+.ord-acc b { font-size: 20px; letter-spacing: .06em; font-variant-numeric: tabular-nums; }
+.ord-acc .linkbtn { justify-self: start; margin-top: 8px; }
+.ord-qr { width: min(240px, 100%); border-radius: 8px; background: #fff; }
+.ord-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding-block: 28px 8px; }
+@media (max-width: 900px) {
+  .ord-grid { grid-template-columns: 1fr; }
+  .ord-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+  .ord-steps li { font-size: 11px; }
+}
+
+/* angka lurus pada kode pesanan dan nama produk, supaya 0/o dan 1/l tidak membingungkan */
+.nm, .pd-info h1, .ord-head h1, .o-code, .cat h2, .cat h3 { font-variant-numeric: lining-nums; }

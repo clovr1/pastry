@@ -1,0 +1,4 @@
+api/config.php
+storage/*
+!storage/.htaccess
+!storage/.gitkeep

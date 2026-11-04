@@ -1,49 +1,63 @@
 # Sweet Bite
 
-Website pemesanan pastry: pelanggan memilih pastry, memilih ambil di toko atau diantar,
-lalu pesanan dikirim ke WhatsApp toko. Situs statis (HTML, CSS, JavaScript), tanpa build dan tanpa dependensi.
+Website pemesanan pastry. Pembeli memilih pastry, memilih ambil di tempat atau delivery, lalu mengirim pesanan.
+Pesanan masuk ke **halaman owner** yang dilindungi kata sandi. Pembeli bisa memantau statusnya di halaman pesanan.
+
+Dibuat dengan HTML, CSS, JavaScript, dan **PHP** (database SQLite, tanpa perlu MySQL).
 
 ## Struktur
 
 ```
-index.html      Halaman Home (banner dan slider pastry)
-products.html   Halaman Product (semua produk, filter kategori)
-product.html    Halaman detail satu produk, dibuka dari kartu produk (product.html?id=cr1)
-checkout.html   Halaman detail pesanan: data diri, ambil di tempat atau delivery, pembayaran
-css/style.css   Tampilan untuk semua halaman
-js/data.js      Data toko dan menu: yang paling sering kamu ubah
-js/app.js       Logika bersama (menu atas, keranjang, halaman detail pesanan)
-images/         Foto banner dan produk
+index.html       Home (banner dan slider pastry)
+products.html    Semua produk, filter kategori
+product.html     Detail satu produk (product.html?id=cr1)
+checkout.html    Detail pesanan: data diri, ambil di tempat atau delivery, pembayaran
+pesanan.html     Status pesanan untuk pembeli (pesanan.html?id=...)
+owner/           Halaman owner: pesanan masuk, ubah status, tandai lunas
+api/             Backend PHP (menu, buat pesanan, status, owner)
+data/menu.json   Data toko dan menu: yang paling sering kamu ubah
+storage/         Database pesanan (dibuat otomatis, tidak masuk GitHub)
+tools/           Alat bantu terminal (membuat kata sandi owner)
+css/, js/        Tampilan dan logika
+images/          Foto banner dan produk
 ```
-
-Menu atas dan panel keranjang dibuat oleh `js/app.js`, jadi cukup diubah di satu tempat.
-Pembeli menambah pesanan dari halaman detail produk, bukan dari kartu. Isi keranjang disimpan di browser dan ikut berpindah antar halaman.
 
 ## Menjalankan
 
-Buka lewat server lokal supaya keranjang terbawa antar halaman di semua browser.
-Dengan Laragon, taruh folder ini di `C:\laragon\www` lalu buka `http://localhost/nama-folder/`.
-Atau, kalau Python terpasang:
+Situs ini butuh PHP (versi 7.3 atau lebih baru dengan `pdo_sqlite`). Jalankan lewat **Laragon**, bukan Live Server atau klik dua kali file HTML.
+
+1. Taruh folder proyek di `C:\laragon\www`, lalu klik **Start All** di Laragon.
+2. Buka `http://localhost/nama-folder/`.
+3. Buat kata sandi owner. Buka **Terminal** di Laragon, masuk ke folder proyek, lalu jalankan:
 
 ```bash
-python3 -m http.server 8000
+php tools/set-owner-password.php
 ```
 
-Lalu buka http://localhost:8000.
+4. Halaman owner ada di `http://localhost/nama-folder/owner/`.
+
+Tanpa Laragon, bisa juga: `php -S localhost:8000` di folder proyek, lalu buka http://localhost:8000.
+
+## Cara kerja pesanan
+
+1. Pembeli mengisi **Detail pesanan** dan menekan **Kirim pesanan**. Server memeriksa ulang semuanya (produk, stok, harga, hari tutup, jam, minimal antar) dan menghitung harga sendiri dari `data/menu.json`, jadi harga dari browser tidak dipercaya.
+2. Pesanan disimpan di database dan pembeli diarahkan ke `pesanan.html?id=…`. Tautan itu berisi kode acak yang hanya diketahui pemesannya. Halaman itu menampilkan status dan petunjuk pembayaran, dan diperbarui otomatis tiap 20 detik.
+3. Di halaman owner, pesanan baru muncul otomatis (diperiksa tiap 15 detik). Owner bisa mengonfirmasi, menandai disiapkan, siap, selesai, menandai lunas, atau membatalkan.
+
+Status pesanan: **Baru → Dikonfirmasi → Disiapkan → Siap (diambil/diantar) → Selesai**, atau **Dibatalkan**.
 
 ## Mengubah isi
 
-Semua data ada di `js/data.js`:
+Semua data toko dan menu ada di `data/menu.json`:
 
-- `CONFIG`: nama toko, nomor WhatsApp (format `62…`), alamat, jam buka, hari tutup, ongkir per area, minimal pesanan antar, jam ambil/antar, dan teks banner.
-- `ITEMS`: daftar produk (`name`, `desc`, `price`, `tag`, `soldOut`, `allergens`, `img`, `cat`). Deskripsi tampil di halaman Product dan halaman detail, tidak di slider.
-- `allergens` per produk dan `CONFIG.allergyNote` tampil di dropdown **Peringatan alergi** pada halaman detail. Isi awalnya hanya contoh, **periksa dan sesuaikan dengan resep aslimu** sebelum toko dibuka.
-- Dropdown **Delivery** dan **Pick up**, serta garis status "Buka sekarang · Jam buka …" di bawah tombol tambah ke keranjang, dibuat otomatis dari `CONFIG` (alamat, jam, hari tutup, area dan ongkir, minimal pesanan, jam antar/ambil).
-- `id` produk dipakai di alamat halaman detail, jadi jangan diubah-ubah setelah dibagikan.
-- `CATS`: kategori untuk filter di halaman Product. Alamat langsung ke satu kategori, misalnya `products.html#tart`.
+- `config`: nama toko, alamat, kontak, jam buka, hari tutup, ongkir per area (`zones`), minimal pesanan antar, jam ambil/antar (`slots`), banner, metode pembayaran (`payments`), dan `paymentInfo`.
+- `paymentInfo`: nomor rekening dan gambar QRIS. **Hanya dikirim ke pembeli setelah pesanan dibuat**, tidak ikut dimuat di semua halaman. Isi awalnya contoh, ganti dengan data aslimu.
+- `items`: daftar produk (`id`, `cat`, `name`, `desc`, `price`, `tag`, `soldOut`, `allergens`, `img`). Tandai `"soldOut": true` untuk produk yang habis.
+- `cats`: kategori untuk filter di halaman Product.
+- `allergens` per produk dan `allergyNote` tampil di dropdown **Peringatan alergi**. Isi awalnya hanya contoh, **periksa dan sesuaikan dengan resep aslimu** sebelum toko dibuka.
+- `id` produk dipakai di alamat halaman detail dan di pesanan, jadi jangan diubah setelah toko berjalan.
 
-Menu atas (Home, Product, Login) ada di fungsi `mountShell()` pada `js/app.js`.
-Login belum berfungsi dan hanya menampilkan pemberitahuan, karena butuh server dan database.
+Menu atas ada di fungsi `mountShell()` pada `js/app.js`. Login pembeli belum ada, hanya menampilkan pemberitahuan.
 
 ## Foto
 
@@ -72,16 +86,19 @@ Foto yang belum ada otomatis diganti tempat foto, jadi kamu bisa menambah satu p
 
 Jumlah produk sebaiknya kelipatan 4 supaya setiap geseran di desktop menampilkan 4 produk penuh.
 Foto produk paling cocok berbentuk tegak (sekitar 600 × 1000 px). Foto yang lebar akan terpotong di kiri dan kanan.
-Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` di `ITEMS` pada `js/data.js`.
-
-## Cara kerja pesanan
-
-Tombol "Siapkan pesanan" membuat teks pesanan dan tautan `https://wa.me/<nomor>?text=…`.
-Pelanggan membuka WhatsApp dan mengirim pesan itu. Tidak ada server atau database,
-dan pesanan baru sah setelah toko membalas dan mengonfirmasi.
+Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` pada produknya di `data/menu.json`.
 
 ## Mode terang dan gelap
 
 Tombol bulan/matahari di menu atas mengganti mode. Kalau pembeli belum memilih, situs mengikuti
 pengaturan perangkatnya. Pilihan disimpan di browser (kunci `sweetbite-theme`) dan berlaku di semua halaman.
 Warna kedua mode ada di bagian atas `css/style.css`.
+
+## Keamanan dan perawatan
+
+- **Kata sandi owner** disimpan sebagai hash di `api/config.php` (tidak masuk GitHub). Setelah 6 kali salah, login dikunci 10 menit.
+- **Database** ada di `storage/orders.sqlite`. Folder `storage/` dan `data/` dilindungi `.htaccess` (Apache, termasuk Laragon). Kalau memakai Nginx, tolak akses langsung ke dua folder itu di pengaturan server.
+- **Cadangan:** salin file `storage/orders.sqlite` secara berkala. Itu seluruh riwayat pesananmu.
+- Pesanan dibatasi 8 per perangkat dalam 10 menit untuk mengurangi pesanan palsu.
+- Kalau situs dipasang di internet, **wajib pakai HTTPS** supaya kata sandi dan data pemesan tidak terkirim terbuka.
+- Halaman owner memakai `noindex`, tapi alamatnya tetap sebaiknya tidak dibagikan.

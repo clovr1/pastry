@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<script>try{var t=localStorage.getItem("sweetbite-theme");if(t==="dark"||t==="light")document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Owner · Sweet Bite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="../css/style.css">
+<link rel="stylesheet" href="owner.css">
+</head>
+<body data-page="owner">
+<div class="wrap">
+  <header class="top top-min">
+    <span class="brand" id="shopName">Sweet Bite</span>
+    <div class="top-r">
+      <span class="o-tag">Owner</span>
+      <button class="themebtn" type="button" id="themeBtn"></button>
+      <button class="o-btn" type="button" id="soundBtn" aria-pressed="false" hidden>Bunyi: mati</button>
+      <button class="o-btn" type="button" id="logoutBtn" hidden>Keluar</button>
+    </div>
+  </header>
+
+  <main id="loading" class="o-center"><p class="o-muted">Memuat…</p></main>
+
+  <main id="setup" class="o-center" hidden>
+    <h1>Kata sandi owner belum dibuat</h1>
+    <p class="o-muted">Buat dulu supaya hanya kamu yang bisa membuka halaman ini. Buka terminal di folder proyek (di Laragon: tombol <b>Terminal</b>), lalu jalankan:</p>
+    <pre class="o-code-block">php tools/set-owner-password.php</pre>
+    <p class="o-muted">Ketik kata sandi (minimal 8 karakter), lalu muat ulang halaman ini.</p>
+  </main>
+
+  <main id="login" class="o-center" hidden>
+    <h1>Masuk sebagai owner</h1>
+    <form id="loginForm" class="o-login" novalidate>
+      <div class="field"><label for="pw">Kata sandi</label><input id="pw" type="password" autocomplete="current-password" required></div>
+      <p class="err" id="loginErr" role="alert" hidden></p>
+      <button class="btn block" type="submit" id="loginBtn">Masuk</button>
+    </form>
+  </main>
+
+  <main id="dash" hidden>
+    <p class="o-net" id="net" role="status" hidden>Koneksi terputus. Mencoba lagi otomatis…</p>
+    <section class="o-stats" aria-label="Ringkasan">
+      <div><span>Pesanan baru</span><b id="stNew">0</b></div>
+      <div><span>Pesanan hari ini</span><b id="stToday">0</b></div>
+      <div><span>Omzet hari ini</span><b id="stRev">Rp 0</b></div>
+      <div><span>Belum lunas</span><b id="stUnpaid">0</b></div>
+    </section>
+    <section class="o-toolbar">
+      <div class="tabs" id="filters" role="group" aria-label="Filter status"></div>
+      <div class="field o-search"><label for="q" class="o-sr">Cari pesanan</label><input id="q" type="search" placeholder="Cari kode, nama, atau nomor HP"></div>
+    </section>
+    <section id="olist" aria-live="polite"></section>
+    <p class="o-muted o-foot" id="foot"></p>
+  </main>
+</div>
+<script src="owner.js"></script>
+</body>
+</html>

@@ -1,4 +1,8 @@
 /* Sweet Bite: logika bersama untuk semua halaman (keranjang, panel pesanan, menu atas). */
+if (typeof CONFIG === 'undefined') {
+  document.body.innerHTML = '<div style="max-width:560px;margin:15vh auto;padding:0 20px;font:16px/1.6 system-ui,sans-serif"><h1 style="font-weight:600">Situs belum bisa dimuat</h1><p>Data menu dibaca lewat PHP. Buka situs ini lewat Laragon (alamat <b>http://localhost/…</b>), bukan lewat Live Server atau klik dua kali file HTML.</p></div>';
+  throw new Error('api/menu.php tidak berjalan');
+}
 const PAGE = document.body.dataset.page || 'home';
 
 /* ---- Mode terang / gelap ---- */
@@ -232,7 +236,7 @@ function renderProduct() {
       '<div class="qtyrow"><span class="label">Jumlah</span><div class="stepper q"><button type="button" data-qty="-1" aria-label="Kurangi jumlah">−</button><output id="qty" aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Tambah jumlah">+</button></div></div>' +
       '<p class="incart" id="inCart" hidden></p><button class="btn block" type="button" id="addBtn">Tambah ke keranjang</button>') +
     hoursLine() + '<p class="pd-desc">' + esc(it.desc) + '</p>' + accordion(it) +
-    '<p class="hint">Pesanan dikonfirmasi lewat WhatsApp sebelum kamu bayar.</p></div>';
+    '<p class="hint">Toko mengonfirmasi pesananmu sebelum kamu membayar.</p></div>';
   const others = ITEMS.filter(i => i.id !== it.id);
   const rel = others.filter(i => i.cat === it.cat).concat(others.filter(i => i.cat !== it.cat)).slice(0, 4);
   $('rel').innerHTML = '<div class="cat"><h2>Produk lainnya</h2></div><div class="pgrid">' + rel.map(i => itemHtml(i, false)).join('') + '</div>';
@@ -343,6 +347,7 @@ function buildSlots() {
   if ([...$('slot').options].some(o => o.value === cur && !o.disabled)) $('slot').value = cur;
 }
 function initForm() {
+  $('pays').innerHTML = CONFIG.payments.map((p, i) => '<label class="pay"><input type="radio" name="pay" value="' + esc(p.id) + '"' + (i === 0 ? ' checked' : '') + '><b>' + esc(p.label) + '</b><span>' + esc(p.desc) + '</span></label>').join('');
   $('zone').innerHTML = CONFIG.zones.map(z => '<option value="' + z.id + '">' + z.label + ' · ' + rp(z.fee) + '</option>').join('');
   const today = isoDate(new Date());
   $('date').min = today; $('date').value = today;
@@ -360,7 +365,7 @@ function validate() {
   const t = totals();
   if (t.count === 0) return 'Pilih minimal satu pastry dari menu.';
   if (!$('name').value.trim()) return 'Isi nama kamu.';
-  if ($('phone').value.replace(/[^\d]/g, '').length < 9) return 'Isi nomor WhatsApp yang benar.';
+  if ($('phone').value.replace(/[^\d]/g, '').length < 9) return 'Isi nomor HP yang benar.';
   const date = $('date').value;
   if (!date) return 'Pilih tanggal.';
   const [y, m, dd] = date.split('-').map(Number), dObj = new Date(y, m - 1, dd);
@@ -374,25 +379,6 @@ function validate() {
   if (!payVal()) return 'Pilih metode pembayaran.';
   return '';
 }
-function buildMessage() {
-  const t = totals(), d = mode() === 'delivery';
-  const dt = new Date($('date').value + 'T00:00:00');
-  const L = ['Halo ' + CONFIG.shop + ', saya mau pesan:', ''];
-  Object.keys(state.cart).forEach(id => { const it = byId(id), q = state.cart[id]; L.push('• ' + q + '× ' + it.name + ' (' + rp(it.price * q) + ')'); });
-  L.push('', 'Subtotal: ' + rp(t.sub));
-  if (d) L.push('Ongkir (' + t.zone.label + '): ' + rp(t.fee));
-  L.push('Total: ' + rp(t.total), '');
-  L.push('Cara terima: ' + (d ? 'Delivery (diantar)' : 'Ambil di tempat'));
-  L.push('Tanggal: ' + DAYS[dt.getDay()] + ', ' + dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }));
-  L.push('Jam: ' + $('slot').value);
-  if (d) L.push('Alamat: ' + $('addr').value.trim());
-  L.push('Nama: ' + $('name').value.trim());
-  L.push('WhatsApp: ' + $('phone').value.trim());
-  L.push('Pembayaran: ' + payVal());
-  if ($('note').value.trim()) L.push('Catatan: ' + $('note').value.trim());
-  return L.join('\n');
-}
-
 /* ---- Events ---- */
 document.addEventListener('click', e => {
   const tab = e.target.closest('[data-cat]');
@@ -428,23 +414,32 @@ if (PAGE === 'checkout') {
   $('zone').addEventListener('change', () => { hideDone(); renderCart(); });
   $('date').addEventListener('change', buildSlots);
   $('editCart').addEventListener('click', openCart);
-  $('form').addEventListener('submit', e => {
+  $('form').addEventListener('submit', async e => {
     e.preventDefault();
     const m = validate(); showErr(m);
     if (m) return;
-    const text = buildMessage();
-    $('msg').textContent = text;
-    $('waShow').textContent = '+' + CONFIG.whatsapp;
-    $('waLink').href = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent(text);
-    $('done').hidden = false;
-    $('done').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-  $('copyBtn').addEventListener('click', () => {
-    const btn = $('copyBtn'), text = $('msg').textContent;
-    const fallback = () => { const r = document.createRange(); r.selectNodeContents($('msg')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Pesan terpilih, tekan salin'; };
+    const btn = $('submitBtn');
+    btn.disabled = true; btn.textContent = 'Mengirim…';
+    const body = {
+      name: $('name').value.trim(), phone: $('phone').value.trim(), mode: mode(),
+      date: $('date').value, slot: $('slot').value, payment: payVal(), note: $('note').value.trim(),
+      items: Object.keys(state.cart).map(id => ({ id, qty: state.cart[id] }))
+    };
+    if (mode() === 'delivery') { body.zone = $('zone').value; body.address = $('addr').value.trim(); }
+    let sent = false;
     try {
-      navigator.clipboard.writeText(text).then(() => { btn.textContent = 'Tersalin'; setTimeout(() => btn.textContent = 'Salin pesan', 2000); }, fallback);
-    } catch (err) { fallback(); }
+      const r = await fetch('api/order.php', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'sb' }, body: JSON.stringify(body) });
+      const data = await r.json().catch(() => null);
+      if (!r.ok || !data || !data.id) { showErr((data && data.error) || 'Pesanan belum terkirim. Coba lagi sebentar lagi.'); return; }
+      sent = true;
+      state.cart = {}; save();
+      try { localStorage.setItem('sweetbite-last-order', data.id); } catch (err) {}
+      location.href = 'pesanan.html?id=' + encodeURIComponent(data.id);
+    } catch (err) {
+      showErr('Tidak bisa terhubung ke server. Periksa koneksi lalu coba lagi.');
+    } finally {
+      if (!sent) { btn.disabled = false; btn.textContent = 'Kirim pesanan'; }
+    }
   });
 }
 

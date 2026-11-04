@@ -15,7 +15,7 @@
 <div class="wrap">
   <div class="co-head">
     <h1>Detail pesanan</h1>
-    <p>Isi data di bawah, lalu kirim pesananmu lewat WhatsApp. Belum ada pembayaran yang diambil di halaman ini.</p>
+    <p>Isi data di bawah, lalu kirim pesananmu ke toko. Kamu baru membayar setelah toko mengonfirmasi, dan belum ada pembayaran yang diambil di halaman ini.</p>
   </div>
 
   <div class="empty co-empty" id="coEmpty" hidden>
@@ -25,22 +25,12 @@
 
   <div class="co" id="coMain" hidden>
     <div class="co-form">
-      <div class="done" id="done" hidden>
-        <h3>Tinggal satu langkah lagi</h3>
-        <p class="hint" style="color:var(--ink)">Buka WhatsApp, lalu tekan kirim. Kalau tombolnya tidak terbuka, salin pesan ini dan kirim sendiri ke <b id="waShow"></b>.</p>
-        <pre id="msg"></pre>
-        <div class="acts">
-          <a class="btn" id="waLink" href="#" target="_blank" rel="noopener">Buka WhatsApp</a>
-          <button class="btn ghost" type="button" id="copyBtn">Salin pesan</button>
-        </div>
-      </div>
-
       <form id="form" novalidate>
         <section class="co-sec" aria-labelledby="h1s">
           <h2 id="h1s"><span class="n">1</span>Data diri</h2>
           <div class="two">
             <div class="field"><label for="name">Nama lengkap</label><input id="name" autocomplete="name" placeholder="Nama kamu"></div>
-            <div class="field"><label for="phone">No. WhatsApp</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0812…"></div>
+            <div class="field"><label for="phone">No. HP (WhatsApp)</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0812…"></div>
           </div>
         </section>
 
@@ -64,11 +54,7 @@
 
         <section class="co-sec" aria-labelledby="h3s">
           <h2 id="h3s"><span class="n">3</span>Pembayaran</h2>
-          <div class="pays" role="radiogroup" aria-label="Metode pembayaran">
-            <label class="pay"><input type="radio" name="pay" value="Transfer bank (setelah konfirmasi)" checked><b>Transfer bank</b><span>Nomor rekening kami kirim lewat WhatsApp setelah pesanan dikonfirmasi.</span></label>
-            <label class="pay"><input type="radio" name="pay" value="QRIS (setelah konfirmasi)"><b>QRIS</b><span>Kode QRIS kami kirim lewat WhatsApp setelah pesanan dikonfirmasi.</span></label>
-            <label class="pay"><input type="radio" name="pay" value="Bayar tunai saat terima"><b>Bayar tunai</b><span>Bayar langsung saat pesananmu diambil atau diantar.</span></label>
-          </div>
+          <div class="pays" id="pays" role="radiogroup" aria-label="Metode pembayaran"></div>
         </section>
       </form>
     </div>
@@ -79,13 +65,13 @@
       <div class="sum" id="coSum"></div>
       <p class="hint warn" id="minHint" hidden></p>
       <p class="err" id="err" role="alert" hidden></p>
-      <button class="btn block" type="submit" form="form">Siapkan pesanan</button>
-      <p class="hint">Pesanan baru sah setelah kami balas dan konfirmasi di WhatsApp.</p>
+      <button class="btn block" type="submit" form="form" id="submitBtn">Kirim pesanan</button>
+      <p class="hint">Pesanan baru sah setelah toko mengonfirmasi. Kamu bisa memantau statusnya di halaman pesanan.</p>
       <button class="linkbtn" type="button" id="editCart">Ubah pesanan</button>
     </aside>
   </div>
 </div>
-<script src="js/data.js"></script>
+<script src="api/menu.php"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
