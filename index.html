@@ -431,18 +431,34 @@ function updateAct(id) {
 function setupCars() {
   document.querySelectorAll('.car').forEach(car => {
     const track = car.querySelector('.track'), prev = car.querySelector('.prev'), next = car.querySelector('.next'), dots = car.querySelector('.dots');
+    const stepOf = () => {
+      const it = track.querySelector('.item');
+      return it ? it.getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 0) : track.clientWidth;
+    };
+    const maxLeft = () => track.scrollWidth - track.clientWidth;
+    let idx = 0, lockUntil = 0;
     function upd() {
-      const over = track.scrollWidth > track.clientWidth + 2;
+      const over = maxLeft() > 2;
       prev.hidden = next.hidden = dots.hidden = !over;
       if (!over) return;
-      const n = Math.max(1, Math.ceil((track.scrollWidth - 2) / track.clientWidth));
-      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
-      const cur = atEnd ? n - 1 : Math.min(n - 1, Math.round(track.scrollLeft / track.clientWidth));
-      prev.disabled = track.scrollLeft <= 2; next.disabled = atEnd;
+      const st = stepOf(), n = Math.max(1, Math.round(maxLeft() / st) + 1);
+      // saat animasi dari tombol berjalan, titik mengikuti tujuan, bukan posisi sementara
+      const cur = Date.now() < lockUntil ? idx : (track.scrollLeft >= maxLeft() - 2 ? n - 1 : Math.min(n - 1, Math.round(track.scrollLeft / st)));
       dots.innerHTML = Array.from({ length: n }, (_, i) => '<span class="dot' + (i === cur ? ' on' : '') + '"></span>').join('');
     }
-    prev.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth }));
-    next.addEventListener('click', () => track.scrollBy({ left: track.clientWidth }));
+    // geser satu produk per klik; di ujung kembali ke sisi sebaliknya
+    function go(dir) {
+      const st = stepOf(), n = Math.round(maxLeft() / st);
+      if (Date.now() >= lockUntil) idx = Math.round(track.scrollLeft / st);
+      idx += dir;
+      if (idx > n) idx = 0;
+      if (idx < 0) idx = n;
+      lockUntil = Date.now() + 1000;
+      track.scrollTo({ left: idx === n ? maxLeft() : idx * st });
+      setTimeout(upd, 1050);
+    }
+    prev.addEventListener('click', () => go(-1));
+    next.addEventListener('click', () => go(1));
     track.addEventListener('scroll', upd, { passive: true });
     new ResizeObserver(upd).observe(track);
     upd();
