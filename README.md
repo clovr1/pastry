@@ -35,7 +35,9 @@ Lalu buka http://localhost:8000.
 Semua data ada di `js/data.js`:
 
 - `CONFIG`: nama toko, nomor WhatsApp (format `62…`), alamat, jam buka, hari tutup, ongkir per area, minimal pesanan antar, jam ambil/antar, dan teks banner.
-- `ITEMS`: daftar produk (`name`, `desc`, `price`, `tag`, `soldOut`, `img`, `cat`). Deskripsi tampil di halaman Product, tidak di slider.
+- `ITEMS`: daftar produk (`name`, `desc`, `price`, `tag`, `soldOut`, `allergens`, `img`, `cat`). Deskripsi tampil di halaman Product dan halaman detail, tidak di slider.
+- `allergens` per produk dan `CONFIG.allergyNote` tampil di dropdown **Peringatan alergi** pada halaman detail. Isi awalnya hanya contoh, **periksa dan sesuaikan dengan resep aslimu** sebelum toko dibuka.
+- Dropdown **Delivery**, **Pick up**, dan **Jam buka toko** dibuat otomatis dari `CONFIG` (alamat, jam, hari tutup, area dan ongkir, minimal pesanan, jam antar/ambil).
 - `id` produk dipakai di alamat halaman detail, jadi jangan diubah-ubah setelah dibagikan.
 - `CATS`: kategori untuk filter di halaman Product. Alamat langsung ke satu kategori, misalnya `products.html#tart`.
 

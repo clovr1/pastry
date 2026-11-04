@@ -276,3 +276,22 @@ a.item:hover .nm { color: var(--accent); }
   .pd-info { position: static; }
   .pd-meta > div { grid-template-columns: 1fr; gap: 0; }
 }
+
+/* Dropdown info produk */
+.acc { display: grid; border-top: 1px solid var(--line); }
+.acc details { border-bottom: 1px solid var(--line); }
+.acc summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 16px 2px; font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
+.acc summary::-webkit-details-marker { display: none; }
+.acc summary svg { width: 20px; height: 20px; flex: none; }
+.acc summary::after { content: ""; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-top: -3px; }
+.acc details[open] summary::after { transform: rotate(-135deg); margin-top: 3px; }
+.acc summary:hover { color: var(--accent); }
+.acc-body { padding: 0 2px 20px; color: var(--muted); font-size: 15px; display: grid; gap: 10px; }
+.acc-body p { margin: 0; }
+.acc-body b { color: var(--ink); font-weight: 600; }
+.acc-body ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.acc-body li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 12px; background: var(--tile); border-radius: 6px; font-size: 14px; }
+.acc-body li b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.al-l { color: var(--ink); font-weight: 600; font-size: 14px; }
+.al { display: flex; flex-wrap: wrap; gap: 8px; }
+.al span { border: 1px solid var(--warn); color: var(--warn); border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
