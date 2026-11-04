@@ -522,18 +522,36 @@ a.backcart { text-decoration: none; color: inherit; }
 .auth-hint { margin: -8px 0 0; font-size: 13px; color: var(--muted); }
 .auth-switch { display: grid; gap: 12px; text-align: center; font-size: 14px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 22px; }
 .acc-ok { margin: 0; color: var(--ink); font-weight: 600; font-size: 14px; }
-.acc-wrap { padding-bottom: 64px; }
-.acc-cols { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-.acc-card { border: 1px solid var(--line); border-radius: 8px; padding: 22px; background: var(--surface); display: grid; gap: 16px; }
-.acc-card h2 { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; }
-.acc-orders { display: grid; gap: 10px; }
-.acc-order { display: grid; gap: 6px; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; background: var(--bg); color: inherit; text-decoration: none; }
-.acc-order:hover { border-color: var(--ink); }
+.acc-wrap { padding: 28px 0 72px; display: grid; gap: 28px; }
+.acc-hero { display: flex; align-items: center; gap: 18px; }
+.acc-av { flex: none; width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: var(--bg); font-family: var(--font-display); font-size: 28px; }
+.acc-who { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.acc-who h1 { font-family: var(--font-display); font-size: clamp(30px, 4.4vw, 44px); line-height: 1.05; letter-spacing: -.015em; }
+.acc-who p { margin: 0; color: var(--muted); overflow-wrap: anywhere; }
+.acc-stats { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.acc-stats[hidden] { display: none; }
+.acc-stats > div { padding: 18px 22px; display: grid; gap: 4px; }
+.acc-stats > div + div { border-left: 1px solid var(--line); }
+.acc-stats span { font-size: 13px; color: var(--muted); }
+.acc-stats b { font-family: var(--font-display); font-weight: 500; font-size: clamp(22px, 3vw, 30px); line-height: 1.1; }
+.acc-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+.acc-h { font-family: var(--font-name); font-weight: 600; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
+.acc-side { background: var(--tile); border-radius: 14px; padding: 24px; display: grid; gap: 16px; }
+.acc-side .acc-h { margin-bottom: 0; }
+.acc-dl { margin: 0; display: grid; gap: 14px; }
+.acc-dl dt { font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+.acc-dl dd { margin: 2px 0 0; font-weight: 500; overflow-wrap: anywhere; }
+.acc-orders { display: grid; gap: 12px; }
+.acc-order { display: grid; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; background: var(--surface); color: inherit; text-decoration: none; transition: border-color .15s ease, transform .15s ease; }
+.acc-order:hover { border-color: var(--ink); transform: translateY(-1px); }
 .acc-o-top, .acc-o-bot { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.acc-o-top b { font-family: var(--font-name); letter-spacing: .08em; }
 .acc-o-mid { color: var(--muted); font-size: 14px; }
+.acc-o-bot b { font-size: 17px; }
 .acc-o-bot span { color: var(--muted); font-size: 14px; }
-.acc-empty { display: grid; gap: 12px; justify-items: start; }
-.acc-empty p { margin: 0; color: var(--muted); }
+.acc-empty { border: 1px dashed var(--line); border-radius: 12px; padding: 44px 24px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+.acc-empty b { font-family: var(--font-display); font-weight: 500; font-size: 22px; }
+.acc-empty p { margin: 0 0 8px; color: var(--muted); max-width: 34ch; }
 .acc-pw summary { cursor: pointer; font-size: 14px; font-weight: 600; margin-bottom: 12px; }
 .acc-pw[open] { display: grid; gap: 12px; }
-@media (max-width: 800px) { .acc-cols { grid-template-columns: 1fr; } }
+@media (max-width: 800px) { .acc-cols { grid-template-columns: 1fr; gap: 32px; } .acc-hero { gap: 12px; } .acc-hero .btn { padding: 9px 16px; font-size: 14px; } .acc-av { width: 52px; height: 52px; font-size: 22px; } .acc-stats > div { padding: 14px 14px; } }
