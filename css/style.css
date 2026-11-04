@@ -19,8 +19,10 @@ img { max-width: 100%; }
   --bn-ink: #B3213B;
   --bn-scrim: rgba(245, 238, 223, .82);
   color-scheme: light;
-  --font-display: "Instrument Serif", "Times New Roman", Georgia, serif;
-  --font-name: "Cormorant Garamond", "Times New Roman", Georgia, serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-name: "Fraunces", Georgia, "Times New Roman", serif;
+  /* nama toko: tulisan tegak bersambung. Untuk mengganti, ubah baris ini dan nama font di tautan Google Fonts tiap halaman. */
+  --font-brand: "Petit Formal Script", "Snell Roundhand", "Brush Script MT", cursive;
   --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
@@ -50,7 +52,7 @@ body {
   padding-block: 0 56px;
 }
 .wrap { max-width: 1280px; margin: 0 auto; }
-h1, h2, h3 { font-weight: 400; margin: 0; text-wrap: balance; }
+h1, h2, h3 { font-weight: 500; margin: 0; text-wrap: balance; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -58,7 +60,7 @@ button { cursor: pointer; }
 
 /* Kop */
 .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 20px; }
-.brand { font-family: var(--font-display); font-size: 32px; letter-spacing: -.01em; text-decoration: none; color: inherit; }
+.brand { font-family: var(--font-brand); font-weight: 400; font-size: 38px; line-height: 1.1; letter-spacing: 0; text-decoration: none; color: inherit; white-space: nowrap; }
 .nav { display: flex; gap: 32px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; font-weight: 500; }
 .nav a { color: inherit; text-decoration: none; }
 .nav a:hover, .nav a[aria-current] { color: var(--accent); }
@@ -83,7 +85,7 @@ button { cursor: pointer; }
 .ph img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .banner .ph img, #bnImg img { object-position: 50% 52%; }
 .noimg { position: absolute; inset: 0; display: grid; place-content: center; gap: 8px; text-align: center; padding: 20px; }
-.noimg i { font-family: var(--font-display); font-size: clamp(24px, 3vw, 34px); line-height: 1.1; color: var(--ink); opacity: .5; }
+.noimg i { font-family: var(--font-display); font-size: clamp(20px, 2.4vw, 28px); line-height: 1.15; color: var(--ink); opacity: .5; }
 .noimg span { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
 /* Banner */
@@ -91,7 +93,7 @@ button { cursor: pointer; }
 .bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; padding: clamp(18px, 3.5vw, 40px) 24px clamp(40px, 6vw, 90px); text-align: center; display: grid; justify-items: center; gap: 14px;
   background: linear-gradient(to bottom, var(--bn-scrim) 0%, var(--bn-scrim) 45%, transparent 100%); }
 .bn-badge { background: var(--bn-ink); color: #FFFFFF; border-radius: 999px; padding: 6px 22px; font-size: clamp(15px, 2.2vw, 26px); font-weight: 500; }
-.bn-title { font-family: var(--font-display); text-transform: uppercase; color: var(--bn-ink); font-size: clamp(40px, 7.4vw, 100px); line-height: .92; letter-spacing: .005em; max-width: 14ch; }
+.bn-title { font-family: var(--font-display); text-transform: uppercase; color: var(--bn-ink); font-weight: 500; font-size: clamp(30px, 5.6vw, 76px); line-height: 1.02; letter-spacing: .01em; max-width: 16ch; }
 .bn-cta { position: absolute; z-index: 1; left: 0; right: 0; bottom: clamp(16px, 3vw, 36px); display: grid; justify-items: center; }
 
 /* Info */
@@ -103,7 +105,7 @@ button { cursor: pointer; }
 
 /* Menu */
 .menuhead { display: grid; gap: 22px; padding-block: 40px 8px; }
-.menuhead h1, .menuhead h2 { font-family: var(--font-display); font-size: clamp(40px, 6vw, 64px); line-height: 1; letter-spacing: -.02em; }
+.menuhead h1, .menuhead h2 { font-family: var(--font-display); font-size: clamp(32px, 4.4vw, 52px); line-height: 1.05; letter-spacing: -.015em; }
 .tabs { display: flex; flex-wrap: wrap; gap: 10px; }
 .tab { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 9px 18px; font-size: 14px; font-weight: 500; color: var(--ink); white-space: nowrap; }
 .tab:hover { border-color: var(--ink); }
@@ -114,7 +116,7 @@ button { cursor: pointer; }
   .tabs::-webkit-scrollbar { display: none; }
 }
 .cat { margin: 44px 0 18px; text-align: center; }
-.cat h2, .cat h3 { font-family: var(--font-name); font-weight: 600; font-size: 15px; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); }
+.cat h2, .cat h3 { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .26em; text-transform: uppercase; color: var(--accent); }
 
 #menu { padding-block: 48px 0; }
 .car { position: relative; }
@@ -131,7 +133,7 @@ button { cursor: pointer; }
 .stepper { display: inline-flex; align-items: center; background: var(--ink); color: var(--bg); border-radius: 999px; }
 .stepper button { width: 40px; height: 44px; border: 0; background: transparent; color: inherit; font-size: 20px; }
 .stepper output { min-width: 22px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
-.nm { display: block; margin-top: 14px; font-family: var(--font-name); font-weight: 700; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; line-height: 1.3; }
+.nm { display: block; margin-top: 14px; font-family: var(--font-name); font-weight: 600; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; line-height: 1.35; }
 .price { display: block; margin-top: 4px; font-size: 14px; font-variant-numeric: tabular-nums; }
 .item p { margin: 6px auto 0; color: var(--muted); font-size: 13.5px; max-width: 28ch; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -146,7 +148,7 @@ button { cursor: pointer; }
 /* Cara pesan */
 .how { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; padding-block: 80px 24px; }
 .how > div { border-top: 1px solid var(--ink); padding-top: 16px; display: grid; gap: 6px; align-content: start; }
-.how .n { font-family: var(--font-display); font-size: 44px; line-height: 1; color: var(--accent); }
+.how .n { font-family: var(--font-display); font-size: 38px; line-height: 1; color: var(--accent); }
 .how b { font-weight: 600; font-size: 18px; }
 .how span { color: var(--muted); }
 
@@ -160,7 +162,7 @@ footer b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 4
   transform: translateX(100%); visibility: hidden; padding-top: env(safe-area-inset-top, 0px); }
 .drawer.open { transform: none; visibility: visible; }
 .dhead { display: flex; align-items: center; justify-content: space-between; padding: 18px max(20px, env(safe-area-inset-right, 0px)) 14px 22px; border-bottom: 1px solid var(--line); }
-.dhead h2 { font-family: var(--font-display); font-size: 34px; }
+.dhead h2 { font-family: var(--font-display); font-size: 28px; }
 .x { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: transparent; font-size: 18px; }
 .x:hover { border-color: var(--ink); }
 .dbody { overflow-y: auto; padding: 20px max(22px, env(safe-area-inset-right, 0px)) 24px 22px; display: grid; gap: 22px; align-content: start; flex: 1; }
@@ -200,7 +202,7 @@ footer b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 4
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label:has(input:checked) { background: var(--ink); color: var(--bg); }
 .seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
-.dh3 { font-family: var(--font-display); font-size: 26px; }
+.dh3 { font-family: var(--font-display); font-size: 22px; }
 form { display: grid; gap: 14px; }
 .field { display: grid; gap: 5px; min-width: 0; }
 .field label { font-size: 13px; font-weight: 600; }
@@ -212,7 +214,7 @@ form { display: grid; gap: 14px; }
 .dfields { display: grid; gap: 14px; }
 
 .done { border: 1px solid var(--ok); background: var(--ok-soft); border-radius: 8px; padding: 18px; display: grid; gap: 12px; }
-.done h3 { font-family: var(--font-display); font-size: 28px; }
+.done h3 { font-family: var(--font-display); font-size: 24px; }
 .done pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: 13px/1.55 var(--font-body); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 12px; max-height: 220px; overflow: auto; }
 .acts { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -265,7 +267,7 @@ a.item:hover .nm { color: var(--accent); }
 .pd-img { aspect-ratio: 4 / 5; }
 .pd-info { display: grid; gap: 18px; position: sticky; top: calc(var(--hdr, 0px) + 24px); transition: top .28s ease; }
 .pd-info .label { margin: 0 0 -6px; }
-.pd-info h1 { font-family: var(--font-name); font-weight: 700; font-size: clamp(26px, 3.2vw, 38px); letter-spacing: .12em; text-transform: uppercase; line-height: 1.15; }
+.pd-info h1 { font-family: var(--font-name); font-weight: 600; font-size: clamp(24px, 2.8vw, 34px); letter-spacing: .08em; text-transform: uppercase; line-height: 1.15; }
 .pd-price { margin: 0; font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .qtyrow { display: grid; gap: 8px; justify-items: start; }
 .qtyrow .stepper { background: transparent; color: var(--ink); border: 1px solid var(--ink); border-radius: 4px; }
@@ -279,7 +281,7 @@ a.item:hover .nm { color: var(--accent); }
 .pd-meta dt { font-weight: 600; }
 .pd-meta dd { margin: 0; color: var(--muted); }
 .nf { padding-block: 64px; display: grid; gap: 14px; justify-items: start; }
-.nf h1 { font-family: var(--font-display); font-size: clamp(32px, 5vw, 52px); }
+.nf h1 { font-family: var(--font-display); font-size: clamp(28px, 4.2vw, 44px); }
 .nf p { margin: 0; color: var(--muted); }
 #rel { padding-top: 56px; }
 @media (max-width: 900px) {
@@ -314,7 +316,7 @@ a.item:hover .nm { color: var(--accent); }
 
 /* Halaman detail pesanan */
 .co-head { padding-block: 8px 28px; display: grid; gap: 8px; }
-.co-head h1 { font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1; letter-spacing: -.02em; }
+.co-head h1 { font-family: var(--font-display); font-size: clamp(32px, 4.2vw, 48px); line-height: 1.05; letter-spacing: -.015em; }
 .co-head p { margin: 0; color: var(--muted); }
 .co-empty { padding-block: 40px; justify-items: start; }
 .co { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 56px; align-items: start; padding-bottom: 24px; }
@@ -322,7 +324,7 @@ a.item:hover .nm { color: var(--accent); }
 .co-form form { gap: 0; }
 .co-sec { display: grid; gap: 16px; padding-block: 28px; border-top: 1px solid var(--line); }
 .co-sec:first-child { border-top: 0; padding-top: 0; }
-.co-sec h2 { display: flex; align-items: center; gap: 12px; font-family: var(--font-name); font-weight: 700; font-size: 16px; letter-spacing: .14em; text-transform: uppercase; }
+.co-sec h2 { display: flex; align-items: center; gap: 12px; font-family: var(--font-name); font-weight: 600; font-size: 15px; letter-spacing: .12em; text-transform: uppercase; }
 .co-sec h2 .n { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--font-body); font-size: 13px; letter-spacing: 0; }
 .infobox { background: var(--tile); border-radius: 8px; padding: 14px 16px; font-size: 14px; color: var(--muted); }
 .infobox b { color: var(--ink); font-weight: 600; }
@@ -336,7 +338,7 @@ a.item:hover .nm { color: var(--accent); }
 .co-sum { position: sticky; top: 24px; display: grid; gap: 16px; border: 1px solid var(--line); border-radius: 8px; padding: 22px; }
 /* kalau barangnya banyak, daftar di kartu bisa digulir sendiri supaya tombol kirim tetap terlihat di layar */
 .co-sum .lines { max-height: max(120px, calc(100vh - 480px)); overflow-y: auto; padding-right: 4px; }
-.co-sum h2 { font-family: var(--font-display); font-size: 28px; }
+.co-sum h2 { font-family: var(--font-display); font-size: 24px; }
 .co-sum .lines li.cl { grid-template-columns: 52px minmax(0, 1fr) auto; }
 .co-sum .th { width: 52px; height: 64px; }
 .co-sum .sum { border-top: 1px solid var(--line); padding-top: 14px; }
@@ -364,7 +366,7 @@ a.item:hover .nm { color: var(--accent); }
 /* Halaman status pesanan */
 .ord-load { padding-block: 48px; color: var(--muted); }
 .ord-head { padding-block: 8px 20px; display: grid; gap: 6px; }
-.ord-head h1 { font-family: var(--font-name); font-weight: 700; font-size: clamp(30px, 5vw, 48px); letter-spacing: .12em; line-height: 1.1; }
+.ord-head h1 { font-family: var(--font-name); font-weight: 600; font-size: clamp(26px, 4vw, 38px); letter-spacing: .08em; line-height: 1.1; }
 .ord-head .label { margin: 0; }
 .ord-sub { margin: 0; color: var(--muted); }
 .ord-banner { background: var(--tile); border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; }
@@ -377,7 +379,7 @@ a.item:hover .nm { color: var(--accent); }
 .ord-steps li.now { color: var(--ink); font-weight: 700; }
 .ord-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start; }
 .ord-card { border: 1px solid var(--line); border-radius: 8px; padding: 22px; display: grid; gap: 12px; background: var(--surface); }
-.ord-card h2 { font-family: var(--font-name); font-weight: 700; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; }
+.ord-card h2 { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .12em; text-transform: uppercase; }
 .ord-card p { margin: 0; }
 .ord-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .ord-lines li { display: flex; justify-content: space-between; gap: 12px; font-size: 15px; }
@@ -450,13 +452,13 @@ a.backcart { text-decoration: none; color: inherit; }
 
 /* Halaman keranjang */
 .kr-head { padding-block: 8px 24px; display: grid; gap: 10px; }
-.kr-head h1 { font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); line-height: 1; letter-spacing: -.02em; }
+.kr-head h1 { font-family: var(--font-display); font-size: clamp(32px, 4.2vw, 48px); line-height: 1.05; letter-spacing: -.015em; }
 .kr { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 56px; align-items: start; padding-bottom: 48px; }
 .kr-lines { list-style: none; margin: 16px 0 0; padding: 0; border-bottom: 1px solid var(--line); }
 .kr-lines li { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 20px; padding-block: 20px; border-top: 1px solid var(--line); align-items: start; }
 .kr-th .th { width: 96px; height: 120px; border-radius: 4px; }
 .kr-info { display: grid; gap: 8px; justify-items: start; min-width: 0; }
-.kr-name { font-family: var(--font-name); font-weight: 700; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; line-height: 1.3; color: inherit; text-decoration: none; font-variant-numeric: lining-nums; }
+.kr-name { font-family: var(--font-name); font-weight: 600; font-size: 15px; letter-spacing: .1em; text-transform: uppercase; line-height: 1.3; color: inherit; text-decoration: none; font-variant-numeric: lining-nums; }
 .kr-name:hover { color: var(--accent); }
 .kr-unit { color: var(--muted); font-size: 14px; }
 .kr-info .stepper { background: transparent; color: var(--ink); border: 1px solid var(--line); margin-top: 4px; }
@@ -465,7 +467,7 @@ a.backcart { text-decoration: none; color: inherit; }
 .kr-total { font-weight: 700; font-variant-numeric: tabular-nums; }
 .kr-more { display: inline-block; margin-top: 20px; text-decoration: none; }
 .kr-sum { position: sticky; top: calc(var(--hdr, 0px) + 24px); transition: top .28s ease; display: grid; gap: 16px; background: var(--panel); border-radius: 8px; padding: 24px; }
-.kr-sum h2 { font-family: var(--font-display); font-size: 28px; }
+.kr-sum h2 { font-family: var(--font-display); font-size: 24px; }
 .kr-sum .sum { border-top: 0; padding-top: 0; }
 @media (max-width: 900px) {
   .kr { grid-template-columns: 1fr; gap: 32px; }

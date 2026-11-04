@@ -89,6 +89,12 @@ Jumlah produk sebaiknya kelipatan 4 supaya setiap geseran di desktop menampilkan
 Foto produk paling cocok berbentuk tegak (sekitar 600 × 1000 px). Foto yang lebar akan terpotong di kiri dan kanan.
 Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` pada produknya di `data/menu.json`.
 
+## Huruf
+
+- **Judul dan nama produk:** Fraunces (lebar dan hangat). **Teks biasa:** Hanken Grotesk. **Nama toko:** Petit Formal Script (tulisan tegak bersambung).
+- Semuanya dimuat dari Google Fonts lewat tautan di bagian `<head>` tiap halaman.
+- Untuk mengganti gaya nama toko, ubah `--font-brand` di bagian atas `css/style.css`, lalu ganti `Petit+Formal+Script` di tautan Google Fonts pada semua file `.html` (di `owner/index.html` juga). Contoh pengganti yang cocok: Sacramento, Rouge Script, Allison.
+
 ## Mode terang dan gelap
 
 Tombol bulan/matahari di menu atas mengganti mode. Kalau pembeli belum memilih, situs mengikuti
