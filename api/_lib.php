@@ -45,15 +45,15 @@ function sb_auto_featured(array $m) {
 // Koleksi bawaan (contoh): bisa diubah atau dihapus dari dashboard owner.
 function sb_default_collections(array $m) {
     $ids = array_column($m['items'], 'id');
-    $pick = array_values(array_filter(['pk2', 'pk4', 'pk1', 'pk3'], function ($i) use ($ids) { return in_array($i, $ids, true); }));
+    $pick = array_values(array_filter(['pk4', 'pk2', 'kk1', 'kk2', 'ku1'], function ($i) use ($ids) { return in_array($i, $ids, true); }));
     if (!$pick) return [];
     return [[
         'id' => 'christmas', 'title' => 'Perfect for Christmas', 'label' => 'Edisi Natal',
-        'text' => 'Paket dan hampers pilihan untuk meja Natal, kantor, dan hadiah.',
+        'text' => 'Hampers, kue kering, dan kue utuh pilihan untuk meja Natal dan hadiah.',
         'reasons' => [
-            ['t' => 'Pas untuk dihadiahkan', 'd' => 'Pilihan paket dan hampers yang praktis untuk dibagikan.'],
-            ['t' => 'Porsi untuk berbagi', 'd' => 'Isi paket cukup untuk keluarga atau satu tim kecil.'],
-            ['t' => 'Lebih hemat', 'd' => 'Harga paket lebih murah daripada membeli satuan.'],
+            ['t' => 'Pas untuk dihadiahkan', 'd' => 'Hampers dan kue kering yang praktis untuk dibagikan.'],
+            ['t' => 'Porsi untuk berbagi', 'd' => 'Cukup untuk keluarga atau tamu yang datang.'],
+            ['t' => 'Lebih hemat', 'd' => 'Paket hampers lebih murah daripada membeli satuan.'],
         ],
         'img' => in_array('tt3', $ids, true) ? 'images/berry-mousse-cake.jpg' : '',
         'items' => $pick, 'cta' => 'Explore more', 'home' => true, 'layout' => 'auto',
