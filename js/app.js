@@ -3,6 +3,16 @@ const PAGE = document.body.dataset.page || 'home';
 
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
 function mountShell() {
+  if (PAGE === 'checkout') {
+    document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
+      '<header class="top top-min" id="top">' +
+        '<a class="brand" href="index.html" id="shopName">Senja Pastry</a>' +
+        '<button class="backcart" type="button" id="cartBtn" aria-label="Kembali ke keranjang, 0 item">' +
+          '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></button>' +
+      '</header><div class="notice" id="notice" role="status" hidden></div>');
+    document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
+    return;
+  }
   const cur = n => ((PAGE === n || (n === 'products' && PAGE === 'product')) ? ' aria-current="page"' : '');
   document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
     '<header class="top" id="top">' +
@@ -81,8 +91,7 @@ function initInfo() {
     $('bnImg').innerHTML = photo(b.img, CONFIG.shop, 'Foto banner · rasio 16:8');
   }
   const s = storeStatus(), st = $('status');
-  st.textContent = s.text;
-  st.classList.toggle('closed', !s.open);
+  if (st) { st.textContent = s.text; st.classList.toggle('closed', !s.open); }
 }
 
 /* ---- Menu ---- */
@@ -261,7 +270,7 @@ function renderCart() {
   $('dfoot').hidden = !has;
   const badge = $('cartN');
   badge.textContent = t.count > 99 ? '99+' : t.count; badge.hidden = t.count === 0;
-  $('cartBtn').setAttribute('aria-label', 'Shopping Cart, ' + t.count + ' item');
+  $('cartBtn').setAttribute('aria-label', (PAGE === 'checkout' ? 'Kembali ke keranjang, ' : 'Shopping Cart, ') + t.count + ' item');
   updateInCart();
   if (PAGE === 'checkout') renderCheckout();
 }
@@ -375,7 +384,8 @@ document.addEventListener('click', e => {
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
 $('cartBtn').addEventListener('click', openCart);
 let noticeTimer = 0;
-$('loginLink').addEventListener('click', e => {
+const loginLink = $('loginLink');
+if (loginLink) loginLink.addEventListener('click', e => {
   e.preventDefault();
   const n = $('notice');
   n.textContent = 'Fitur login segera hadir. Kamu tetap bisa langsung memesan tanpa akun.';

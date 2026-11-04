@@ -335,3 +335,10 @@ a.item:hover .nm { color: var(--accent); }
   .co { grid-template-columns: 1fr; gap: 32px; }
   .co-sum { position: static; }
 }
+
+/* Header sederhana di halaman detail pesanan */
+.top.top-min { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.backcart { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--ink); border-radius: 999px; background: transparent; padding: 10px 18px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.backcart:hover { background: var(--ink); color: var(--bg); }
+.backcart .cn { min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--bg); font-size: 12px; font-weight: 700; line-height: 20px; text-align: center; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .backcart { padding: 9px 14px; font-size: 13px; } }
