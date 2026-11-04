@@ -63,7 +63,7 @@ function sb_menu($reload = false) {
     sb_config(); // pastikan zona waktu terpasang
     if (!isset($menu['config']['acceptOrders'])) $menu['config']['acceptOrders'] = true;
     if (!isset($menu['config']['closedNote'])) $menu['config']['closedNote'] = '';
-    if (!array_key_exists('quote', $menu['config'])) $menu['config']['quote'] = ['text' => 'Seni rupa ada lima: lukisan, patung, puisi, musik, dan arsitektur, dan cabang utama arsitektur adalah pastry.', 'author' => 'Marie-Antoine Carême', 'role' => 'Pâtissier Prancis, 1783–1833'];
+    if (!array_key_exists('quote', $menu['config'])) $menu['config']['quote'] = ['text' => "Il y a cinq beaux-arts : la peinture, la sculpture, la poésie, la musique, l’architecture, laquelle a pour branche principale la pâtisserie.", 'author' => 'Marie-Antoine Carême', 'role' => 'Pâtissier français, 1783–1833', 'lang' => 'fr'];
     if (!isset($menu['config']['featured']) || !is_array($menu['config']['featured'])) $menu['config']['featured'] = sb_auto_featured($menu);
     // dibaca tanpa kunci: file ditulis lewat rename, jadi isinya selalu utuh
     $stock = is_file(sb_config()['data_path']) ? sb_store_load(sb_config()['data_path'])['stock'] : [];

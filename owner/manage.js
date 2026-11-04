@@ -264,7 +264,8 @@
         '<p class="o-hint">Kalimat dari tokoh yang tampil di bagian bawah beranda. Kosongkan kalimatnya untuk menyembunyikan bagian ini.</p>' +
         '<div class="field"><label for="qText">Kutipan</label><textarea id="qText" rows="3" maxlength="260">' + esc((s.quote || {}).text || '') + '</textarea></div>' +
         '<div class="field"><label for="qAuthor">Nama tokoh</label><input id="qAuthor" maxlength="60" value="' + esc((s.quote || {}).author || '') + '"></div>' +
-        '<div class="field"><label for="qRole">Keterangan (opsional)</label><input id="qRole" maxlength="80" value="' + esc((s.quote || {}).role || '') + '" placeholder="Mis. Pâtissier Prancis, 1783–1833"></div>' +
+        '<div class="field"><label for="qLang">Bahasa kutipan</label><select id="qLang">' + [['', 'Sama dengan situs (Indonesia)'], ['fr', 'Prancis'], ['en', 'Inggris'], ['it', 'Italia'], ['es', 'Spanyol']].map(o => '<option value="' + o[0] + '"' + (((s.quote || {}).lang || '') === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
+        '<div class="field"><label for="qRole">Keterangan (opsional)</label><input id="qRole" maxlength="80" value="' + esc((s.quote || {}).role || '') + '" placeholder="Mis. Pâtissier français, 1783–1833"></div>' +
         '<button class="btn" type="submit">Simpan</button></form>' +
 
       '<form class="o-card2" data-set="hours" novalidate><h2>Jam &amp; hari buka</h2>' +
@@ -326,7 +327,7 @@
     const f = e.target, kind = f.dataset.set, v = id => $(id).value;
     let body = {};
     if (kind === 'info') body = { shop: v('sShop'), address: v('sAddr'), contact: v('sContact'), social: { instagram: v('sIg'), tiktok: v('sTt'), facebook: v('sFb') } };
-    if (kind === 'quote') body = { quote: { text: v('qText'), author: v('qAuthor'), role: v('qRole') } };
+    if (kind === 'quote') body = { quote: { text: v('qText'), author: v('qAuthor'), role: v('qRole'), lang: v('qLang') } };
     if (kind === 'hours') body = { open: Number(v('sOpen')), close: Number(v('sClose')), closedDays: Array.from(f.querySelectorAll('input[name="cday"]:checked')).map(x => Number(x.value)) };
     if (kind === 'delivery') body = { minDelivery: v('sMin'), zones: Array.from(f.querySelectorAll('.o-zone')).map(r => ({ id: r.dataset.zid, label: r.querySelector('[data-z="label"]').value, fee: r.querySelector('[data-z="fee"]').value })) };
     if (kind === 'pay') body = { transfer: { bank: v('sBank'), number: v('sNo'), holder: v('sHolder') }, qris: v('sQris') };

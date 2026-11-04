@@ -208,4 +208,4 @@ Bundle atau produk baru bisa tampil sebagai blok selebar layar di bagian atas be
 
 ## Kutipan di beranda
 
-Di bagian bawah beranda (di atas footer) ada satu kutipan tokoh. Bawaannya kalimat yang sering dikaitkan dengan Marie-Antoine Carême, pâtissier Prancis (1783–1833), dalam terjemahan bebas bahasa Indonesia. Kutipan setua ini sering beredar dengan sedikit perbedaan kata, jadi kalau ingin memakai kutipan lain atau menyesuaikan kata-katanya, ganti dari dashboard owner: **Pengaturan toko**, kartu **Kutipan di beranda** (kalimat, nama tokoh, keterangan). Kosongkan kalimatnya untuk menyembunyikan bagian ini.
+Di bagian bawah beranda (di atas footer) ada satu kutipan tokoh. Bawaannya kalimat yang sering dikaitkan dengan Marie-Antoine Carême, pâtissier Prancis (1783–1833), dalam bahasa aslinya (Prancis). Kutipan setua ini sering beredar dengan sedikit perbedaan kata, jadi kalau ingin memakai kutipan lain atau menyesuaikan kata-katanya, ganti dari dashboard owner: **Pengaturan toko**, kartu **Kutipan di beranda** (kalimat, nama tokoh, bahasa, keterangan). Kosongkan kalimatnya untuk menyembunyikan bagian ini.

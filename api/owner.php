@@ -366,7 +366,7 @@ if ($action === 'settings_save') {
     if (array_key_exists('contact', $in)) $set['contact'] = sb_text($in['contact'], 40);
     if (array_key_exists('quote', $in) && is_array($in['quote'])) {
         $qt = sb_text($in['quote']['text'] ?? '', 260, true);
-        $set['quote'] = $qt === '' ? ['text' => '', 'author' => '', 'role' => ''] : ['text' => $qt, 'author' => sb_text($in['quote']['author'] ?? '', 60), 'role' => sb_text($in['quote']['role'] ?? '', 80)];
+        $set['quote'] = $qt === '' ? ['text' => '', 'author' => '', 'role' => '', 'lang' => ''] : ['text' => $qt, 'author' => sb_text($in['quote']['author'] ?? '', 60), 'role' => sb_text($in['quote']['role'] ?? '', 80), 'lang' => preg_match('/^[a-z]{2,3}$/', (string)($in['quote']['lang'] ?? '')) ? $in['quote']['lang'] : ''];
     }
     if (array_key_exists('social', $in) && is_array($in['social'])) {
         // boleh diisi tautan lengkap (https://…) atau cukup nama akun (@namaakun)

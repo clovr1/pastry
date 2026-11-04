@@ -128,9 +128,10 @@
       "facebook": ""
     },
     "quote": {
-      "text": "Seni rupa ada lima: lukisan, patung, puisi, musik, dan arsitektur, dan cabang utama arsitektur adalah pastry.",
+      "text": "Il y a cinq beaux-arts : la peinture, la sculpture, la poésie, la musique, l’architecture, laquelle a pour branche principale la pâtisserie.",
       "author": "Marie-Antoine Carême",
-      "role": "Pâtissier Prancis, 1783–1833"
+      "role": "Pâtissier français, 1783–1833",
+      "lang": "fr"
     }
   },
   "cats": [

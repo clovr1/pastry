@@ -256,7 +256,7 @@ function featuredHtml() {
 function quoteHtml() {
   const q = CONFIG.quote;
   if (!q || !q.text) return '';
-  return '<figure class="quote"><span class="quote-mark" aria-hidden="true">“</span><blockquote><p>' + esc(q.text) + '</p></blockquote>' +
+  return '<figure class="quote"><span class="quote-mark" aria-hidden="true">“</span><blockquote' + (q.lang ? ' lang="' + esc(q.lang) + '"' : '') + '><p>' + esc(q.text) + '</p></blockquote>' +
     (q.author ? '<figcaption><b>' + esc(q.author) + '</b>' + (q.role ? '<span>' + esc(q.role) + '</span>' : '') + '</figcaption>' : '') + '</figure>';
 }
 function renderHome() {
