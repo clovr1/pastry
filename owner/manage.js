@@ -267,7 +267,7 @@
     }
     if (!b) return;
     const row = b.closest('.o-coll');
-    if (b.dataset.cact === 'new') { st.coll = { isNew: true, id: '', title: '', label: '', text: '', reasons: [{ t: '', d: '' }, { t: '', d: '' }, { t: '', d: '' }], img: '', items: [], cta: 'Order now', home: true, layout: 'auto' }; renderCollections(); window.scrollTo(0, 0); }
+    if (b.dataset.cact === 'new') { st.coll = { isNew: true, id: '', title: '', label: '', text: '', reasons: [{ t: '', d: '' }, { t: '', d: '' }, { t: '', d: '' }], img: '', items: [], cta: 'Explore more', home: true, layout: 'auto' }; renderCollections(); window.scrollTo(0, 0); }
     if (b.dataset.cact === 'edit') {
       const c = JSON.parse(JSON.stringify(st.data.collections.find(x => x.id === row.dataset.cid)));
       while ((c.reasons || []).length < 3) c.reasons.push({ t: '', d: '' });
@@ -290,7 +290,7 @@
           '<span class="o-muted" id="cUp">Foto lebar yang tajam (minimal 1600 px). Kosong = pakai foto produk pertama.</span></div></div>' +
         '<div class="field"><label for="cTitle">Judul (kalimat penawaran)</label><input id="cTitle" maxlength="60" value="' + esc(c.title) + '" placeholder="Perfect for Christmas"></div>' +
         '<div class="two"><div class="field"><label for="cLabel">Label kecil</label><input id="cLabel" maxlength="30" value="' + esc(c.label) + '" placeholder="Edisi Natal"></div>' +
-          '<div class="field"><label for="cCta">Teks tombol</label><input id="cCta" maxlength="24" value="' + esc(c.cta) + '" placeholder="Order now"></div></div>' +
+          '<div class="field"><label for="cCta">Teks tombol</label><input id="cCta" maxlength="24" value="' + esc(c.cta) + '" placeholder="Explore more"></div></div>' +
         '<div class="field"><label for="cText">Kalimat pengantar</label><textarea id="cText" rows="2" maxlength="400">' + esc(c.text) + '</textarea></div>' +
         '<fieldset class="o-feat"><legend>Alasan (kenapa cocok), maksimal 4</legend>' +
           c.reasons.map((r, i) => '<div class="o-reason"><input data-r="t" value="' + esc(r.t) + '" maxlength="50" placeholder="Alasan ' + (i + 1) + ', mis. Pas untuk dihadiahkan" aria-label="Judul alasan ' + (i + 1) + '"><input data-r="d" value="' + esc(r.d) + '" maxlength="160" placeholder="Penjelasan singkat" aria-label="Penjelasan alasan ' + (i + 1) + '"></div>').join('') +

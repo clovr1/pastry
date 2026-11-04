@@ -242,7 +242,7 @@ function featBlock(o, i) {
     '<a class="feat-img ph" href="' + o.href + '" aria-label="' + esc(o.headline) + '">' + photo(o.img, o.headline, 'Foto segera hadir') + (o.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</a>' +
     '<div class="feat-txt">' + (o.label ? '<span class="feat-label">' + esc(o.label) + '</span>' : '') +
       '<h2>' + esc(o.headline) + '</h2>' + (o.text ? '<p>' + esc(o.text) + '</p>' : '') + (o.extra || '') +
-      '<a class="btn feat-cta" href="' + o.href + '">' + esc(o.cta || 'Order now') + '</a></div></section>';
+      '<a class="btn feat-cta" href="' + o.href + '">' + esc(o.cta || (o.kind === 'koleksi' ? 'Explore more' : 'Order now')) + '</a></div></section>';
 }
 /* Sorotan di beranda: koleksi/kampanye (mis. "Perfect for Christmas", dengan alasan-alasannya, menuju halaman koleksi)
    lalu produk launching (menuju halaman produknya). Keduanya diatur owner di dashboard. */
@@ -250,7 +250,7 @@ function featuredHtml() {
   const blocks = [];
   (CONFIG.collections || []).filter(c => c.home).forEach(c => {
     const why = (c.reasons || []).length ? '<ol class="feat-why">' + c.reasons.map(r => '<li><b>' + esc(r.t) + '</b>' + (r.d ? '<span>' + esc(r.d) + '</span>' : '') + '</li>').join('') + '</ol>' : '';
-    blocks.push({ layout: c.layout, headline: c.title, label: c.label, text: c.text, extra: why, cta: c.cta, img: c.img || ((byId((c.items || [])[0]) || {}).img), href: 'koleksi.html?id=' + encodeURIComponent(c.id) });
+    blocks.push({ kind: 'koleksi', layout: c.layout, headline: c.title, label: c.label, text: c.text, extra: why, cta: c.cta, img: c.img || ((byId((c.items || [])[0]) || {}).img), href: 'koleksi.html?id=' + encodeURIComponent(c.id) });
   });
   (CONFIG.featured || []).forEach(f => {
     const it = byId(f.id);

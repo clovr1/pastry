@@ -56,7 +56,7 @@ function sb_default_collections(array $m) {
             ['t' => 'Lebih hemat', 'd' => 'Harga paket lebih murah daripada membeli satuan.'],
         ],
         'img' => in_array('tt3', $ids, true) ? 'images/berry-mousse-cake.jpg' : '',
-        'items' => $pick, 'cta' => 'Order now', 'home' => true, 'layout' => 'auto',
+        'items' => $pick, 'cta' => 'Explore more', 'home' => true, 'layout' => 'auto',
     ]];
 }
 
