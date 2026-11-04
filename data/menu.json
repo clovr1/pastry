@@ -7,8 +7,9 @@
     "banner": {
       "img": "images/banner.jpg",
       "badge": "Dipanggang hari ini",
-      "title": "Pastry segar tiap pagi",
-      "cta": "Pesan sekarang"
+      "title": "Pastry segar",
+      "cta": "Pesan sekarang",
+      "accent": "tiap pagi"
     },
     "open": 7,
     "close": 18,

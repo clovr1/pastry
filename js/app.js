@@ -5,6 +5,12 @@ if (typeof CONFIG === 'undefined') {
 }
 const PAGE = document.body.dataset.page || 'home';
 
+/* Nama toko: kata pertama bertulisan sambung, sisanya huruf besar renggang (mis. "Sweet" + "BITE"). */
+function brandHtml(name) {
+  const w = String(name).trim().split(/\s+/), first = w.shift();
+  return '<span class="b1">' + esc(first) + '</span>' + (w.length ? '<span class="b2">' + esc(w.join(' ')) + '</span>' : '');
+}
+
 /* ---- Mode terang / gelap ---- */
 const THEME_KEY = 'sweetbite-theme';
 const THEME_BTN_HTML = '<button class="themebtn" type="button" id="themeBtn"></button>';
@@ -33,7 +39,7 @@ function mountShell() {
     // halaman detail pesanan: header sederhana; tombol kembali menuju halaman keranjang
     document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
       '<header class="top top-min" id="top">' +
-        '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
+        '<a class="brand" href="index.html" id="shopName">' + brandHtml(CONFIG.shop) + '</a>' +
         '<div class="top-r">' + THEME_BTN_HTML +
         '<a class="backcart" href="keranjang.html" id="cartBtn" aria-label="Kembali ke keranjang, 0 item">' +
           '<span aria-hidden="true">←</span><span>Kembali ke keranjang</span><span class="cn" id="cartN" hidden>0</span></a></div>' +
@@ -45,7 +51,7 @@ function mountShell() {
   // menu atas ditaruh di luar .wrap supaya latarnya bisa selebar layar; ia bersembunyi saat digulir ke bawah (lihat initHeaderHide)
   document.body.insertAdjacentHTML('afterbegin',
     '<div class="topbar" id="topbar"><header class="top" id="top">' +
-      '<a class="brand" href="index.html" id="shopName">Sweet Bite</a>' +
+      '<a class="brand" href="index.html" id="shopName">' + brandHtml(CONFIG.shop) + '</a>' +
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
@@ -137,12 +143,13 @@ function hoursText() {
   return pad(CONFIG.open) + '.00–' + pad(CONFIG.close) + '.00' + (closed ? ' · Tutup ' + closed : '');
 }
 function initInfo() {
-  $('shopName').textContent = CONFIG.shop;
+  $('shopName').innerHTML = brandHtml(CONFIG.shop);
   if (PAGE !== 'product') document.title = (PAGE === 'products' ? 'Product · ' : PAGE === 'checkout' ? 'Detail pesanan · ' : '') + CONFIG.shop;
   if ($('bnImg')) {
     const b = CONFIG.banner;
     $('bnBadge').textContent = b.badge; $('bnBadge').hidden = !b.badge;
-    $('bnTitle').textContent = b.title; $('bnCta').textContent = b.cta;
+    $('bnTitle').innerHTML = esc(b.title) + (b.accent ? ' <span class="bn-script">' + esc(b.accent) + '</span>' : '');
+    $('bnCta').textContent = b.cta;
     $('bnImg').innerHTML = photo(b.img, CONFIG.shop, 'Foto banner · rasio 16:8');
   }
   const s = storeStatus(), st = $('status');

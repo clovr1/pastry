@@ -17,6 +17,7 @@ img { max-width: 100%; }
   --tile: #EBE0CB;
   --panel: #EDE4D1;
   --bn-ink: #B3213B;
+  --bn-text: #211B16;
   --bn-scrim: rgba(245, 238, 223, .82);
   color-scheme: light;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
@@ -60,7 +61,9 @@ button { cursor: pointer; }
 
 /* Kop */
 .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 20px; }
-.brand { font-family: var(--font-brand); font-weight: 400; font-size: 38px; line-height: 1.1; letter-spacing: 0; text-decoration: none; color: inherit; white-space: nowrap; }
+.brand { display: inline-flex; align-items: baseline; gap: 9px; font-family: var(--font-brand); font-weight: 400; line-height: 1.1; letter-spacing: 0; text-decoration: none; color: inherit; white-space: nowrap; }
+.brand .b1 { font-family: var(--font-brand); font-size: 40px; line-height: 1.1; }
+.brand .b2 { font-family: var(--font-display); font-size: 17px; font-weight: 500; letter-spacing: .34em; text-transform: uppercase; }
 .nav { display: flex; gap: 32px; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; font-weight: 500; }
 .nav a { color: inherit; text-decoration: none; }
 .nav a:hover, .nav a[aria-current] { color: var(--accent); }
@@ -90,10 +93,12 @@ button { cursor: pointer; }
 
 /* Banner */
 .banner { aspect-ratio: 16 / 8.2; border-radius: 0; display: block; }
-.bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; padding: clamp(18px, 3.5vw, 40px) 24px clamp(40px, 6vw, 90px); text-align: center; display: grid; justify-items: center; gap: 14px;
-  background: linear-gradient(to bottom, var(--bn-scrim) 0%, var(--bn-scrim) 45%, transparent 100%); }
+.bn-text { position: absolute; z-index: 1; left: 0; right: 0; top: 0; padding: clamp(18px, 3.5vw, 40px) 24px clamp(56px, 8.5vw, 124px); text-align: center; display: grid; justify-items: center; gap: 14px;
+  background: linear-gradient(to bottom, var(--bn-scrim) 0%, var(--bn-scrim) 62%, transparent 100%); }
 .bn-badge { background: var(--bn-ink); color: #FFFFFF; border-radius: 999px; padding: 6px 22px; font-size: clamp(15px, 2.2vw, 26px); font-weight: 500; }
-.bn-title { font-family: var(--font-display); text-transform: uppercase; color: var(--bn-ink); font-weight: 500; font-size: clamp(30px, 5.6vw, 76px); line-height: 1.02; letter-spacing: .01em; max-width: 16ch; }
+.bn-title { font-family: var(--font-display); color: var(--bn-text); font-weight: 500; font-size: clamp(34px, 5.2vw, 70px); line-height: 1.06; letter-spacing: -.01em; max-width: 14ch; text-wrap: balance;
+  text-shadow: 0 0 22px rgba(245, 238, 223, .9), 0 0 8px rgba(245, 238, 223, .8); }
+.bn-script { font-family: var(--font-brand); font-weight: 400; color: var(--bn-ink); text-shadow: 0 0 12px rgba(245, 238, 223, .95), 0 0 4px rgba(245, 238, 223, .9); font-size: 1.3em; line-height: .8; letter-spacing: 0; white-space: nowrap; }
 .bn-cta { position: absolute; z-index: 1; left: 0; right: 0; bottom: clamp(16px, 3vw, 36px); display: grid; justify-items: center; }
 
 /* Info */
@@ -229,7 +234,7 @@ form { display: grid; gap: 14px; }
   .nav a { flex: 1; text-align: center; padding: 12px 0; }
   .status { display: none; }
   .banner { aspect-ratio: 4 / 5; }
-  .bn-title { max-width: 10ch; }
+  .bn-title { max-width: 12ch; }
   .strip { grid-template-columns: 1fr; }
   .strip > div, .strip > div + div { padding: 14px 0; border-left: 0; }
   .strip > div + div { border-top: 1px solid var(--line); }

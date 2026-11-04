@@ -11,6 +11,11 @@
   const label = (s, mode) => ({ baru: 'Baru', dikonfirmasi: 'Dikonfirmasi', disiapkan: 'Disiapkan', siap: mode === 'delivery' ? 'Diantar' : 'Siap diambil', selesai: 'Selesai', dibatalkan: 'Dibatalkan' }[s] || s);
   const NEXT = { baru: ['dikonfirmasi', 'Konfirmasi pesanan'], dikonfirmasi: ['disiapkan', 'Mulai disiapkan'], disiapkan: ['siap', null], siap: ['selesai', 'Tandai selesai'] };
 
+  let SHOP = 'Toko';
+  const brandHtml = name => {
+    const w = String(name).trim().split(/\s+/), first = w.shift();
+    return '<span class="b1">' + esc(first) + '</span>' + (w.length ? '<span class="b2">' + esc(w.join(' ')) + '</span>' : '');
+  };
   const state = { orders: [], counts: {}, filter: 'aktif', q: '', open: new Set(), fresh: new Set(), maxId: 0, first: true, offset: 0, confirm: null, sound: false, timer: 0, busy: false };
   try { state.sound = localStorage.getItem('sweetbite-owner-sound') === '1'; } catch (e) {}
 
@@ -107,7 +112,7 @@
     $('stToday').textContent = d.today.orders;
     $('stRev').textContent = rp(d.today.revenue);
     $('stUnpaid').textContent = d.unpaid;
-    document.title = ((d.counts.baru || 0) ? '(' + d.counts.baru + ') ' : '') + 'Owner · ' + ($('shopName').textContent || 'Toko');
+    document.title = ((d.counts.baru || 0) ? '(' + d.counts.baru + ') ' : '') + 'Owner · ' + SHOP;
   }
 
   function renderFilters() {
@@ -248,7 +253,7 @@
       problem('Server melaporkan masalah', esc(r.data.error || 'Kode ' + r.status) + ' Kalau pesannya soal database, pastikan ekstensi <b>pdo_sqlite</b> aktif di PHP dan folder <b>storage</b> bisa ditulis.');
       return;
     }
-    $('shopName').textContent = r.data.shop;
+    SHOP = r.data.shop; $('shopName').innerHTML = brandHtml(SHOP);
     if (!r.data.configured) { show('setup'); return; }
     if (!r.data.loggedIn) { showLogin(); return; }
     showDash();
