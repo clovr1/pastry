@@ -1,11 +1,27 @@
 # Senja Pastry
 
 Website pemesanan pastry: pelanggan memilih pastry, memilih ambil di toko atau diantar,
-lalu pesanan dikirim ke WhatsApp toko. Satu file `index.html`, tanpa build dan tanpa dependensi.
+lalu pesanan dikirim ke WhatsApp toko. Situs statis (HTML, CSS, JavaScript), tanpa build dan tanpa dependensi.
+
+## Struktur
+
+```
+index.html      Halaman Home (banner dan slider pastry)
+products.html   Halaman Product (semua produk, filter kategori)
+css/style.css   Tampilan untuk semua halaman
+js/data.js      Data toko dan menu: yang paling sering kamu ubah
+js/app.js       Logika bersama (menu atas, keranjang, form pesanan)
+images/         Foto banner dan produk
+```
+
+Menu atas, keranjang, dan form pesanan dibuat oleh `js/app.js`, jadi cukup diubah di satu tempat.
+Isi keranjang disimpan di browser dan ikut berpindah antar halaman.
 
 ## Menjalankan
 
-Buka `index.html` di browser, atau jalankan server lokal:
+Buka lewat server lokal supaya keranjang terbawa antar halaman di semua browser.
+Dengan Laragon, taruh folder ini di `C:\laragon\www` lalu buka `http://localhost/nama-folder/`.
+Atau, kalau Python terpasang:
 
 ```bash
 python3 -m http.server 8000
@@ -15,10 +31,14 @@ Lalu buka http://localhost:8000.
 
 ## Mengubah isi
 
-Semua data ada di bagian `EDIT BAGIAN INI` pada tag `<script>` di `index.html`:
+Semua data ada di `js/data.js`:
 
 - `CONFIG`: nama toko, nomor WhatsApp (format `62…`), alamat, jam buka, hari tutup, ongkir per area, minimal pesanan antar, jam ambil/antar, dan teks banner.
-- `ITEMS`: daftar produk (`name`, `price`, `tag`, `soldOut`, `img`).
+- `ITEMS`: daftar produk (`name`, `desc`, `price`, `tag`, `soldOut`, `img`, `cat`). Deskripsi tampil di halaman Product, tidak di slider.
+- `CATS`: kategori untuk filter di halaman Product. Alamat langsung ke satu kategori, misalnya `products.html#tart`.
+
+Menu atas (Home, Product, Login) ada di fungsi `mountShell()` pada `js/app.js`.
+Login belum berfungsi dan hanya menampilkan pemberitahuan, karena butuh server dan database.
 
 ## Foto
 
@@ -47,7 +67,7 @@ Foto yang belum ada otomatis diganti tempat foto, jadi kamu bisa menambah satu p
 
 Jumlah produk sebaiknya kelipatan 4 supaya setiap geseran di desktop menampilkan 4 produk penuh.
 Foto produk paling cocok berbentuk tegak (sekitar 600 × 1000 px). Foto yang lebar akan terpotong di kiri dan kanan.
-Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` di `ITEMS` pada `index.html`.
+Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` di `ITEMS` pada `js/data.js`.
 
 ## Cara kerja pesanan
 
