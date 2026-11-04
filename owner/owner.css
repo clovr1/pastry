@@ -179,3 +179,8 @@
 .o-pick { display: flex; align-items: center; gap: 8px; font-size: 14.5px; }
 .o-pick small { color: var(--muted); margin-left: auto; }
 @media (max-width: 900px) { .o-coll { grid-template-columns: 56px minmax(0, 1fr); } .o-coll > .o-btn { grid-column: 2; justify-self: start; } .o-reason { grid-template-columns: 1fr; } }
+
+/* Pengaturan toko: kartu tersusun rapat ke dua kolom tanpa celah (menghindari ruang kosong akibat tinggi kartu berbeda) */
+.o-setgrid { display: block; columns: 2 460px; column-gap: 20px; }
+.o-setgrid > .o-card2 { break-inside: avoid; margin-bottom: 20px; }
+@media (max-width: 900px) { .o-setgrid { columns: 1; } }
