@@ -3,7 +3,7 @@ const PAGE = document.body.dataset.page || 'home';
 
 /* ---- Kerangka bersama: menu atas, tombol keranjang, panel pesanan ---- */
 function mountShell() {
-  const cur = n => (PAGE === n ? ' aria-current="page"' : '');
+  const cur = n => ((PAGE === n || (n === 'products' && PAGE === 'product')) ? ' aria-current="page"' : '');
   document.querySelector('.wrap').insertAdjacentHTML('afterbegin',
     '<header class="top" id="top">' +
       '<a class="brand" href="index.html" id="shopName">Senja Pastry</a>' +
@@ -39,8 +39,6 @@ const SHELL_PANEL = `
       </div>
       <div class="nudge" id="nudge" hidden></div>
       <ul class="lines" id="lines"></ul>
-      <div class="sum" id="sum" hidden></div>
-      <button class="btn block" type="button" id="toForm" hidden>Lanjut ke detail pesanan</button>
     </section>
 
     <section class="step" id="stepForm" hidden>
@@ -70,10 +68,6 @@ const SHELL_PANEL = `
           </select>
         </div>
         <div class="field"><label for="note">Catatan</label><textarea id="note" placeholder="Contoh: tanpa kacang, tulis ucapan di box"></textarea></div>
-        <div class="sum" id="sum2"></div>
-        <p class="err" id="err" role="alert" hidden></p>
-        <button class="btn block" type="submit">Siapkan pesanan</button>
-        <p class="hint">Pesanan baru sah setelah kami balas dan konfirmasi di WhatsApp.</p>
       </form>
 
       <div class="done" id="done" hidden>
@@ -86,6 +80,19 @@ const SHELL_PANEL = `
         </div>
       </div>
     </section>
+  </div>
+
+  <div class="dfoot" id="dfoot" hidden>
+    <div id="footCart">
+      <div class="sum" id="sum"></div>
+      <button class="btn block" type="button" id="toForm">Lanjut ke detail pesanan</button>
+    </div>
+    <div id="footForm" hidden>
+      <div class="sum" id="sum2"></div>
+      <p class="err" id="err" role="alert" hidden></p>
+      <button class="btn block" type="submit" form="form">Siapkan pesanan</button>
+      <p class="hint">Pesanan baru sah setelah kami balas dan konfirmasi di WhatsApp.</p>
+    </div>
   </div>
 </aside>
 `;
@@ -113,7 +120,7 @@ function photo(src, name, label) {
 /* ---- Info toko ---- */
 function initInfo() {
   $('shopName').textContent = CONFIG.shop;
-  document.title = (PAGE === 'products' ? 'Product · ' : '') + CONFIG.shop;
+  if (PAGE !== 'product') document.title = (PAGE === 'products' ? 'Product · ' : '') + CONFIG.shop;
   if ($('bnImg')) {
     const b = CONFIG.banner;
     $('bnBadge').textContent = b.badge; $('bnBadge').hidden = !b.badge;
@@ -128,20 +135,12 @@ function initInfo() {
 }
 
 /* ---- Menu ---- */
-function actHtml(it) {
-  if (it.soldOut) return '';
-  const q = state.cart[it.id] || 0;
-  return q > 0
-    ? '<div class="stepper"><button type="button" data-act="dec" data-id="' + it.id + '" aria-label="Kurangi ' + esc(it.name) + '">−</button><output aria-live="polite">' + q + '</output><button type="button" data-act="inc" data-id="' + it.id + '" aria-label="Tambah ' + esc(it.name) + '">+</button></div>'
-    : '<button type="button" class="add" data-act="inc" data-id="' + it.id + '" aria-label="Tambah ' + esc(it.name) + '">+</button>';
-}
 function itemHtml(it, withDesc) {
-  return '<article class="item" data-item="' + it.id + '"><div class="ph">' + photo(it.img, it.name, 'Foto segera hadir') +
+  return '<a class="item" href="product.html?id=' + encodeURIComponent(it.id) + '" data-item="' + it.id + '"><div class="ph">' + photo(it.img, it.name, 'Foto segera hadir') +
     (it.tag ? '<span class="tag">' + esc(it.tag) + '</span>' : '') +
-    (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') +
-    '<div class="act">' + actHtml(it) + '</div></div>' +
+    (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</div>' +
     '<span class="nm">' + esc(it.name) + '</span><span class="price">' + rp(it.price) + '</span>' +
-    (withDesc ? '<p>' + esc(it.desc) + '</p>' : '') + '</article>';
+    (withDesc ? '<p>' + esc(it.desc) + '</p>' : '') + '</a>';
 }
 function renderHome() {
   $('list').innerHTML = '<div class="car"><button type="button" class="arr prev" aria-label="Sebelumnya">‹</button>' +
@@ -157,14 +156,6 @@ function renderProducts() {
     return items.length ? '<div class="cat"><h2>' + c.name + '</h2></div><div class="pgrid">' + items.map(it => itemHtml(it, true)).join('') + '</div>' : '';
   }).join('');
 }
-function updateAct(id) {
-  const it = byId(id), box = document.querySelector('[data-item="' + id + '"] .act');
-  if (!box) return;
-  const had = box.contains(document.activeElement);
-  box.innerHTML = actHtml(it);
-  if (had) { const b = box.querySelector('[data-act="inc"]'); if (b) b.focus(); }
-}
-
 /* ---- Carousel ---- */
 function setupCars() {
   document.querySelectorAll('.car').forEach(car => {
@@ -210,6 +201,53 @@ function setupCars() {
   });
 }
 
+/* ---- Halaman detail produk ---- */
+let prodItem = null, prodQty = 1;
+function updateInCart() {
+  const el = $('inCart');
+  if (!el || !prodItem) return;
+  const n = state.cart[prodItem.id] || 0;
+  el.hidden = !n; el.textContent = 'Sudah ada ' + n + ' di keranjangmu.';
+}
+function renderProduct() {
+  const it = byId(new URLSearchParams(location.search).get('id')), box = $('pd');
+  if (!it) {
+    document.title = 'Produk tidak ditemukan · ' + CONFIG.shop;
+    box.innerHTML = '<div class="nf"><h1>Produk tidak ditemukan</h1><p>Produk yang kamu cari tidak ada atau sudah tidak dijual.</p><a class="btn" href="products.html">Lihat semua produk</a></div>';
+    return;
+  }
+  prodItem = it; prodQty = 1;
+  document.title = it.name + ' · ' + CONFIG.shop;
+  $('crumbName').textContent = it.name;
+  const cat = CATS.find(c => c.id === it.cat), closed = CONFIG.closedDays.map(d => DAYS[d]).join(', ');
+  box.innerHTML = '<div class="pd-img ph">' + photo(it.img, it.name, 'Foto segera hadir') +
+    (it.tag ? '<span class="tag">' + esc(it.tag) + '</span>' : '') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</div>' +
+    '<div class="pd-info"><p class="label">' + esc(cat ? cat.name : '') + '</p><h1>' + esc(it.name) + '</h1><p class="pd-price">' + rp(it.price) + '</p>' +
+    (it.soldOut ? '<p class="soldout">Habis hari ini. Coba lagi besok atau pilih produk lain.</p>' :
+      '<div class="qtyrow"><span class="label">Jumlah</span><div class="stepper q"><button type="button" data-qty="-1" aria-label="Kurangi jumlah">−</button><output id="qty" aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Tambah jumlah">+</button></div></div>' +
+      '<p class="incart" id="inCart" hidden></p><button class="btn block" type="button" id="addBtn">Tambah ke keranjang</button>') +
+    '<p class="pd-desc">' + esc(it.desc) + '</p>' +
+    '<dl class="pd-meta"><div><dt>Ambil di toko</dt><dd>' + esc(CONFIG.address) + '</dd></div>' +
+    '<div><dt>Jam buka</dt><dd>' + pad(CONFIG.open) + '.00–' + pad(CONFIG.close) + '.00' + (closed ? ' · Tutup ' + closed : '') + '</dd></div>' +
+    '<div><dt>Antar</dt><dd>' + esc(CONFIG.deliveryText) + '</dd></div></dl>' +
+    '<p class="hint">Pesanan dikonfirmasi lewat WhatsApp sebelum kamu bayar.</p></div>';
+  const others = ITEMS.filter(i => i.id !== it.id);
+  const rel = others.filter(i => i.cat === it.cat).concat(others.filter(i => i.cat !== it.cat)).slice(0, 4);
+  $('rel').innerHTML = '<div class="cat"><h2>Produk lainnya</h2></div><div class="pgrid">' + rel.map(i => itemHtml(i, false)).join('') + '</div>';
+  updateInCart();
+}
+let addTimer = 0;
+document.addEventListener('click', e => {
+  if (PAGE !== 'product' || !prodItem) return;
+  const q = e.target.closest('[data-qty]');
+  if (q) { prodQty = Math.max(1, Math.min(50, prodQty + Number(q.dataset.qty))); $('qty').textContent = prodQty; return; }
+  if (e.target.closest('#addBtn')) {
+    change(prodItem.id, prodQty);
+    const btn = $('addBtn'); btn.textContent = 'Ditambahkan ✓';
+    clearTimeout(addTimer); addTimer = setTimeout(() => { btn.textContent = 'Tambah ke keranjang'; }, 1600);
+  }
+});
+
 /* ---- Keranjang ---- */
 const mode = () => document.querySelector('input[name="mode"]:checked').value;
 function totals() {
@@ -225,18 +263,25 @@ const sumRows = (t, withFee) => '<div><span>Subtotal</span><span>' + rp(t.sub) +
   (withFee ? '<div class="total"><span>Total</span><span>' + rp(t.total) + '</span></div>' : '');
 const TRUCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4h13v12H1zM14 8h4l4 4v4h-8"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>';
 let step = 'cart';
+// footer panel (ringkasan dan tombol) menempel di bawah; hilang saat keranjang kosong atau pesanan sudah siap dikirim
+function updateFoot() {
+  const has = Object.keys(state.cart).length > 0;
+  $('dfoot').hidden = !(has && $('done').hidden);
+  $('footCart').hidden = step !== 'cart';
+  $('footForm').hidden = step !== 'form';
+}
 function showStep(name) {
   step = name;
   $('stepCart').hidden = name !== 'cart';
   $('stepForm').hidden = name !== 'form';
   $('cartTitle').textContent = name === 'cart' ? 'Shopping Cart' : 'Detail pesanan';
   $('dbody').scrollTop = 0;
+  updateFoot();
 }
 function renderCart() {
   const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
   if (!has && step === 'form') showStep('cart');
   $('emptyMsg').hidden = has;
-  $('toForm').hidden = !has;
   if (!has) $('done').hidden = true;
 
   // pengingat minimal pesanan antar
@@ -258,18 +303,17 @@ function renderCart() {
       '<div class="rt"><button type="button" class="rm" data-act="rm" data-id="' + id + '" aria-label="Hapus ' + esc(it.name) + '">×</button><span class="price">' + rp(it.price * q) + '</span></div></li>';
   }).join('');
 
-  const sum = $('sum');
-  sum.hidden = !has;
-  sum.innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di langkah berikutnya</span></div>';
+  $('sum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di langkah berikutnya</span></div>';
   $('sum2').innerHTML = sumRows(t, true);
   $('cartN').textContent = t.count; $('barCount').textContent = t.count; $('barTotal').textContent = rp(t.sub);
   $('bar').hidden = t.count === 0 || drawerOpen();
+  updateFoot(); updateInCart();
 }
 function change(id, d) {
   const it = byId(id); if (!it || it.soldOut) return;
   const q = Math.max(0, Math.min(50, (state.cart[id] || 0) + d));
   if (q === 0) delete state.cart[id]; else state.cart[id] = q;
-  save(); updateAct(id); renderCart(); $('done').hidden = true;
+  save(); $('done').hidden = true; renderCart();
 }
 
 /* ---- Panel ---- */
@@ -304,7 +348,7 @@ function initForm() {
   $('date').min = today; $('date').value = today;
   buildSlots();
 }
-function syncMode() { $('deliveryFields').hidden = mode() !== 'delivery'; renderCart(); $('done').hidden = true; }
+function syncMode() { $('deliveryFields').hidden = mode() !== 'delivery'; $('done').hidden = true; renderCart(); }
 function showErr(m) { const e = $('err'); e.textContent = m; e.hidden = !m; }
 
 function validate() {
@@ -356,7 +400,7 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
 document.querySelectorAll('input[name="mode"]').forEach(r => r.addEventListener('change', syncMode));
-$('zone').addEventListener('change', () => { renderCart(); $('done').hidden = true; });
+$('zone').addEventListener('change', () => { $('done').hidden = true; renderCart(); });
 $('date').addEventListener('change', buildSlots);
 $('cartBtn').addEventListener('click', openCart);
 $('toForm').addEventListener('click', () => { showStep('form'); $('name').focus({ preventScroll: true }); });
@@ -382,7 +426,7 @@ $('form').addEventListener('submit', e => {
   $('msg').textContent = text;
   $('waShow').textContent = '+' + CONFIG.whatsapp;
   $('waLink').href = 'https://wa.me/' + CONFIG.whatsapp + '?text=' + encodeURIComponent(text);
-  $('done').hidden = false;
+  $('done').hidden = false; updateFoot();
   $('done').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 });
 $('copyBtn').addEventListener('click', () => {
@@ -395,6 +439,7 @@ $('copyBtn').addEventListener('click', () => {
 
 initInfo(); initForm(); syncMode();
 if (PAGE === 'home') renderHome();
+if (PAGE === 'product') renderProduct();
 if (PAGE === 'products') {
   const h = location.hash.slice(1);
   if (CATS.some(c => c.id === h)) state.filter = h;

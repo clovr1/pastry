@@ -8,6 +8,7 @@ lalu pesanan dikirim ke WhatsApp toko. Situs statis (HTML, CSS, JavaScript), tan
 ```
 index.html      Halaman Home (banner dan slider pastry)
 products.html   Halaman Product (semua produk, filter kategori)
+product.html    Halaman detail satu produk, dibuka dari kartu produk (product.html?id=cr1)
 css/style.css   Tampilan untuk semua halaman
 js/data.js      Data toko dan menu: yang paling sering kamu ubah
 js/app.js       Logika bersama (menu atas, keranjang, form pesanan)
@@ -15,7 +16,7 @@ images/         Foto banner dan produk
 ```
 
 Menu atas, keranjang, dan form pesanan dibuat oleh `js/app.js`, jadi cukup diubah di satu tempat.
-Isi keranjang disimpan di browser dan ikut berpindah antar halaman.
+Pembeli menambah pesanan dari halaman detail produk, bukan dari kartu. Isi keranjang disimpan di browser dan ikut berpindah antar halaman.
 
 ## Menjalankan
 
@@ -35,6 +36,7 @@ Semua data ada di `js/data.js`:
 
 - `CONFIG`: nama toko, nomor WhatsApp (format `62…`), alamat, jam buka, hari tutup, ongkir per area, minimal pesanan antar, jam ambil/antar, dan teks banner.
 - `ITEMS`: daftar produk (`name`, `desc`, `price`, `tag`, `soldOut`, `img`, `cat`). Deskripsi tampil di halaman Product, tidak di slider.
+- `id` produk dipakai di alamat halaman detail, jadi jangan diubah-ubah setelah dibagikan.
 - `CATS`: kategori untuk filter di halaman Product. Alamat langsung ke satu kategori, misalnya `products.html#tart`.
 
 Menu atas (Home, Product, Login) ada di fungsi `mountShell()` pada `js/app.js`.
