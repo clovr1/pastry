@@ -101,6 +101,15 @@ Kalau halaman owner atau checkout menampilkan pesan galat, buka
 apakah fitur yang dibutuhkan ada, apakah folder `storage` bisa ditulis, dan apakah kata sandi owner sudah dibuat.
 Ia hanya menjawab dari komputer yang sama. **Hapus file `api/diagnose.php` sebelum situs dipasang di internet.**
 
+## Setelah mengubah file
+
+Tautan CSS dan JavaScript di semua halaman membawa nomor versi (`?v=...`) supaya browser tidak memakai file lama.
+Setelah mengedit `css/` atau `js/`, jalankan ini lalu muat ulang halaman:
+
+```bash
+php tools/bump-version.php
+```
+
 ## Keamanan dan perawatan
 
 - **Kata sandi owner** disimpan sebagai hash di `api/config.php` (tidak masuk GitHub). Setelah 6 kali salah, login dikunci 10 menit.
