@@ -9,6 +9,8 @@ Dibuat dengan HTML, CSS, JavaScript, dan **PHP biasa**. Tidak butuh MySQL atau e
 
 ```
 index.html       Home (banner dan slider pastry)
+masuk.html       Masuk dan daftar akun pembeli
+akun.html        Akun pembeli: riwayat pesanan dan data diri
 products.html    Semua produk, filter kategori
 product.html     Detail satu produk (product.html?id=cr1)
 keranjang.html   Halaman keranjang: ubah jumlah, hapus barang, lanjut ke detail pesanan
@@ -128,3 +130,11 @@ php tools/bump-version.php
 - Pesanan dibatasi 8 per perangkat dalam 10 menit untuk mengurangi pesanan palsu.
 - Kalau situs dipasang di internet, **wajib pakai HTTPS** supaya kata sandi dan data pemesan tidak terkirim terbuka.
 - Halaman owner memakai `noindex`, tapi alamatnya tetap sebaiknya tidak dibagikan.
+
+## Akun pembeli
+
+- Pembeli bisa **daftar** (nama, email, nomor HP, kata sandi minimal 8 karakter) dan **masuk** lewat menu **Login** di `masuk.html`. Setelah masuk, menu berubah jadi **Akun** (`akun.html`) yang berisi riwayat pesanan, ubah data diri, ganti kata sandi, dan keluar.
+- Akun itu **tidak wajib**: pembeli tanpa akun tetap bisa memesan. Kalau sudah masuk, nama dan nomor HP di halaman detail pesanan terisi otomatis dan pesanan tersimpan di akunnya.
+- Data akun disimpan di file yang sama dengan pesanan (`storage/store-*.json`). Kata sandi disimpan sebagai hash (tidak bisa dibaca balik). Login dibatasi 8 percobaan per 10 menit per perangkat.
+- Belum ada fitur "lupa kata sandi" lewat email. Kalau pembeli lupa, ganti dari terminal: `php tools/reset-user-password.php email@pembeli.com`.
+- Sesi login tersimpan di `storage/sessions/` (ikut terlindungi oleh `storage/.htaccess`).

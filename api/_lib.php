@@ -94,7 +94,7 @@ function sb_store_check() {
 }
 
 function sb_store_empty() {
-    return ['seq' => 0, 'orders' => [], 'attempts' => []];
+    return ['seq' => 0, 'orders' => [], 'attempts' => [], 'users' => [], 'useq' => 0];
 }
 
 function sb_store_load($path) {
@@ -108,6 +108,8 @@ function sb_store_load($path) {
         sb_fail(500, 'File data pesanan rusak. Jangan dihapus. Pulihkan dari salinan backup-*.json di folder storage.');
     }
     if (!isset($d['attempts']) || !is_array($d['attempts'])) $d['attempts'] = [];
+    if (!isset($d['users']) || !is_array($d['users'])) $d['users'] = [];
+    if (!isset($d['useq'])) $d['useq'] = 0;
     return $d;
 }
 
@@ -213,18 +215,29 @@ function sb_order_view(array $o, $owner) {
 
 /* ---------- Sesi pemilik toko ---------- */
 
-function sb_session() {
+// Sesi disimpan di storage/sessions (folder tertutup dari web), terpisah untuk owner (sb_owner) dan pembeli (sb_user).
+function sb_session_start($name, $lifetime) {
     if (session_status() === PHP_SESSION_ACTIVE) return;
     $secure = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-    session_name('sb_owner');
+    sb_store_check();
+    $dir = SB_ROOT . '/storage/sessions';
+    if (!is_dir($dir)) @mkdir($dir, 0775, true);
+    if (is_dir($dir) && is_writable($dir)) session_save_path($dir);
+    @ini_set('session.gc_maxlifetime', (string)(31 * 86400));
+    session_name($name);
     session_set_cookie_params([
-        'lifetime' => 0,
+        'lifetime' => $lifetime,
         'path' => '/',
         'secure' => $secure,
         'httponly' => true,
         'samesite' => 'Strict',
     ]);
     session_start();
+}
+
+function sb_session() {
+    if (session_status() === PHP_SESSION_ACTIVE) return;
+    sb_session_start('sb_owner', 0);
     // keluar otomatis kalau tidak ada aktivitas lebih dari 12 jam
     if (!empty($_SESSION['owner']) && isset($_SESSION['t']) && time() - $_SESSION['t'] > 43200) {
         $_SESSION = [];
@@ -241,6 +254,31 @@ function sb_is_owner() {
 
 function sb_require_owner() {
     if (!sb_is_owner()) sb_fail(401, 'Silakan masuk dulu.');
+}
+
+/* ---------- Akun pembeli ---------- */
+
+// Membuka sesi pembeli untuk ditulis (masuk/keluar/ganti data). Dipanggil hanya dari api/user.php.
+function sb_user_session() {
+    sb_session_start('sb_user', 30 * 86400);
+}
+
+// Id pembeli yang sedang masuk (atau 0). Hanya membaca, lalu langsung melepas kunci sesi.
+function sb_user_id() {
+    if (empty($_COOKIE['sb_user'])) return 0;
+    if (session_status() !== PHP_SESSION_ACTIVE) sb_session_start('sb_user', 30 * 86400);
+    $id = (int)($_SESSION['uid'] ?? 0);
+    session_write_close();
+    return $id;
+}
+
+function sb_user_find(array $d, $id) {
+    foreach ($d['users'] as $u) { if ((int)$u['id'] === (int)$id) return $u; }
+    return null;
+}
+
+function sb_user_view(array $u) {
+    return ['name' => $u['name'], 'email' => $u['email'], 'phone' => $u['phone']];
 }
 
 /* ---------- Teks ---------- */

@@ -88,7 +88,8 @@ if (!$payment) sb_fail(422, 'Pilih metode pembayaran.');
 /* --- simpan (dengan batas jumlah pesanan per perangkat, supaya tidak dibanjiri pesanan palsu) --- */
 $publicId = bin2hex(random_bytes(8));
 $ipHash = sb_ip_hash();
-$orderId = sb_store_update(function (&$d) use ($cfg, $now, $ipHash, $publicId, $name, $phone, $mode, $date, $slot, $zoneLabel, $address, $payment, $note, $subtotal, $fee, $lines) {
+$userId = sb_user_id();   // 0 kalau pembeli memesan tanpa akun
+$orderId = sb_store_update(function (&$d) use ($cfg, $now, $ipHash, $userId, $publicId, $name, $phone, $mode, $date, $slot, $zoneLabel, $address, $payment, $note, $subtotal, $fee, $lines) {
     $recent = 0;
     for ($i = count($d['orders']) - 1; $i >= 0; $i--) {
         if ($d['orders'][$i]['created_at'] <= $now - (int)$cfg['order_limit_window']) break;
@@ -105,7 +106,7 @@ $orderId = sb_store_update(function (&$d) use ($cfg, $now, $ipHash, $publicId, $
         'zone_label' => $zoneLabel, 'address' => $address, 'payment' => $payment,
         'note' => $note === '' ? null : $note,
         'subtotal' => $subtotal, 'fee' => $fee, 'total' => $subtotal + $fee,
-        'ip_hash' => $ipHash,
+        'ip_hash' => $ipHash, 'user_id' => $userId ?: null,
         'items' => array_map(function ($l) { return ['id' => $l['id'], 'name' => $l['name'], 'price' => $l['price'], 'qty' => $l['qty']]; }, $lines),
     ];
     return $id;

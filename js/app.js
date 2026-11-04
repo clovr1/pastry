@@ -55,7 +55,7 @@ function mountShell() {
       '<nav class="nav" aria-label="Menu utama">' +
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
-        '<a href="#" id="loginLink">Login</a>' +
+        '<a href="' + (PAGE === 'akun' ? 'akun.html' : 'masuk.html') + '" id="loginLink"' + (PAGE === 'masuk' || PAGE === 'akun' ? ' aria-current="page"' : '') + '>Login</a>' +
       '</nav>' +
       '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML +
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
@@ -450,15 +450,21 @@ $('themeBtn').addEventListener('click', toggleTheme);
 paintThemeBtn();
 // jika pembeli belum memilih sendiri, ikuti perubahan pengaturan sistem
 try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', paintThemeBtn); } catch (e) {}
-let noticeTimer = 0;
-const loginLink = $('loginLink');
-if (loginLink) loginLink.addEventListener('click', e => {
-  e.preventDefault();
-  const n = $('notice');
-  n.textContent = 'Fitur login segera hadir. Kamu tetap bisa langsung memesan tanpa akun.';
-  n.hidden = false;
-  clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { n.hidden = true; }, 4500);
-});
+/* ---- Akun pembeli: tautan "Login" berubah jadi "Akun" kalau sudah masuk ---- */
+const USER_HINT = 'sweetbite-user';
+function paintLogin(user) {
+  const a = $('loginLink');
+  if (!a) return;
+  a.textContent = user ? 'Akun' : 'Login';
+  a.href = user ? 'akun.html' : 'masuk.html';
+}
+function rememberUser(user) { try { user ? sessionStorage.setItem(USER_HINT, '1') : sessionStorage.removeItem(USER_HINT); } catch (e) {} paintLogin(user); }
+try { if (sessionStorage.getItem(USER_HINT)) paintLogin({}); } catch (e) {}   // tebakan awal supaya tautan tidak berkedip
+const authReady = fetch('api/user.php?action=me', { cache: 'no-store' }).then(r => r.json()).then(d => {
+  const user = d && d.loggedIn ? d.user : null;
+  rememberUser(user);
+  return user;
+}).catch(() => null);
 $('closeCart').addEventListener('click', closeCart);
 $('scrim').addEventListener('click', closeCart);
 $('toMenu').addEventListener('click', e => { if (PAGE === 'products') { e.preventDefault(); closeCart(); } });
@@ -499,6 +505,17 @@ if (PAGE === 'checkout') {
 initInfo();
 initHeaderHide();
 if (PAGE === 'checkout') { initForm(); syncMode(); } else { renderCart(); }
+if (PAGE === 'checkout') authReady.then(user => {
+  const note = $('coAcct');
+  if (user) {
+    if (!$('name').value.trim()) $('name').value = user.name;
+    if (!$('phone').value.trim()) $('phone').value = user.phone;
+    note.innerHTML = 'Masuk sebagai <b>' + esc(user.name) + '</b>. Pesanan ini akan tersimpan di <a href="akun.html">akunmu</a>.';
+  } else {
+    note.innerHTML = 'Punya akun? <a href="masuk.html?next=checkout.html">Masuk</a> atau <a href="masuk.html?next=checkout.html#daftar">daftar</a> supaya riwayat pesananmu tersimpan. Tanpa akun pun tetap bisa memesan.';
+  }
+  note.hidden = false;
+});
 if (PAGE === 'home') renderHome();
 if (PAGE === 'product') renderProduct();
 if (PAGE === 'products') {
