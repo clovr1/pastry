@@ -9,13 +9,14 @@ lalu pesanan dikirim ke WhatsApp toko. Situs statis (HTML, CSS, JavaScript), tan
 index.html      Halaman Home (banner dan slider pastry)
 products.html   Halaman Product (semua produk, filter kategori)
 product.html    Halaman detail satu produk, dibuka dari kartu produk (product.html?id=cr1)
+checkout.html   Halaman detail pesanan: data diri, ambil di tempat atau delivery, pembayaran
 css/style.css   Tampilan untuk semua halaman
 js/data.js      Data toko dan menu: yang paling sering kamu ubah
-js/app.js       Logika bersama (menu atas, keranjang, form pesanan)
+js/app.js       Logika bersama (menu atas, keranjang, halaman detail pesanan)
 images/         Foto banner dan produk
 ```
 
-Menu atas, keranjang, dan form pesanan dibuat oleh `js/app.js`, jadi cukup diubah di satu tempat.
+Menu atas dan panel keranjang dibuat oleh `js/app.js`, jadi cukup diubah di satu tempat.
 Pembeli menambah pesanan dari halaman detail produk, bukan dari kartu. Isi keranjang disimpan di browser dan ikut berpindah antar halaman.
 
 ## Menjalankan
