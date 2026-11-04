@@ -18,10 +18,32 @@ Lalu buka http://localhost:8000.
 Semua data ada di bagian `EDIT BAGIAN INI` pada tag `<script>` di `index.html`:
 
 - `CONFIG`: nama toko, nomor WhatsApp (format `62…`), alamat, jam buka, hari tutup, ongkir per area, minimal pesanan antar, jam ambil/antar, dan teks banner.
-- `CONFIG.banner.img`: alamat foto banner (rasio sekitar 16:8).
-- `ITEMS`: daftar produk (`name`, `price`, `tag`, `soldOut`) dan `img` untuk foto produk. Foto produk paling bagus dengan latar polos. Kosongkan `img` untuk menampilkan tempat foto.
+- `ITEMS`: daftar produk (`name`, `price`, `tag`, `soldOut`, `img`).
 
-Taruh foto di folder `images/` lalu isi `img` dengan `images/nama-file.jpg`.
+## Foto
+
+Taruh file foto di folder `images/` dengan nama persis seperti di tabel, format `.jpg`.
+Foto yang belum ada otomatis diganti tempat foto, jadi kamu bisa menambah satu per satu.
+
+| File | Dipakai untuk |
+|---|---|
+| `images/banner.jpg` | Banner di atas (sekitar 1600 × 820 px, bagian atas agak kosong untuk judul) |
+| `images/butter-croissant.jpg` | Butter Croissant |
+| `images/pain-au-chocolat.jpg` | Pain au Chocolat |
+| `images/almond-croissant.jpg` | Almond Croissant |
+| `images/cinnamon-roll.jpg` | Cinnamon Roll |
+| `images/kouign-amann.jpg` | Kouign-Amann |
+| `images/pain-aux-raisins.jpg` | Pain aux Raisins |
+| `images/lemon-tart.jpg` | Lemon Tart |
+| `images/pistachio-eclair.jpg` | Pistachio Éclair |
+| `images/basque-cheesecake-potong.jpg` | Basque Cheesecake (potong) |
+| `images/cookie-box.jpg` | Cookie Box isi 6 |
+| `images/nastar-toples.jpg` | Nastar Toples |
+| `images/basque-cheesecake-15cm.jpg` | Basque Cheesecake 15 cm |
+| `images/lemon-tart-18cm.jpg` | Lemon Tart 18 cm |
+
+Foto produk paling cocok berbentuk tegak (sekitar 600 × 1000 px). Foto yang lebar akan terpotong di kiri dan kanan.
+Usahakan tiap file di bawah 300 KB. Untuk nama file lain, ubah `img` di `ITEMS` pada `index.html`.
 
 ## Cara kerja pesanan
 
