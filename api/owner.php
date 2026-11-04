@@ -6,13 +6,14 @@ require __DIR__ . '/_lib.php';
 
 $action = $_GET['action'] ?? '';
 $cfg = sb_config();
-$db = sb_db();
 $shop = sb_menu()['config']['shop'] ?? 'Toko';
 $configured = $cfg['owner_password_hash'] !== '';
 
 if ($action === 'me') {
     sb_json(['configured' => $configured, 'loggedIn' => $configured && sb_is_owner(), 'shop' => $shop]);
 }
+
+$db = in_array($action, ['login', 'list', 'update'], true) ? sb_db() : null;
 
 if ($action === 'login') {
     sb_require_post();

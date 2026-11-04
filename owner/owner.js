@@ -228,18 +228,30 @@
     load();
     state.timer = setInterval(load, 15000);
   }
+  function problem(title, text) {
+    show('loading');
+    $('loading').innerHTML = '<h1>' + esc(title) + '</h1><p class="o-muted">' + text + '</p>';
+  }
   async function start() {
+    let r;
     try {
-      const r = await api('me');
-      if (!r.ok || !r.data) throw new Error('bad');
-      $('shopName').textContent = r.data.shop;
-      if (!r.data.configured) { show('setup'); return; }
-      if (!r.data.loggedIn) { showLogin(); return; }
-      showDash();
+      r = await api('me');
     } catch (e) {
-      show('loading');
-      $('loading').innerHTML = '<p class="o-muted">Halaman ini perlu dijalankan lewat PHP. Buka lewat Laragon (http://localhost/…), bukan Live Server.</p>';
+      problem('Server tidak bisa dihubungi', 'Pastikan Laragon (Start All) atau server PHP sedang berjalan, lalu buka halaman ini lewat <b>http://localhost/…</b> dan muat ulang.');
+      return;
     }
+    if (!r.data) {
+      problem('PHP belum berjalan', 'Server membalas, tapi bukan dari PHP. Kamu mungkin membuka lewat Live Server atau klik dua kali file. Buka lewat <b>http://localhost/…</b> (Laragon) atau jalankan <b>php -S localhost:8000</b> di folder proyek.');
+      return;
+    }
+    if (!r.ok || r.data.error) {
+      problem('Server melaporkan masalah', esc(r.data.error || 'Kode ' + r.status) + ' Kalau pesannya soal database, pastikan ekstensi <b>pdo_sqlite</b> aktif di PHP dan folder <b>storage</b> bisa ditulis.');
+      return;
+    }
+    $('shopName').textContent = r.data.shop;
+    if (!r.data.configured) { show('setup'); return; }
+    if (!r.data.loggedIn) { showLogin(); return; }
+    showDash();
   }
 
   $('loginForm').addEventListener('submit', async e => {
