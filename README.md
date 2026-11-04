@@ -189,3 +189,7 @@ Kalau ingin mematikan satu efek, hapus aturannya di bagian `/* Animasi */`; kala
 ## Pilihan tanggal, jam, dan area antar
 
 Di halaman detail pesanan, tanggal memakai kalender buatan sendiri (hari libur toko, hari yang jamnya sudah lewat, dan tanggal lebih dari 60 hari ke depan otomatis tidak bisa dipilih), jam berupa tombol, dan area antar berupa kartu pilihan. Tampilannya mengikuti mode terang/gelap. Gayanya ada di bagian `/* Pemilih tanggal, jam, ... */` pada `css/style.css`.
+
+## Rekomendasi "Kamu mungkin suka" di halaman produk
+
+Urutannya dihitung dari kecocokan dengan produk yang sedang dibuka: satu kategori paling berpengaruh; paket dan isinya saling merekomendasikan (produk yang ada di dalam paket muncul di halaman paketnya, dan paket yang berisi produk itu muncul di halaman produknya, dibaca dari daftar "Isi paket"); label Terlaris/Baru dan harga yang mirip menambah nilai; produk yang habis dipindah ke belakang. Ditampilkan sebagai slider 8 produk (4 per halaman, bisa berputar) seperti di beranda. Logikanya ada di fungsi `relatedItems` pada `js/app.js`.

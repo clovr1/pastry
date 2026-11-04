@@ -213,7 +213,11 @@ button { cursor: pointer; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; border: 1px solid var(--line); }
 .seg label { text-align: center; padding: 10px 8px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
-.seg label:has(input:checked) { background: var(--ink); color: var(--bg); }
+.seg { position: relative; }
+.seg::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 6px); border-radius: 999px; background: var(--ink); transition: transform .38s var(--ease); }
+.seg:has(label:nth-child(2) input:checked)::before { transform: translateX(calc(100% + 4px)); }
+.seg label { position: relative; z-index: 1; transition: color .3s ease; }
+.seg label:has(input:checked) { color: var(--bg); }
 .seg label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
 .dh3 { font-family: var(--font-display); font-size: 22px; }
 form { display: grid; gap: 14px; }
@@ -307,8 +311,8 @@ a.item:hover .nm { color: var(--accent); }
 .acc summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 16px 2px; font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; }
 .acc summary::-webkit-details-marker { display: none; }
 .acc summary svg { width: 20px; height: 20px; flex: none; }
-.acc summary::after { content: ""; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); margin-top: -3px; }
-.acc details[open] summary::after { transform: rotate(-135deg); margin-top: 3px; }
+.acc summary::after { content: ""; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-3px) rotate(45deg); transition: transform .35s var(--ease); }
+.acc details[open]:not(.closing) summary::after { transform: translateY(3px) rotate(-135deg); }
 .acc summary:hover { color: var(--accent); }
 .acc-body { padding: 0 2px 20px; color: var(--muted); font-size: 15px; display: grid; gap: 10px; }
 .acc-body p { margin: 0; }
@@ -749,3 +753,15 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .zones .pay input { grid-row: auto; }
 .zones .pay span { color: var(--ink); font-weight: 600; }
 @media (prefers-reduced-motion: no-preference) { .dp-pop { animation: pmIn .25s var(--ease) both; } .dp-btn, .chip, .dp-d { transition: background-color .2s ease, color .2s ease, border-color .2s ease; } }
+
+/* Peralihan halus: kartu pilihan, pesan yang muncul, angka jumlah */
+.pay { transition: border-color .25s ease, background-color .25s ease, box-shadow .25s ease; }
+.pay:has(input:checked) { box-shadow: 0 0 0 1px var(--ink); }
+.acc summary { transition: color .2s ease; }
+@media (prefers-reduced-motion: no-preference) {
+  .infobox:not([hidden]), .hint.warn:not([hidden]), .err:not([hidden]), .done:not([hidden]), .soldout, .incart:not([hidden]) { animation: softIn .35s var(--ease) backwards; }
+  @keyframes softIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  .stepper output.bump, .q output.bump { animation: numBump .3s var(--ease); }
+  @keyframes numBump { 0% { transform: scale(1); } 45% { transform: scale(1.3); } 100% { transform: scale(1); } }
+  .dfields:not([hidden]) .pay, .dfields:not([hidden]) .field { animation: softIn .4s var(--ease) backwards; }
+}

@@ -326,6 +326,46 @@ function hoursLine() {
   const s = storeStatus();
   return '<p class="hours"><span class="sd' + (s.open ? '' : ' off') + '" aria-hidden="true"></span><b>' + s.text + '</b><span>Jam buka ' + hoursText() + '</span></p>';
 }
+/* Animasi buka-tutup (tinggi dan pudar) untuk bagian yang disembunyikan lewat atribut hidden. */
+const EASE = 'cubic-bezier(.22, .61, .36, 1)';
+const reducedMotion = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function slide(el, show, instant) {
+  if (el._anim) { el._anim.cancel(); el._anim = null; el.style.overflow = ''; }
+  if (instant || reducedMotion() || (!show && el.hidden) || (show && !el.hidden)) { el.hidden = !show; return; }
+  if (show) {
+    el.hidden = false;
+    const h = el.offsetHeight;
+    el.style.overflow = 'hidden';
+    el._anim = el.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: 340, easing: EASE });
+    el._anim.onfinish = () => { el.style.overflow = ''; el._anim = null; };
+  } else {
+    const h = el.offsetHeight;
+    el.style.overflow = 'hidden';
+    el._anim = el.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: 260, easing: EASE });
+    el._anim.onfinish = () => { el.hidden = true; el.style.overflow = ''; el._anim = null; };
+  }
+}
+// dropdown (peringatan alergi, delivery, pick up): isi membuka dan menutup dengan halus, bukan langsung muncul
+document.addEventListener('click', e => {
+  const sum = e.target.closest('.acc summary');
+  if (!sum || reducedMotion()) return;
+  const det = sum.parentElement, body = det.querySelector('.acc-body');
+  if (!body) return;
+  e.preventDefault();
+  if (body._a) { body._a.cancel(); body._a = null; body.style.overflow = ''; }
+  if (det.open && !det.classList.contains('closing')) {
+    const h = body.offsetHeight;
+    det.classList.add('closing'); body.style.overflow = 'hidden';
+    body._a = body.animate([{ height: h + 'px', opacity: 1 }, { height: '0px', opacity: 0 }], { duration: 280, easing: EASE });
+    body._a.onfinish = () => { det.open = false; det.classList.remove('closing'); body.style.overflow = ''; body._a = null; };
+  } else {
+    det.classList.remove('closing'); det.open = true;
+    const h = body.offsetHeight;
+    body.style.overflow = 'hidden';
+    body._a = body.animate([{ height: '0px', opacity: 0 }, { height: h + 'px', opacity: 1 }], { duration: 340, easing: EASE });
+    body._a.onfinish = () => { body.style.overflow = ''; body._a = null; };
+  }
+});
 function accordion(it) {
   const slotText = CONFIG.slots.map(s => s.label).join(', ');
   const row = (key, title, body, open) => '<details' + (open ? ' open' : '') + '><summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[key] + '</svg>' + title + '</summary><div class="acc-body">' + body + '</div></details>';
@@ -338,6 +378,25 @@ function accordion(it) {
       '<p>Jam antar: ' + esc(slotText) + '. Pilih tanggal dan jam saat memesan.</p>') +
     row('bag', 'Pick up', '<p>Ambil sendiri di <b>' + esc(CONFIG.address) + '</b>. Tidak ada minimal pesanan.</p><p>Jam ambil: ' + esc(slotText) + '. Pilih tanggal dan jam saat memesan.</p>') +
     '</div>';
+}
+/* Rekomendasi di halaman produk: urut berdasarkan kecocokan dengan produk yang dibuka.
+   Satu kategori paling kuat; paket dan isinya saling merekomendasikan (isi paket dibaca dari daftar "includes");
+   produk "Terlaris"/"Baru" dan harga yang mirip menambah nilai; produk yang habis dipush ke belakang. */
+function relatedItems(it) {
+  const inc = x => (x.includes || []).join(' ').toLowerCase();
+  const mine = inc(it);
+  const scored = ITEMS.filter(o => o.id !== it.id).map((o, idx) => {
+    let sc = 0;
+    if (o.cat === it.cat) sc += 50;
+    if (mine && mine.includes(o.name.toLowerCase())) sc += 90;          // o ada di dalam paket ini
+    if (inc(o).includes(it.name.toLowerCase())) sc += 90;                // paket yang berisi produk ini
+    if (o.tag === 'Terlaris') sc += 15; else if (o.tag === 'Baru') sc += 8;
+    sc += 20 * (1 - Math.min(1, Math.abs(o.price - it.price) / Math.max(it.price, 1)));
+    if (o.soldOut) sc -= 100;
+    return { o, sc, idx };
+  });
+  scored.sort((a, b) => b.sc - a.sc || a.idx - b.idx);
+  return scored.slice(0, 8).map(x => x.o);
 }
 function renderProduct() {
   const it = byId(new URLSearchParams(location.search).get('id')), box = $('pd');
@@ -359,16 +418,18 @@ function renderProduct() {
     hoursLine() + '<p class="pd-desc">' + esc(it.desc) + '</p>' +
     (it.includes && it.includes.length ? '<div class="pd-incl"><span class="label">Isi paket</span><ul>' + it.includes.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' : '') + accordion(it) +
     '<p class="hint">Toko mengonfirmasi pesananmu sebelum kamu membayar.</p></div>';
-  const others = ITEMS.filter(i => i.id !== it.id);
-  const rel = others.filter(i => i.cat === it.cat).concat(others.filter(i => i.cat !== it.cat)).slice(0, 4);
-  $('rel').innerHTML = '<div class="cat"><h2>Produk lainnya</h2></div><div class="pgrid">' + rel.map(i => itemHtml(i, false)).join('') + '</div>';
+  const rel = relatedItems(it);
+  $('rel').innerHTML = '<div class="cat"><h2>Kamu mungkin suka</h2></div><div class="car"><button type="button" class="arr prev" aria-label="Sebelumnya">‹</button>' +
+    '<div class="track">' + rel.map(i => itemHtml(i, false)).join('') + '</div>' +
+    '<button type="button" class="arr next" aria-label="Berikutnya">›</button><div class="dots" aria-hidden="true"></div></div>';
+  setupCars();
   updateInCart();
 }
 let addTimer = 0;
 document.addEventListener('click', e => {
   if (PAGE !== 'product' || !prodItem) return;
   const q = e.target.closest('[data-qty]');
-  if (q) { prodQty = Math.max(1, Math.min(50, prodQty + Number(q.dataset.qty))); $('qty').textContent = prodQty; return; }
+  if (q) { prodQty = Math.max(1, Math.min(50, prodQty + Number(q.dataset.qty))); const o = $('qty'); o.textContent = prodQty; o.classList.remove('bump'); void o.offsetWidth; o.classList.add('bump'); return; }
   if (e.target.closest('#addBtn')) {
     change(prodItem.id, prodQty);
     const btn = $('addBtn'); btn.textContent = 'Ditambahkan ✓';
@@ -572,9 +633,11 @@ function initForm() {
   });
   $('zoneCards').addEventListener('change', e => { $('zone').value = e.target.value; $('zone').dispatchEvent(new Event('change')); });
 }
+let modeInit = true;
 function syncMode() {
-  const d = mode() === 'delivery';
-  $('deliveryFields').hidden = !d; $('pickupInfo').hidden = d;
+  const d = mode() === 'delivery', first = modeInit;
+  modeInit = false;
+  slide($('deliveryFields'), d, first); slide($('pickupInfo'), !d, first);
   hideDone(); renderCart();
 }
 // label tombol di ringkasan: transfer/QRIS bayar dulu, tunai langsung kirim

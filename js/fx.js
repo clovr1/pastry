@@ -11,7 +11,7 @@
 
   /* ---- muncul saat digulir ---- */
   const SEL = ['.hsec-head', '.hsec .item', '.pgrid .item', '.menuhead', '.cat', '.strip > div', '.co-head', '.co-sec', '.kr-head',
-    '.pd-img', '.rel .item', '.ord-head', '.ord-banner', '.ord-steps', '.ord-card', '.acc-hero', '.acc-h', '.acc-vrow', '.acc-order', '.acc-side',
+    '.pd-img', '#rel .item', '.ord-head', '.ord-banner', '.ord-steps', '.ord-card', '.acc-hero', '.acc-h', '.acc-vrow', '.acc-order', '.acc-side',
     '.acc-empty', '.auth', '.foot-in > *', '.foot-bot', '.empty'].join(',');
   let io = null;
   if (!reduced && 'IntersectionObserver' in window) {
