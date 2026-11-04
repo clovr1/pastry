@@ -13,30 +13,35 @@ if ($action === 'me') {
     sb_json(['configured' => $configured, 'loggedIn' => $configured && sb_is_owner(), 'shop' => $shop]);
 }
 
-$db = in_array($action, ['login', 'list', 'update'], true) ? sb_db() : null;
-
 if ($action === 'login') {
     sb_require_post();
     if (!$configured) sb_fail(503, 'Kata sandi owner belum dibuat. Jalankan: php tools/set-owner-password.php');
-    $ip = sb_ip_hash();
-    $now = time();
-    $db->prepare('DELETE FROM login_attempts WHERE at < ?')->execute([$now - 3600]);
-    $st = $db->prepare('SELECT COUNT(*) FROM login_attempts WHERE ip_hash = ? AND at > ?');
-    $st->execute([$ip, $now - 600]);
-    if ((int)$st->fetchColumn() >= 6) sb_fail(429, 'Terlalu banyak percobaan. Coba lagi 10 menit lagi.');
-
     $in = sb_body();
     $pw = is_string($in['password'] ?? null) ? $in['password'] : '';
-    if ($pw === '' || !password_verify($pw, $cfg['owner_password_hash'])) {
-        $db->prepare('INSERT INTO login_attempts (ip_hash, at) VALUES (?, ?)')->execute([$ip, $now]);
-        usleep(400000);
-        sb_fail(401, 'Kata sandi salah.');
-    }
+    $ip = sb_ip_hash();
+    $now = time();
+    $hash = $cfg['owner_password_hash'];
+
+    $result = sb_store_update(function (&$d) use ($ip, $now, $pw, $hash) {
+        // buang catatan percobaan yang sudah lama, lalu hitung yang terbaru dari perangkat ini
+        $d['attempts'] = array_values(array_filter($d['attempts'], function ($a) use ($now) { return $a['at'] > $now - 3600; }));
+        $recent = 0;
+        foreach ($d['attempts'] as $a) { if ($a['ip'] === $ip && $a['at'] > $now - 600) $recent++; }
+        if ($recent >= 6) return 'blocked';
+        if ($pw === '' || !password_verify($pw, $hash)) {
+            $d['attempts'][] = ['ip' => $ip, 'at' => $now];
+            return 'wrong';
+        }
+        $d['attempts'] = array_values(array_filter($d['attempts'], function ($a) use ($ip) { return $a['ip'] !== $ip; }));
+        return 'ok';
+    });
+
+    if ($result === 'blocked') sb_fail(429, 'Terlalu banyak percobaan. Coba lagi 10 menit lagi.');
+    if ($result === 'wrong') { usleep(400000); sb_fail(401, 'Kata sandi salah.'); }
     sb_session();
     session_regenerate_id(true);
     $_SESSION['owner'] = true;
     $_SESSION['t'] = $now;
-    $db->prepare('DELETE FROM login_attempts WHERE ip_hash = ?')->execute([$ip]);
     sb_json(['ok' => true]);
 }
 
@@ -54,25 +59,24 @@ if ($action === 'logout') {
 
 if ($action === 'list') {
     sb_require_owner();
-    $rows = $db->query('SELECT * FROM orders ORDER BY created_at DESC, id DESC LIMIT 300')->fetchAll();
-    $ids = array_map(function ($r) { return (int)$r['id']; }, $rows);
-    $items = sb_items_for($ids);
-    $orders = [];
-    foreach ($rows as $r) $orders[] = sb_order_view($r, $items[(int)$r['id']] ?? [], true);
+    $all = sb_store_read()['orders'];
 
     $counts = array_fill_keys(SB_STATUSES, 0);
-    foreach ($db->query('SELECT status, COUNT(*) AS n FROM orders GROUP BY status')->fetchAll() as $c) $counts[$c['status']] = (int)$c['n'];
-
     $start = strtotime('today');
-    $st = $db->prepare('SELECT COUNT(*) AS n, COALESCE(SUM(total), 0) AS revenue FROM orders WHERE created_at >= ? AND status != "dibatalkan"');
-    $st->execute([$start]);
-    $today = $st->fetch();
-    $unpaid = (int)$db->query('SELECT COUNT(*) FROM orders WHERE paid = 0 AND status NOT IN ("dibatalkan", "selesai")')->fetchColumn();
+    $todayOrders = 0; $revenue = 0; $unpaid = 0;
+    foreach ($all as $o) {
+        if (isset($counts[$o['status']])) $counts[$o['status']]++;
+        if ($o['created_at'] >= $start && $o['status'] !== 'dibatalkan') { $todayOrders++; $revenue += (int)$o['total']; }
+        if (!$o['paid'] && $o['status'] !== 'dibatalkan' && $o['status'] !== 'selesai') $unpaid++;
+    }
+
+    $orders = [];
+    for ($i = count($all) - 1; $i >= 0 && count($orders) < 300; $i--) $orders[] = sb_order_view($all[$i], true);
 
     sb_json([
         'orders' => $orders,
         'counts' => $counts,
-        'today' => ['orders' => (int)$today['n'], 'revenue' => (int)$today['revenue']],
+        'today' => ['orders' => $todayOrders, 'revenue' => $revenue],
         'unpaid' => $unpaid,
         'now' => time(),
     ]);
@@ -83,24 +87,26 @@ if ($action === 'update') {
     sb_require_owner();
     $in = sb_body();
     $id = (int)($in['id'] ?? 0);
-    $st = $db->prepare('SELECT * FROM orders WHERE id = ?');
-    $st->execute([$id]);
-    $row = $st->fetch();
-    if (!$row) sb_fail(404, 'Pesanan tidak ditemukan.');
-
-    $status = $row['status'];
-    $paid = (int)$row['paid'];
+    $newStatus = null;
     if (array_key_exists('status', $in)) {
         if (!is_string($in['status']) || !in_array($in['status'], SB_STATUSES, true)) sb_fail(422, 'Status tidak dikenal.');
-        $status = $in['status'];
+        $newStatus = $in['status'];
     }
-    if (array_key_exists('paid', $in)) $paid = $in['paid'] ? 1 : 0;
+    $hasPaid = array_key_exists('paid', $in);
+    $paid = $hasPaid && $in['paid'] ? 1 : 0;
 
-    $db->prepare('UPDATE orders SET status = ?, paid = ?, updated_at = ? WHERE id = ?')->execute([$status, $paid, time(), $id]);
-    $st->execute([$id]);
-    $row = $st->fetch();
-    $items = sb_items_for([$id]);
-    sb_json(sb_order_view($row, $items[$id] ?? [], true));
+    $updated = sb_store_update(function (&$d) use ($id, $newStatus, $hasPaid, $paid) {
+        foreach ($d['orders'] as &$o) {
+            if ((int)$o['id'] !== $id) continue;
+            if ($newStatus !== null) $o['status'] = $newStatus;
+            if ($hasPaid) $o['paid'] = $paid;
+            $o['updated_at'] = time();
+            return $o;
+        }
+        return null;
+    });
+    if (!$updated) sb_fail(404, 'Pesanan tidak ditemukan.');
+    sb_json(sb_order_view($updated, true));
 }
 
 sb_fail(404, 'Tidak ditemukan.');

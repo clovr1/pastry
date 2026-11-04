@@ -10,48 +10,40 @@ header('Content-Type: text/plain; charset=utf-8');
 header('Cache-Control: no-store');
 
 $yn = function ($v) { return $v ? 'ya' : 'TIDAK'; };
-$extDir = (string)ini_get('extension_dir');
-$ini = php_ini_loaded_file();
 $root = dirname(__DIR__);
 $storage = $root . DIRECTORY_SEPARATOR . 'storage';
+$ini = php_ini_loaded_file();
+$cfgFile = __DIR__ . '/config.php';
+$cfg = is_file($cfgFile) ? include $cfgFile : [];
+$dataFile = is_array($cfg) && !empty($cfg['data_file']) ? basename((string)$cfg['data_file']) : 'store.json';
 
 echo "PERIKSA SERVER SWEET BITE\n";
 echo "=========================\n";
 echo "Versi PHP            : " . PHP_VERSION . ' (' . PHP_SAPI . ")\n";
-echo "php.ini yang dipakai : " . ($ini ? $ini : '(TIDAK ADA, PHP berjalan tanpa php.ini)') . "\n";
-echo "PHP mencari php.ini  : " . (string)get_cfg_var('cfg_file_path') . "\n";
-echo "File ini tambahan    : " . (php_ini_scanned_files() ? trim(str_replace("\n", ' ', (string)php_ini_scanned_files())) : '(tidak ada)') . "\n";
-echo "extension_dir        : " . ($extDir !== '' ? $extDir : '(kosong)') . "\n";
-echo "Folder itu ada       : " . $yn(is_dir($extDir)) . "\n";
-echo "php_pdo_sqlite.dll   : " . $yn(is_file($extDir . DIRECTORY_SEPARATOR . 'php_pdo_sqlite.dll') || is_file($extDir . DIRECTORY_SEPARATOR . 'pdo_sqlite.so')) . " (ada di extension_dir)\n";
-echo "php_sqlite3.dll      : " . $yn(is_file($extDir . DIRECTORY_SEPARATOR . 'php_sqlite3.dll') || is_file($extDir . DIRECTORY_SEPARATOR . 'sqlite3.so')) . " (ada di extension_dir)\n";
-echo "pdo_sqlite aktif     : " . $yn(extension_loaded('pdo_sqlite')) . "\n";
-echo "sqlite3 aktif        : " . $yn(extension_loaded('sqlite3')) . "\n";
-echo "mbstring aktif       : " . $yn(extension_loaded('mbstring')) . " (boleh tidak aktif)\n";
+echo "php.ini yang dipakai : " . ($ini ? $ini : '(tidak ada, PHP berjalan tanpa php.ini. Ini tidak masalah)') . "\n";
+echo "Fitur yang dibutuhkan:\n";
+foreach (['json', 'session', 'hash', 'pcre', 'date'] as $e) {
+    echo "  " . str_pad($e, 8) . ": " . $yn(extension_loaded($e)) . "\n";
+}
+echo "  password_hash : " . $yn(function_exists('password_hash')) . "\n";
+echo "  random_bytes  : " . $yn(function_exists('random_bytes')) . "\n";
+echo "  mbstring      : " . $yn(extension_loaded('mbstring')) . " (boleh tidak aktif)\n";
 echo "Folder storage       : " . $storage . "\n";
 echo "  ada                : " . $yn(is_dir($storage)) . "\n";
 echo "  bisa ditulis       : " . $yn(is_writable($storage)) . "\n";
-echo "api/config.php ada   : " . $yn(is_file(__DIR__ . '/config.php')) . "\n";
-
-if ($ini && is_readable($ini)) {
-    echo "\nBaris penting di php.ini:\n";
-    $found = 0;
-    foreach (file($ini, FILE_IGNORE_NEW_LINES) as $i => $line) {
-        if (preg_match('/^\s*;?\s*(extension_dir|extension\s*=\s*"?(php_)?(pdo_)?sqlite3?)/i', $line)) {
-            echo '  baris ' . ($i + 1) . ': ' . trim($line) . "\n";
-            $found++;
-        }
-    }
-    if (!$found) echo "  (tidak ada baris extension_dir atau sqlite)\n";
-}
+echo "File data pesanan    : " . $dataFile . ' (' . (is_file($storage . DIRECTORY_SEPARATOR . $dataFile) ? filesize($storage . DIRECTORY_SEPARATOR . $dataFile) . ' byte' : 'belum dibuat, muncul setelah ada pesanan') . ")\n";
+echo "api/config.php ada   : " . $yn(is_file($cfgFile)) . "\n";
+echo "Kata sandi owner     : " . $yn(is_array($cfg) && !empty($cfg['owner_password_hash'])) . " (sudah dibuat)\n";
 
 echo "\nKESIMPULAN\n";
-if (extension_loaded('pdo_sqlite') && is_writable($storage)) {
-    echo "Semuanya siap. Muat ulang halaman owner.\n";
-} elseif (!$ini) {
-    echo "Web server memakai PHP tanpa php.ini. Taruh php.ini di folder yang sama dengan PHP yang dipakai Apache, lalu Stop dan Start All.\n";
-} elseif (!extension_loaded('pdo_sqlite')) {
-    echo "php.ini di atas sudah dipakai, tapi pdo_sqlite belum aktif. Pastikan baris extension_dir dan extension=pdo_sqlite di file itu tanpa tanda ';', lalu Stop dan Start All.\n";
+$need = ['json', 'session', 'hash', 'pcre', 'date'];
+$missing = array_filter($need, function ($e) { return !extension_loaded($e); });
+if ($missing) {
+    echo "Fitur PHP yang kurang: " . implode(', ', $missing) . ". Pakai PHP versi lain di Laragon.\n";
+} elseif (!is_dir($storage) || !is_writable($storage)) {
+    echo "Folder storage tidak ada atau tidak bisa ditulis oleh PHP. Beri izin tulis atau pindahkan proyek ke C:\\laragon\\www.\n";
+} elseif (!is_array($cfg) || empty($cfg['owner_password_hash'])) {
+    echo "Server siap, tapi kata sandi owner belum dibuat. Jalankan: php tools/set-owner-password.php\n";
 } else {
-    echo "Folder storage tidak bisa ditulis oleh PHP. Beri izin tulis atau pindahkan proyek ke C:\\laragon\\www.\n";
+    echo "Semuanya siap. Muat ulang halaman owner.\n";
 }

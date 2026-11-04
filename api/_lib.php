@@ -1,49 +1,16 @@
 <?php
 // Fungsi bersama untuk semua endpoint API. Tidak dipanggil langsung dari browser.
+// Penyimpanan memakai satu file JSON (storage/store*.json), jadi tidak butuh ekstensi PHP tambahan.
 if (!defined('SB_API')) { http_response_code(403); exit; }
+
+// Galat PHP tidak boleh tampil ke pembeli: pesannya bisa merusak respons JSON dan membuka detail server.
+@ini_set('display_errors', '0');
+@ini_set('log_errors', '1');
+error_reporting(E_ALL);
 
 define('SB_ROOT', dirname(__DIR__));
 
 const SB_STATUSES = ['baru', 'dikonfirmasi', 'disiapkan', 'siap', 'selesai', 'dibatalkan'];
-
-const SB_SCHEMA = '
-CREATE TABLE IF NOT EXISTS orders (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  public_id TEXT NOT NULL UNIQUE,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  status TEXT NOT NULL DEFAULT "baru",
-  paid INTEGER NOT NULL DEFAULT 0,
-  name TEXT NOT NULL,
-  phone TEXT NOT NULL,
-  mode TEXT NOT NULL,
-  date TEXT NOT NULL,
-  slot TEXT NOT NULL,
-  zone_label TEXT,
-  address TEXT,
-  payment TEXT NOT NULL,
-  note TEXT,
-  subtotal INTEGER NOT NULL,
-  fee INTEGER NOT NULL,
-  total INTEGER NOT NULL,
-  ip_hash TEXT
-);
-CREATE TABLE IF NOT EXISTS order_items (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  item_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  price INTEGER NOT NULL,
-  qty INTEGER NOT NULL
-);
-CREATE TABLE IF NOT EXISTS login_attempts (
-  ip_hash TEXT NOT NULL,
-  at INTEGER NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
-CREATE INDEX IF NOT EXISTS idx_orders_ip ON orders(ip_hash, created_at);
-CREATE INDEX IF NOT EXISTS idx_items_order ON order_items(order_id);
-';
 
 /* ---------- Pengaturan ---------- */
 
@@ -52,7 +19,7 @@ function sb_config() {
     if ($cfg !== null) return $cfg;
     $defaults = [
         'owner_password_hash' => '',
-        'db_path' => SB_ROOT . '/storage/orders.sqlite',
+        'data_file' => 'store.json',
         'timezone' => 'Asia/Jakarta',
         'order_limit_max' => 8,
         'order_limit_window' => 600,
@@ -60,6 +27,7 @@ function sb_config() {
     $file = __DIR__ . '/config.php';
     $user = is_file($file) ? require $file : [];
     $cfg = array_merge($defaults, is_array($user) ? $user : []);
+    $cfg['data_path'] = SB_ROOT . '/storage/' . basename((string)$cfg['data_file']);
     date_default_timezone_set($cfg['timezone']);
     return $cfg;
 }
@@ -109,39 +77,88 @@ function sb_require_post() {
     if (($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') !== 'sb') sb_fail(403, 'Permintaan ditolak.');
 }
 
-/* ---------- Database ---------- */
+/* ---------- Penyimpanan (satu file JSON, dikunci saat dipakai) ---------- */
 
-function sb_db() {
-    static $pdo = null;
-    if ($pdo !== null) return $pdo;
-    $path = sb_config()['db_path'];
-    $dir = dirname($path);
-
-    // Periksa penyebab yang paling sering terjadi, supaya pesannya bisa langsung ditindaklanjuti.
-    if (!extension_loaded('pdo_sqlite')) {
-        sb_fail(500, 'Ekstensi PHP pdo_sqlite belum aktif. Di Laragon: klik kanan ikon Laragon > PHP > Extensions > centang pdo_sqlite dan sqlite3, lalu Stop All dan Start All.');
-    }
+function sb_store_check() {
+    static $ok = false;
+    if ($ok) return;
+    $dir = dirname(sb_config()['data_path']);
     if (!is_dir($dir)) @mkdir($dir, 0775, true);
     if (!is_dir($dir)) {
-        sb_fail(500, 'Folder database tidak ada dan tidak bisa dibuat: ' . basename($dir) . '. Buat folder itu secara manual.');
+        sb_fail(500, 'Folder penyimpanan tidak ada dan tidak bisa dibuat: ' . basename($dir) . '. Buat folder itu secara manual.');
     }
-    if (!is_writable($dir) || (is_file($path) && !is_writable($path))) {
-        sb_fail(500, 'Folder ' . basename($dir) . ' tidak bisa ditulis oleh PHP. Beri izin tulis ke folder itu (klik kanan > Properties > Security) atau pindahkan proyek ke C:\\laragon\\www.');
+    if (!is_writable($dir)) {
+        sb_fail(500, 'Folder ' . basename($dir) . ' tidak bisa ditulis oleh PHP. Beri izin tulis ke folder itu atau pindahkan proyek ke C:\\laragon\\www.');
     }
+    $ok = true;
+}
 
-    try {
-        $pdo = new PDO('sqlite:' . $path);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-        $pdo->exec('PRAGMA busy_timeout = 5000');
-        $pdo->exec('PRAGMA journal_mode = WAL');
-        $pdo->exec('PRAGMA foreign_keys = ON');
-        $pdo->exec(SB_SCHEMA);
-    } catch (Exception $e) {
-        error_log('[sweetbite] database: ' . $e->getMessage());
-        sb_fail(500, 'Database tidak bisa dibuka. Lihat log error PHP (di Laragon: Menu > Logs) untuk detailnya.');
+function sb_store_empty() {
+    return ['seq' => 0, 'orders' => [], 'attempts' => []];
+}
+
+function sb_store_load($path) {
+    if (!is_file($path)) return sb_store_empty();
+    $raw = @file_get_contents($path);
+    if ($raw === false) sb_fail(500, 'Data pesanan tidak bisa dibaca.');
+    if (trim($raw) === '') return sb_store_empty();
+    $d = json_decode($raw, true);
+    if (!is_array($d) || !isset($d['orders'], $d['seq']) || !is_array($d['orders'])) {
+        error_log('[sweetbite] file data rusak: ' . $path);
+        sb_fail(500, 'File data pesanan rusak. Jangan dihapus. Pulihkan dari salinan backup-*.json di folder storage.');
     }
-    return $pdo;
+    if (!isset($d['attempts']) || !is_array($d['attempts'])) $d['attempts'] = [];
+    return $d;
+}
+
+function sb_store_lock($exclusive) {
+    sb_store_check();
+    $fh = @fopen(dirname(sb_config()['data_path']) . '/store.lock', 'c');
+    if (!$fh || !flock($fh, $exclusive ? LOCK_EX : LOCK_SH)) {
+        if ($fh) fclose($fh);
+        sb_fail(500, 'Penyimpanan sedang sibuk. Coba lagi sebentar lagi.');
+    }
+    return $fh;
+}
+
+function sb_store_read() {
+    $fh = sb_store_lock(false);
+    $d = sb_store_load(sb_config()['data_path']);
+    flock($fh, LOCK_UN);
+    fclose($fh);
+    return $d;
+}
+
+// Salinan harian otomatis, disimpan 14 hari, supaya riwayat pesanan tidak hilang kalau file rusak.
+function sb_store_backup($path) {
+    if (!is_file($path)) return;
+    $dir = dirname($path);
+    $copy = $dir . '/backup-' . date('Ymd') . '.json';
+    if (is_file($copy)) return;
+    @copy($path, $copy);
+    foreach (glob($dir . '/backup-*.json') ?: [] as $f) {
+        if (filemtime($f) < time() - 14 * 86400) @unlink($f);
+    }
+}
+
+// Menjalankan $fn($data) dengan file terkunci, lalu menyimpan perubahannya. $fn menerima data lewat reference.
+function sb_store_update($fn) {
+    $fh = sb_store_lock(true);
+    $path = sb_config()['data_path'];
+    $d = sb_store_load($path);
+    $result = $fn($d);
+    $json = json_encode($d, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($json === false) sb_fail(500, 'Data tidak bisa disimpan.');
+    sb_store_backup($path);
+    $tmp = $path . '.tmp';
+    if (@file_put_contents($tmp, $json) === false || !@rename($tmp, $path)) {
+        @unlink($tmp);
+        error_log('[sweetbite] gagal menulis ' . $path);
+        sb_fail(500, 'Pesanan belum tersimpan. Pastikan folder storage bisa ditulis, lalu coba lagi.');
+    }
+    flock($fh, LOCK_UN);
+    fclose($fh);
+    return $result;
 }
 
 function sb_ip_hash() {
@@ -155,23 +172,6 @@ function sb_code($id) {
     return $prefix . '-' . str_pad((string)$id, 4, '0', STR_PAD_LEFT);
 }
 
-function sb_items_for(array $orderIds) {
-    if (!$orderIds) return [];
-    $in = implode(',', array_fill(0, count($orderIds), '?'));
-    $st = sb_db()->prepare("SELECT order_id, item_id, name, price, qty FROM order_items WHERE order_id IN ($in) ORDER BY id");
-    $st->execute(array_values($orderIds));
-    $by = [];
-    foreach ($st->fetchAll() as $r) {
-        $by[$r['order_id']][] = [
-            'id' => $r['item_id'],
-            'name' => $r['name'],
-            'price' => (int)$r['price'],
-            'qty' => (int)$r['qty'],
-        ];
-    }
-    return $by;
-}
-
 function sb_payment_label($id) {
     foreach (sb_menu()['config']['payments'] ?? [] as $p) {
         if ($p['id'] === $id) return $p['label'];
@@ -180,33 +180,33 @@ function sb_payment_label($id) {
 }
 
 // $owner = true menambahkan data pemesan yang hanya perlu dilihat pemilik toko.
-function sb_order_view(array $r, array $items, $owner) {
+function sb_order_view(array $o, $owner) {
     $view = [
-        'code' => sb_code($r['id']),
-        'publicId' => $r['public_id'],
-        'status' => $r['status'],
-        'paid' => (bool)$r['paid'],
-        'mode' => $r['mode'],
-        'date' => $r['date'],
-        'slot' => $r['slot'],
-        'zone' => $r['zone_label'],
-        'address' => $r['address'],
-        'payment' => $r['payment'],
-        'paymentLabel' => sb_payment_label($r['payment']),
-        'note' => $r['note'],
-        'subtotal' => (int)$r['subtotal'],
-        'fee' => (int)$r['fee'],
-        'total' => (int)$r['total'],
-        'createdAt' => (int)$r['created_at'],
-        'updatedAt' => (int)$r['updated_at'],
-        'items' => $items,
+        'code' => sb_code($o['id']),
+        'publicId' => $o['public_id'],
+        'status' => $o['status'],
+        'paid' => (bool)$o['paid'],
+        'mode' => $o['mode'],
+        'date' => $o['date'],
+        'slot' => $o['slot'],
+        'zone' => $o['zone_label'],
+        'address' => $o['address'],
+        'payment' => $o['payment'],
+        'paymentLabel' => sb_payment_label($o['payment']),
+        'note' => $o['note'],
+        'subtotal' => (int)$o['subtotal'],
+        'fee' => (int)$o['fee'],
+        'total' => (int)$o['total'],
+        'createdAt' => (int)$o['created_at'],
+        'updatedAt' => (int)$o['updated_at'],
+        'items' => array_map(function ($i) {
+            return ['id' => $i['id'], 'name' => $i['name'], 'price' => (int)$i['price'], 'qty' => (int)$i['qty']];
+        }, $o['items']),
+        'name' => $o['name'],
     ];
     if ($owner) {
-        $view['id'] = (int)$r['id'];
-        $view['name'] = $r['name'];
-        $view['phone'] = $r['phone'];
-    } else {
-        $view['name'] = $r['name'];
+        $view['id'] = (int)$o['id'];
+        $view['phone'] = $o['phone'];
     }
     return $view;
 }

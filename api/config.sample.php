@@ -5,8 +5,9 @@ return [
     // Hash kata sandi owner. Buat dengan: php -r "echo password_hash('KATA_SANDI_KAMU', PASSWORD_DEFAULT);"
     'owner_password_hash' => '',
 
-    // Lokasi database pesanan (SQLite). Folder storage tidak boleh bisa dibuka dari browser.
-    'db_path' => __DIR__ . '/../storage/orders.sqlite',
+    // Nama file penyimpanan pesanan di folder storage (satu file JSON, tanpa database). Folder storage tidak boleh bisa dibuka dari browser.
+    // set-owner-password.php mengisinya dengan nama acak supaya tidak bisa ditebak.
+    'data_file' => 'store.json',
 
     // Zona waktu toko, dipakai untuk menolak tanggal yang sudah lewat dan menghitung "hari ini".
     'timezone' => 'Asia/Jakarta',

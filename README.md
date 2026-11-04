@@ -3,7 +3,7 @@
 Website pemesanan pastry. Pembeli memilih pastry, memilih ambil di tempat atau delivery, lalu mengirim pesanan.
 Pesanan masuk ke **halaman owner** yang dilindungi kata sandi. Pembeli bisa memantau statusnya di halaman pesanan.
 
-Dibuat dengan HTML, CSS, JavaScript, dan **PHP** (database SQLite, tanpa perlu MySQL).
+Dibuat dengan HTML, CSS, JavaScript, dan **PHP biasa**. Tidak butuh MySQL atau ekstensi PHP tambahan: pesanan disimpan di satu file JSON.
 
 ## Struktur
 
@@ -16,7 +16,7 @@ pesanan.html     Status pesanan untuk pembeli (pesanan.html?id=...)
 owner/           Halaman owner: pesanan masuk, ubah status, tandai lunas
 api/             Backend PHP (menu, buat pesanan, status, owner)
 data/menu.json   Data toko dan menu: yang paling sering kamu ubah
-storage/         Database pesanan (dibuat otomatis, tidak masuk GitHub)
+storage/         Data pesanan dan salinan cadangannya (dibuat otomatis, tidak masuk GitHub)
 tools/           Alat bantu terminal (membuat kata sandi owner)
 css/, js/        Tampilan dan logika
 images/          Foto banner dan produk
@@ -24,7 +24,7 @@ images/          Foto banner dan produk
 
 ## Menjalankan
 
-Situs ini butuh PHP (versi 7.3 atau lebih baru dengan `pdo_sqlite`). Jalankan lewat **Laragon**, bukan Live Server atau klik dua kali file HTML.
+Situs ini butuh PHP versi 7.3 atau lebih baru (tanpa ekstensi tambahan). Jalankan lewat **Laragon**, bukan Live Server atau klik dua kali file HTML.
 
 1. Taruh folder proyek di `C:\laragon\www`, lalu klik **Start All** di Laragon.
 2. Buka `http://localhost/nama-folder/`.
@@ -41,7 +41,7 @@ Tanpa Laragon, bisa juga: `php -S localhost:8000` di folder proyek, lalu buka ht
 ## Cara kerja pesanan
 
 1. Pembeli mengisi **Detail pesanan** dan menekan **Kirim pesanan**. Server memeriksa ulang semuanya (produk, stok, harga, hari tutup, jam, minimal antar) dan menghitung harga sendiri dari `data/menu.json`, jadi harga dari browser tidak dipercaya.
-2. Pesanan disimpan di database dan pembeli diarahkan ke `pesanan.html?id=…`. Tautan itu berisi kode acak yang hanya diketahui pemesannya. Halaman itu menampilkan status dan petunjuk pembayaran, dan diperbarui otomatis tiap 20 detik.
+2. Pesanan disimpan di file `storage/store-….json` dan pembeli diarahkan ke `pesanan.html?id=…`. Tautan itu berisi kode acak yang hanya diketahui pemesannya. Halaman itu menampilkan status dan petunjuk pembayaran, dan diperbarui otomatis tiap 20 detik.
 3. Di halaman owner, pesanan baru muncul otomatis (diperiksa tiap 15 detik). Owner bisa mengonfirmasi, menandai disiapkan, siap, selesai, menandai lunas, atau membatalkan.
 
 Status pesanan: **Baru → Dikonfirmasi → Disiapkan → Siap (diambil/diantar) → Selesai**, atau **Dibatalkan**.
@@ -96,16 +96,17 @@ Warna kedua mode ada di bagian atas `css/style.css`.
 
 ## Pemecahan masalah
 
-Kalau halaman owner atau checkout menampilkan pesan soal database atau ekstensi, buka
-`http://localhost/nama-folder/api/diagnose.php`. Halaman itu menampilkan PHP dan `php.ini` mana yang dipakai web server,
-apakah `pdo_sqlite` aktif, dan apakah folder `storage` bisa ditulis. Ia hanya menjawab dari komputer yang sama.
-**Hapus file `api/diagnose.php` sebelum situs dipasang di internet.**
+Kalau halaman owner atau checkout menampilkan pesan galat, buka
+`http://localhost/nama-folder/api/diagnose.php`. Halaman itu menampilkan PHP mana yang dipakai web server,
+apakah fitur yang dibutuhkan ada, apakah folder `storage` bisa ditulis, dan apakah kata sandi owner sudah dibuat.
+Ia hanya menjawab dari komputer yang sama. **Hapus file `api/diagnose.php` sebelum situs dipasang di internet.**
 
 ## Keamanan dan perawatan
 
 - **Kata sandi owner** disimpan sebagai hash di `api/config.php` (tidak masuk GitHub). Setelah 6 kali salah, login dikunci 10 menit.
-- **Database** ada di `storage/orders.sqlite`. Folder `storage/` dan `data/` dilindungi `.htaccess` (Apache, termasuk Laragon). Kalau memakai Nginx, tolak akses langsung ke dua folder itu di pengaturan server.
-- **Cadangan:** salin file `storage/orders.sqlite` secara berkala. Itu seluruh riwayat pesananmu.
+- **Data pesanan** ada di `storage/store-….json` (nama acak, dibuat oleh `php tools/set-owner-password.php`). Folder `storage/` dan `data/` dilindungi `.htaccess` (Apache, termasuk Laragon). Kalau memakai Nginx, tolak akses langsung ke dua folder itu di pengaturan server.
+- **Cadangan:** setiap hari PHP otomatis menyalin data ke `storage/backup-TANGGAL.json` dan menyimpannya 14 hari. Tetap salin file `store-….json` ke tempat lain secara berkala, karena itu seluruh riwayat pesananmu. Kalau file data rusak, ganti dengan salinan backup terbaru.
+- **Skala:** penyimpanan satu file ini cukup untuk toko kecil (ribuan pesanan). Kalau pesananmu jauh lebih banyak, saatnya pindah ke database sungguhan.
 - Pesanan dibatasi 8 per perangkat dalam 10 menit untuk mengurangi pesanan palsu.
 - Kalau situs dipasang di internet, **wajib pakai HTTPS** supaya kata sandi dan data pemesan tidak terkirim terbuka.
 - Halaman owner memakai `noindex`, tapi alamatnya tetap sebaiknya tidak dibagikan.

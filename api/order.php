@@ -9,15 +9,7 @@ $in = sb_body();
 $menu = sb_menu();
 $cfg = sb_config();
 $C = $menu['config'];
-$db = sb_db();
 $now = time();
-
-/* --- batas jumlah pesanan per perangkat, supaya tidak dibanjiri pesanan palsu --- */
-$st = $db->prepare('SELECT COUNT(*) FROM orders WHERE ip_hash = ? AND created_at > ?');
-$st->execute([sb_ip_hash(), $now - (int)$cfg['order_limit_window']]);
-if ((int)$st->fetchColumn() >= (int)$cfg['order_limit_max']) {
-    sb_fail(429, 'Terlalu banyak pesanan dalam waktu singkat. Coba lagi beberapa menit lagi.');
-}
 
 /* --- data pemesan --- */
 $name = sb_text($in['name'] ?? '', 80);
@@ -93,22 +85,30 @@ $payment = null;
 foreach ($C['payments'] as $p) { if ($p['id'] === ($in['payment'] ?? '')) $payment = $p['id']; }
 if (!$payment) sb_fail(422, 'Pilih metode pembayaran.');
 
-/* --- simpan --- */
+/* --- simpan (dengan batas jumlah pesanan per perangkat, supaya tidak dibanjiri pesanan palsu) --- */
 $publicId = bin2hex(random_bytes(8));
-try {
-    $db->beginTransaction();
-    $ins = $db->prepare('INSERT INTO orders (public_id, created_at, updated_at, status, paid, name, phone, mode, date, slot, zone_label, address, payment, note, subtotal, fee, total, ip_hash)
-        VALUES (?, ?, ?, "baru", 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
-    $ins->execute([$publicId, $now, $now, $name, $phone, $mode, $date, $slot['label'], $zoneLabel, $address, $payment,
-        $note === '' ? null : $note, $subtotal, $fee, $subtotal + $fee, sb_ip_hash()]);
-    $orderId = (int)$db->lastInsertId();
-    $li = $db->prepare('INSERT INTO order_items (order_id, item_id, name, price, qty) VALUES (?, ?, ?, ?, ?)');
-    foreach ($lines as $l) $li->execute([$orderId, $l['id'], $l['name'], $l['price'], $l['qty']]);
-    $db->commit();
-} catch (Exception $e) {
-    if ($db->inTransaction()) $db->rollBack();
-    error_log('[sweetbite] simpan pesanan: ' . $e->getMessage());
-    sb_fail(500, 'Pesanan belum tersimpan. Coba lagi sebentar lagi.');
-}
+$ipHash = sb_ip_hash();
+$orderId = sb_store_update(function (&$d) use ($cfg, $now, $ipHash, $publicId, $name, $phone, $mode, $date, $slot, $zoneLabel, $address, $payment, $note, $subtotal, $fee, $lines) {
+    $recent = 0;
+    for ($i = count($d['orders']) - 1; $i >= 0; $i--) {
+        if ($d['orders'][$i]['created_at'] <= $now - (int)$cfg['order_limit_window']) break;
+        if ($d['orders'][$i]['ip_hash'] === $ipHash) $recent++;
+    }
+    if ($recent >= (int)$cfg['order_limit_max']) {
+        sb_fail(429, 'Terlalu banyak pesanan dalam waktu singkat. Coba lagi beberapa menit lagi.');
+    }
+    $id = ++$d['seq'];
+    $d['orders'][] = [
+        'id' => $id, 'public_id' => $publicId, 'created_at' => $now, 'updated_at' => $now,
+        'status' => 'baru', 'paid' => 0,
+        'name' => $name, 'phone' => $phone, 'mode' => $mode, 'date' => $date, 'slot' => $slot['label'],
+        'zone_label' => $zoneLabel, 'address' => $address, 'payment' => $payment,
+        'note' => $note === '' ? null : $note,
+        'subtotal' => $subtotal, 'fee' => $fee, 'total' => $subtotal + $fee,
+        'ip_hash' => $ipHash,
+        'items' => array_map(function ($l) { return ['id' => $l['id'], 'name' => $l['name'], 'price' => $l['price'], 'qty' => $l['qty']]; }, $lines),
+    ];
+    return $id;
+});
 
 sb_json(['id' => $publicId, 'code' => sb_code($orderId), 'total' => $subtotal + $fee], 201);

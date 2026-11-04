@@ -7,13 +7,14 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'GET') { header('Allow: GET'); sb_fai
 $id = $_GET['id'] ?? '';
 if (!is_string($id) || !preg_match('/^[a-f0-9]{16}$/', $id)) sb_fail(404, 'Pesanan tidak ditemukan.');
 
-$st = sb_db()->prepare('SELECT * FROM orders WHERE public_id = ?');
-$st->execute([$id]);
-$row = $st->fetch();
+$row = null;
+$orders = sb_store_read()['orders'];
+for ($i = count($orders) - 1; $i >= 0; $i--) {
+    if (hash_equals($orders[$i]['public_id'], $id)) { $row = $orders[$i]; break; }
+}
 if (!$row) sb_fail(404, 'Pesanan tidak ditemukan.');
 
-$items = sb_items_for([(int)$row['id']]);
-$view = sb_order_view($row, $items[(int)$row['id']] ?? [], false);
+$view = sb_order_view($row, false);
 
 // Petunjuk pembayaran hanya ditampilkan setelah pesanan ada, dan hilang kalau sudah lunas atau dibatalkan.
 $info = sb_menu()['config']['paymentInfo'] ?? [];
