@@ -813,24 +813,66 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 @media (max-width: 900px) { .foot-in { padding-block: 56px 40px; gap: 40px; } .foot .brand .b1 { font-size: 52px; } }
 @media (max-width: 520px) { .foot-in { gap: 34px; } .foot-brand p { font-size: 17px; } }
 
-/* Sorotan launching di beranda: foto penuh sampai tepi layar di satu sisi, teks di sisi lain */
+/* Sorotan launching di beranda: tiap sorotan punya gaya sendiri (kiri, kanan, penuh, tengah) dan jarak yang jelas antar sorotan */
 html { overflow-x: clip; }
-.feat { display: grid; grid-template-columns: 1fr 1fr; width: 100vw; margin: 72px 0 0 calc(50% - 50vw); min-height: clamp(520px, 52vw, 760px); }
+.feat { display: grid; width: 100vw; margin: 104px 0 0 calc(50% - 50vw); position: relative; }
 .feat:first-child { margin-top: 24px; }
-.feat.flip .feat-img { order: 2; }
 .feat-img { position: relative; display: block; overflow: hidden; background: var(--tile); }
 .feat-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s var(--ease), opacity .7s var(--ease); }
+.feat:hover .feat-img img { transform: scale(1.045); }
 .feat-txt { display: grid; align-content: center; justify-items: start; gap: 20px; padding: clamp(32px, 6vw, 120px); }
 .feat-label { font-size: 12.5px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
-.feat-txt h2 { font-family: var(--font-body); font-weight: 400; text-transform: uppercase; letter-spacing: .08em; font-size: clamp(30px, 3.7vw, 54px); line-height: 1.12; text-wrap: balance; }
+.feat-txt h2 { font-weight: 400; line-height: 1.12; text-wrap: balance; }
 .feat-txt p { margin: 0; color: var(--ink); font-size: 18px; line-height: 1.65; max-width: 46ch; }
 .feat-price { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 15px; }
 .feat-price b { font-weight: 600; color: var(--ink); font-size: 17px; }
 .feat-price span { font-weight: 600; color: var(--accent); }
 .feat-cta { background: transparent; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 14px 28px; font-size: 12.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; margin-top: 6px; transition: background-color .25s ease, color .25s ease; }
 .feat-cta:hover { background: var(--accent); color: #fff; opacity: 1; transform: none; }
-.feat:hover .feat-img img { transform: scale(1.045); }
-@media (max-width: 900px) { .feat { grid-template-columns: 1fr; min-height: 0; margin-top: 56px; } .feat.flip .feat-img { order: 0; } .feat-img { aspect-ratio: 4 / 3; } .feat-txt { padding: 32px 24px 8px; } .feat-txt p { font-size: 17px; } }
+
+/* 1. kiri: foto di kiri, teks di kanan, latar halaman, judul huruf besar tipis */
+.v-kiri, .v-kanan { grid-template-columns: 1fr 1fr; min-height: clamp(520px, 50vw, 740px); }
+.v-kiri h2 { font-family: var(--font-body); text-transform: uppercase; letter-spacing: .08em; font-size: clamp(30px, 3.7vw, 54px); }
+
+/* 2. kanan: foto di kanan, teks di kiri di atas pita berwarna, judul serif besar */
+.v-kanan { background: var(--tile); }
+.v-kanan .feat-img { order: 2; }
+.v-kanan h2 { font-family: var(--font-display); font-weight: 500; letter-spacing: -.02em; font-size: clamp(36px, 4.6vw, 68px); line-height: 1.02; }
+.v-kanan .feat-label { color: var(--accent); }
+
+/* 3. penuh: foto memenuhi lebar layar, teks putih di atas foto */
+.v-penuh { grid-template: 1fr / 1fr; min-height: clamp(560px, 46vw, 720px); }
+.v-penuh .feat-img, .v-penuh .feat-txt { grid-area: 1 / 1; }
+.v-penuh .feat-img::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to right, rgba(18, 10, 6, .6) 0%, rgba(18, 10, 6, .25) 50%, rgba(18, 10, 6, 0) 80%), linear-gradient(to top, rgba(18, 10, 6, .7) 0%, rgba(18, 10, 6, .15) 50%, rgba(18, 10, 6, 0) 100%); pointer-events: none; }
+.v-penuh .feat-txt { position: relative; z-index: 1; align-content: end; padding-block: clamp(40px, 6vw, 88px); pointer-events: none; }
+.v-penuh .feat-txt > * { pointer-events: auto; color: #fff; }
+.v-penuh .feat-label { letter-spacing: .24em; }
+.v-penuh h2 { font-family: var(--font-body); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; font-size: clamp(34px, 5vw, 76px); max-width: 16ch; }
+.v-penuh .feat-txt p { color: rgba(255, 255, 255, .92); }
+.v-penuh .feat-price { color: rgba(255, 255, 255, .8); }
+.v-penuh .feat-price b { color: #fff; }
+.v-penuh .feat-price span { color: #FFD9DF; }
+.v-penuh .feat-cta { color: #fff; border-color: rgba(255, 255, 255, .9); }
+.v-penuh .feat-cta:hover { background: #fff; color: #1a120c; }
+
+/* 4. tengah: foto lebar di atas, teks di tengah di bawahnya */
+.v-tengah { grid-template-columns: 1fr; }
+.v-tengah .feat-img { height: clamp(300px, 34vw, 520px); }
+.v-tengah .feat-txt { justify-items: center; text-align: center; max-width: 760px; margin: 0 auto; padding-block: clamp(40px, 5vw, 72px) 0; }
+.v-tengah h2 { font-family: var(--font-brand); font-weight: 400; font-size: clamp(44px, 5.8vw, 84px); line-height: 1; letter-spacing: 0; }
+.v-tengah .feat-price { justify-content: center; }
+
+@media (max-width: 900px) {
+  .feat { margin-top: 72px; }
+  .v-kiri, .v-kanan { grid-template-columns: 1fr; min-height: 0; }
+  .v-kanan .feat-img { order: 0; }
+  .v-kiri .feat-img, .v-kanan .feat-img { aspect-ratio: 4 / 3; }
+  .v-kiri .feat-txt, .v-kanan .feat-txt { padding: 32px 24px 40px; }
+  .v-penuh { min-height: 560px; }
+  .v-penuh .feat-txt { padding: 32px 24px 36px; }
+  .v-tengah .feat-txt { padding: 32px 24px 0; }
+  .feat-txt p { font-size: 17px; }
+}
 
 /* Kartu produk tidak lagi bergeser naik-turun saat digulir: hanya memudar. Efek membesar saat disorot tetap hidup walau halaman sedang digulir. */
 @media (prefers-reduced-motion: no-preference) {

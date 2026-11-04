@@ -234,12 +234,14 @@ function itemHtml(it, withDesc) {
 }
 /* Sorotan launching (bundle atau produk baru): gambar besar di satu sisi, teks dan tombol "Explore more" di sisi lain.
    Diatur owner di dashboard (config.featured). Posisi gambar bergantian kiri/kanan. */
+const FEAT_AUTO = ['kiri', 'penuh', 'kanan', 'tengah'];   // urutan gaya kalau owner tidak memilih sendiri
 function featuredHtml() {
   return (CONFIG.featured || []).map((f, i) => {
     const it = byId(f.id);
     if (!it) return '';
+    const lay = ['kiri', 'kanan', 'penuh', 'tengah'].includes(f.layout) ? f.layout : FEAT_AUTO[i % FEAT_AUTO.length];
     const headline = f.headline || it.name, text = f.text || it.desc || '', href = 'product.html?id=' + encodeURIComponent(it.id);
-    return '<section class="feat' + (i % 2 ? ' flip' : '') + '" aria-label="' + esc(headline) + '">' +
+    return '<section class="feat v-' + lay + '" aria-label="' + esc(headline) + '">' +
       '<a class="feat-img ph" href="' + href + '" aria-label="' + esc(it.name) + '">' + photo(it.img, it.name, 'Foto segera hadir') + (it.soldOut ? '<div class="so">Habis hari ini</div>' : '') + '</a>' +
       '<div class="feat-txt">' + (f.label ? '<span class="feat-label">' + esc(f.label) + '</span>' : '') +
         '<h2>' + esc(headline) + '</h2>' + (text ? '<p>' + esc(text) + '</p>' : '') +
