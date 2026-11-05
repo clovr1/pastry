@@ -49,13 +49,20 @@ function sb_default_collections(array $m) {
     if (!$pick) return [];
     return [[
         'id' => 'christmas', 'title' => 'Perfect for Christmas', 'label' => 'Edisi Natal',
-        'text' => 'Hampers, kue kering, dan kue utuh pilihan untuk meja Natal dan hadiah.',
+        'text' => 'Natal itu soal berkumpul dan berbagi. Kami memilih hampers, kue kering, dan kue utuh yang mudah dibawa, mudah dibagi, dan enak dinikmati bersama.',
         'reasons' => [
             ['t' => 'Pas untuk dihadiahkan', 'd' => 'Hampers dan kue kering yang praktis untuk dibagikan.'],
             ['t' => 'Porsi untuk berbagi', 'd' => 'Cukup untuk keluarga atau tamu yang datang.'],
             ['t' => 'Lebih hemat', 'd' => 'Paket hampers lebih murah daripada membeli satuan.'],
         ],
         'img' => is_file(SB_ROOT . '/images/christmas.webp') ? 'images/christmas.webp' : '',
+        'notes' => array_intersect_key([
+            'pk4' => 'Cookie box dan nastar dalam satu paket, tinggal diberikan sebagai bingkisan Natal. Pesan H-2.',
+            'pk2' => 'Kue dan tart untuk dinikmati berdua di malam Natal.',
+            'kk1' => 'Tiga rasa untuk dibagi di meja tamu: choco chip, oat raisin, dan brown butter.',
+            'kk2' => 'Nastar selai nanas buatan sendiri, camilan klasik untuk tamu yang berkunjung. Pesan H-2.',
+            'ku1' => 'Satu kue utuh untuk 6–8 potong, pas sebagai penutup makan malam keluarga. Pesan H-2.',
+        ], array_flip($pick)),
         'items' => $pick, 'cta' => 'Explore more', 'home' => true, 'layout' => 'auto',
     ]];
 }

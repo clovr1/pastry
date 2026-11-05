@@ -380,13 +380,19 @@ if ($action === 'collection_save') {
     $items = [];
     foreach (is_array($in['items'] ?? null) ? $in['items'] : [] as $i) { if (is_string($i) && in_array($i, $known, true) && !in_array($i, $items, true)) $items[] = $i; }
     if (!$items) sb_fail(422, 'Pilih minimal satu produk untuk koleksi ini.');
+    $notes = [];
+    foreach (is_array($in['notes'] ?? null) ? $in['notes'] : [] as $nid => $nt) {
+        if (!in_array((string)$nid, $items, true)) continue;
+        $nt = sb_text(is_string($nt) ? $nt : '', 180);
+        if ($nt !== '') $notes[(string)$nid] = $nt;
+    }
     $cta = sb_text($in['cta'] ?? '', 24);
     $layout = in_array($in['layout'] ?? '', ['auto', 'kiri', 'kanan', 'penuh', 'tengah'], true) ? $in['layout'] : 'auto';
     $home = !empty($in['home']);
     $oldImg = null; $savedId = '';
-    $res = sb_menu_update(function (&$m) use ($id, $title, $label, $text, $reasons, $img, $items, $cta, $layout, $home, &$oldImg, &$savedId) {
+    $res = sb_menu_update(function (&$m) use ($id, $title, $label, $text, $reasons, $img, $items, $notes, $cta, $layout, $home, &$oldImg, &$savedId) {
         $list = isset($m['config']['collections']) && is_array($m['config']['collections']) ? $m['config']['collections'] : sb_default_collections($m);
-        $row = ['id' => $id, 'title' => $title, 'label' => $label, 'text' => $text, 'reasons' => $reasons, 'img' => $img, 'items' => $items, 'cta' => $cta, 'home' => $home, 'layout' => $layout];
+        $row = ['id' => $id, 'title' => $title, 'label' => $label, 'text' => $text, 'reasons' => $reasons, 'img' => $img, 'items' => $items, 'notes' => (object)$notes, 'cta' => $cta, 'home' => $home, 'layout' => $layout];
         $found = false;
         foreach ($list as $k => $c) {
             if ($id !== '' && $c['id'] === $id) { $oldImg = $c['img'] ?? null; $list[$k] = $row; $found = true; }

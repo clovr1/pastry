@@ -293,7 +293,11 @@ function renderCollection() {
     '<section class="coll-hero ph">' + photo(img, c.title, '') + '<div class="coll-hero-txt">' + (c.label ? '<span class="feat-label">' + esc(c.label) + '</span>' : '') + '<h1>' + esc(c.title) + '</h1>' + (c.text ? '<p>' + esc(c.text) + '</p>' : '') + '</div></section>' +
     ((c.reasons || []).length ? '<section class="coll-why" aria-label="Kenapa koleksi ini"><h2 class="cat-h">Kenapa cocok</h2><ol>' + c.reasons.map((r, i) => '<li><span class="n">' + (i + 1) + '</span><b>' + esc(r.t) + '</b>' + (r.d ? '<p>' + esc(r.d) + '</p>' : '') + '</li>').join('') + '</ol></section>' : '') +
     '<section aria-label="Pilihan produk"><div class="cat"><h2>Pilihan produk</h2></div>' +
-    (items.length ? '<div class="pgrid">' + items.map(it => itemHtml(it, true)).join('') + '</div>' : '<p class="ord-muted" style="text-align:center">Produk untuk koleksi ini belum tersedia.</p>') + '</section>';
+    (items.length ? '<div class="pgrid">' + items.map(it => {
+      const note = c.notes && c.notes[it.id];
+      // keterangan "kenapa cocok" untuk produk ini; kalau kosong pakai deskripsi produk
+      return itemHtml(it, !note).replace(/<\/a>$/, note ? '<p class="coll-note"><b>Kenapa cocok</b>' + esc(note) + '</p></a>' : '</a>');
+    }).join('') + '</div>' : '<p class="ord-muted" style="text-align:center">Produk untuk koleksi ini belum tersedia.</p>') + '</section>';
 }
 
 /* Kutipan tokoh di bagian bawah beranda (config.quote; kosongkan teksnya untuk menyembunyikan). */

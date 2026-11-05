@@ -267,11 +267,11 @@
     }
     if (!b) return;
     const row = b.closest('.o-coll');
-    if (b.dataset.cact === 'new') { st.coll = { isNew: true, id: '', title: '', label: '', text: '', reasons: [{ t: '', d: '' }, { t: '', d: '' }, { t: '', d: '' }], img: '', items: [], cta: 'Explore more', home: true, layout: 'auto' }; renderCollections(); window.scrollTo(0, 0); }
+    if (b.dataset.cact === 'new') { st.coll = { isNew: true, id: '', title: '', label: '', text: '', reasons: [{ t: '', d: '' }, { t: '', d: '' }, { t: '', d: '' }], img: '', items: [], notes: {}, cta: 'Explore more', home: true, layout: 'auto' }; renderCollections(); window.scrollTo(0, 0); }
     if (b.dataset.cact === 'edit') {
       const c = JSON.parse(JSON.stringify(st.data.collections.find(x => x.id === row.dataset.cid)));
       while ((c.reasons || []).length < 3) c.reasons.push({ t: '', d: '' });
-      st.coll = Object.assign({ isNew: false }, c); renderCollections(); window.scrollTo(0, 0);
+      c.notes = c.notes || {}; st.coll = Object.assign({ isNew: false }, c); renderCollections(); window.scrollTo(0, 0);
     }
     if (b.dataset.cact === 'del') {
       if (!confirm('Hapus koleksi ini? Produknya tidak ikut terhapus.')) return;
@@ -297,11 +297,18 @@
         '</fieldset>' +
         '<fieldset class="o-feat"><legend>Produk di koleksi ini</legend><div class="o-picks">' +
           d.items.map(i => '<label class="o-pick"><input type="checkbox" name="citem" value="' + esc(i.id) + '"' + (c.items.includes(i.id) ? ' checked' : '') + '> <span>' + esc(i.name) + '</span> <small>' + rp(i.price) + '</small></label>').join('') + '</div></fieldset>' +
+        '<fieldset class="o-feat"><legend>Keterangan per produk: kenapa cocok (opsional)</legend><div id="cNotes">' + collNotesHtml() + '</div></fieldset>' +
         '<div class="field"><label for="cLay">Tampilan di beranda</label><select id="cLay">' + LAYOUTS.map(o => '<option value="' + o[0] + '"' + (c.layout === o[0] ? ' selected' : '') + '>' + o[1] + '</option>').join('') + '</select></div>' +
         '<label class="o-checks one"><input type="checkbox" id="cHome"' + (c.home ? ' checked' : '') + '> Tampilkan sebagai sorotan di beranda</label>' +
         '<p class="err" id="cErr" role="alert" hidden></p>' +
         '<div class="o-formact"><button type="submit" class="btn" id="cSave">Simpan koleksi</button></div>' +
       '</form>';
+  }
+  function collNotesHtml() {
+    const c = st.coll, byId = {};
+    st.data.items.forEach(i => { byId[i.id] = i; });
+    const rows = c.items.map(id => byId[id]).filter(Boolean).map(i => '<div class="field"><label for="n-' + esc(i.id) + '">' + esc(i.name) + '</label><input id="n-' + esc(i.id) + '" data-note="' + esc(i.id) + '" maxlength="180" value="' + esc((c.notes || {})[i.id] || '') + '" placeholder="Mis. Cocok untuk dibagikan ke tamu Natal"></div>').join('');
+    return rows || '<p class="o-hint">Pilih produknya dulu di atas, lalu tulis kenapa tiap produk cocok untuk tema ini.</p>';
   }
   function collKeep() {
     const c = st.coll;
@@ -310,7 +317,13 @@
     c.reasons = Array.from(document.querySelectorAll('.o-reason')).map(r => ({ t: r.querySelector('[data-r="t"]').value, d: r.querySelector('[data-r="d"]').value }));
     c.items = Array.from(document.querySelectorAll('input[name="citem"]:checked')).map(x => x.value);
     c.layout = $('cLay').value; c.home = $('cHome').checked;
+    const notes = Object.assign({}, c.notes || {});
+    document.querySelectorAll('[data-note]').forEach(i => { notes[i.dataset.note] = i.value; });
+    c.notes = notes;
   }
+  $('tabCollections').addEventListener('change', ev => {
+    if (ev.target.name === 'citem' && st.coll) { collKeep(); $('cNotes').innerHTML = collNotesHtml(); }
+  });
   $('tabCollections').addEventListener('change', async ev => {
     if (ev.target.id !== 'cFile' || !st.coll) return;
     const f = ev.target.files[0];
@@ -332,7 +345,7 @@
     if (c.title.trim().length < 2) { err.textContent = 'Isi judul koleksi.'; err.hidden = false; return; }
     if (!c.items.length) { err.textContent = 'Pilih minimal satu produk.'; err.hidden = false; return; }
     const btn = $('cSave'); btn.disabled = true; btn.textContent = 'Menyimpan…';
-    const d = take(await call('collection_save', { id: c.isNew ? '' : c.id, title: c.title, label: c.label, text: c.text, reasons: c.reasons, img: c.img, items: c.items, cta: c.cta, home: c.home, layout: c.layout }));
+    const d = take(await call('collection_save', { id: c.isNew ? '' : c.id, title: c.title, label: c.label, text: c.text, reasons: c.reasons, img: c.img, items: c.items, notes: c.notes, cta: c.cta, home: c.home, layout: c.layout }));
     btn.disabled = false; btn.textContent = 'Simpan koleksi';
     if (d) { toast('Koleksi tersimpan.'); st.coll = null; renderCollections(); }
   });

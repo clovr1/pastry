@@ -940,3 +940,6 @@ html { overflow-x: clip; }
 .foot .brand { grid-area: auto; }
 /* Footer tanpa logo kue: hanya tulisan nama toko */
 .foot .brand .b0 { display: none; }
+
+.item p.coll-note { display: block; -webkit-line-clamp: unset; overflow: visible; margin: 8px auto 0; max-width: 30ch; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.coll-note b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
