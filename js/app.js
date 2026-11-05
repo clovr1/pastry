@@ -588,6 +588,35 @@ function renderCartPage() {
   }).join('');
   $('krSum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
 }
+/* "Cocok untuk ditambahkan" di panel keranjang: pasangan yang melengkapi isi keranjang, bukan produk yang sejenis.
+   Kategori yang saling melengkapi diatur di config.pairs (mis. croissant -> tart dan kue kering). Paket/bundle dan produk yang
+   sudah ada di keranjang tidak disarankan; label Terlaris/Baru dan harga yang ringan (mudah ditambah) menambah nilai. */
+function pairItems(ids, max) {
+  const pairs = CONFIG.pairs || {}, inCart = new Set(ids), best = new Map();
+  ids.forEach((cid, order) => {
+    const src = byId(cid);
+    if (!src) return;
+    const want = pairs[src.cat] || CATS.map(c => c.id).filter(c => c !== src.cat);
+    ITEMS.forEach(o => {
+      if (inCart.has(o.id) || o.soldOut || o.cat === 'paket') return;
+      const rank = want.indexOf(o.cat);
+      if (rank < 0) return;
+      let sc = 60 - rank * 12;
+      if (o.tag === 'Terlaris') sc += 14; else if (o.tag === 'Baru') sc += 8;
+      sc += 10 * (1 - Math.min(1, o.price / 120000));
+      sc += order * 0.5;   // isi keranjang yang terbaru sedikit lebih berpengaruh
+      const prev = best.get(o.id);
+      if (!prev || sc > prev.sc) best.set(o.id, { o, sc, src });
+    });
+  });
+  // maksimal dua saran dari kategori yang sama supaya beragam
+  const out = [], perCat = {};
+  Array.from(best.values()).sort((a, b) => b.sc - a.sc).forEach(x => {
+    if (out.length >= max || (perCat[x.o.cat] || 0) >= 2) return;
+    perCat[x.o.cat] = (perCat[x.o.cat] || 0) + 1; out.push(x);
+  });
+  return out;
+}
 function thumbImg(it) { return it.img ? '<img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : ''; }
 function renderCart() {
   const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
@@ -609,9 +638,9 @@ function renderCart() {
   const dc = $('dCount'); dc.textContent = t.count; dc.hidden = t.count === 0;
   // saran tambahan: produk yang cocok dengan isi keranjang dan belum ada di dalamnya
   const up = $('upsell');
-  const sug = has ? relatedItems(byId(ids[ids.length - 1])).filter(o => !state.cart[o.id] && !o.soldOut).slice(0, 3) : [];
+  const sug = has ? pairItems(ids, 3) : [];
   up.hidden = !sug.length;
-  up.innerHTML = sug.length ? '<h3>Cocok untuk ditambahkan</h3><div class="upl">' + sug.map(o => '<div class="upi"><span class="upimg">' + thumbImg(o) + '</span><div><b>' + esc(o.name) + '</b><small>' + rp(o.price) + '</small></div><button type="button" class="upadd" data-up="' + o.id + '" aria-label="Tambah ' + esc(o.name) + '">+</button></div>').join('') + '</div>' : '';
+  up.innerHTML = sug.length ? '<h3>Cocok untuk ditambahkan</h3><div class="upl">' + sug.map(x => '<div class="upi"><span class="upimg">' + thumbImg(x.o) + '</span><div><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><em>Pas dengan ' + esc(x.src.name) + '</em></div><button type="button" class="upadd" data-up="' + x.o.id + '" aria-label="Tambah ' + esc(x.o.name) + '">+</button></div>').join('') + '</div>' : '';
 
   $('sum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
   $('dfoot').hidden = !has;

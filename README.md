@@ -228,3 +228,7 @@ Gambar kue dari logo toko dipakai di sebelah nama toko (menu atas dan halaman ow
 ## Kalau halaman terlihat belum berubah setelah `git pull`
 
 Browser kadang menyimpan halaman HTML lama, padahal CSS dan JavaScript-nya sudah baru, sehingga satu halaman terlihat berbeda dari yang lain (misalnya logo muncul di Home tapi tidak di Product). `.htaccess` di folder utama menyuruh browser selalu mengecek ulang file `.html` ke server (butuh `mod_headers`, aktif di Laragon). Setelah pull pertama kali, tekan **Ctrl+F5 sekali di setiap halaman** atau hapus cache browser (Ctrl+Shift+Delete, pilih "Gambar dan file dalam cache") supaya salinan lama yang sudah tersimpan terbuang.
+
+## "Cocok untuk ditambahkan" di panel keranjang
+
+Saran di panel keranjang berupa **pasangan yang melengkapi**, bukan produk sejenis: croissant disarankan bersama tart/éclair dan kue kering, tart bersama croissant dan kue kering, kue kering bersama tart dan kue utuh, dan seterusnya. Tiap saran diberi keterangan "Pas dengan <produk di keranjang>". Paket/bundle, produk yang sudah ada di keranjang, dan produk yang habis tidak disarankan; label Terlaris/Baru dan harga yang ringan menambah nilai, dan maksimal dua saran per kategori supaya beragam. Aturan pasangan kategori ada di `config.pairs` pada `data/menu.json` (isi: `"croissant": ["tart", "kering"]` artinya pembeli croissant disarankan tart dulu, lalu kue kering). Kategori yang tidak punya aturan disarankan dengan kategori lain apa pun. Logikanya ada di fungsi `pairItems` pada `js/app.js`.

@@ -87,6 +87,7 @@ function sb_menu($reload = false) {
     if (!isset($menu['config']['closedNote'])) $menu['config']['closedNote'] = '';
     if (!array_key_exists('quote', $menu['config'])) $menu['config']['quote'] = ['text' => "Il y a cinq beaux-arts : la peinture, la sculpture, la poésie, la musique, l’architecture, laquelle a pour branche principale la pâtisserie.", 'author' => 'Marie-Antoine Carême', 'role' => 'Pâtissier français, 1783–1833', 'lang' => 'fr'];
     if (!isset($menu['config']['collections']) || !is_array($menu['config']['collections'])) $menu['config']['collections'] = sb_default_collections($menu);
+    if (!isset($menu['config']['pairs']) || !is_array($menu['config']['pairs'])) $menu['config']['pairs'] = ['croissant' => ['tart', 'kering'], 'tart' => ['croissant', 'kering'], 'kering' => ['tart', 'utuh'], 'utuh' => ['kering', 'tart'], 'paket' => ['kering', 'tart']];
     if (!isset($menu['config']['featured']) || !is_array($menu['config']['featured'])) $menu['config']['featured'] = sb_auto_featured($menu);
     // dibaca tanpa kunci: file ditulis lewat rename, jadi isinya selalu utuh
     $stock = is_file(sb_config()['data_path']) ? sb_store_load(sb_config()['data_path'])['stock'] : [];
