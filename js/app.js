@@ -706,7 +706,7 @@ function renderCheckout() {
     return '<li class="cl">' + thumb(it) + '<div class="lm"><span class="ln">' + esc(it.name) + '</span><span class="sub">' + q + ' × ' + rp(it.price) + '</span></div><span class="price">' + rp(it.price * q) + '</span></li>';
   }).join('');
   // penawaran tambahan di detail pesanan: pasangan yang melengkapi isi pesanan (bisa ditambah dengan satu ketukan)
-  const sug = pairItems(ids, 8, 4), of = $('coOffer');
+  const sug = pairItems(ids, 4, 2), of = $('coOffer');
   const keep = of.querySelector('.sg-track') ? of.querySelector('.sg-track').scrollLeft : 0;   // posisi geser dipertahankan saat daftar digambar ulang
   of.hidden = !sug.length;
   of.innerHTML = sug.length ? '<div class="sg-head"><h3>Kamu mungkin suka</h3><span class="sg-nav"><button type="button" data-sg="-1" aria-label="Sebelumnya">‹</button><button type="button" data-sg="1" aria-label="Berikutnya">›</button></span></div>' +
