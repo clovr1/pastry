@@ -447,6 +447,32 @@ document.addEventListener('click', e => {
     body._a.onfinish = () => { body.style.overflow = ''; body._a = null; };
   }
 });
+/* Animasi "dilempar ke keranjang": gambar produk melayang melengkung ke ikon keranjang lalu mengecil, ikon keranjang bergoyang. */
+function flyToCart(from, imgSrc) {
+  const cart = document.getElementById('cartBtn');
+  if (!cart || !from || reducedMotion() || !cart.getBoundingClientRect().width) return;
+  const bar = document.getElementById('topbar');
+  if (bar && bar.classList.contains('is-hidden')) bar.classList.remove('is-hidden');   // menu atas sedang tersembunyi: munculkan supaya tujuan terlihat
+  const a = from.getBoundingClientRect(), b = cart.getBoundingClientRect();
+  const size = Math.max(56, Math.min(120, Math.min(a.width, a.height)));
+  const x0 = a.left + a.width / 2 - size / 2, y0 = a.top + a.height / 2 - size / 2;
+  const x1 = b.left + b.width / 2 - size / 2, y1 = b.top + b.height / 2 - size / 2;
+  const dot = document.createElement('div');
+  dot.className = 'flyer';
+  dot.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:0;top:0;' + (imgSrc ? 'background-image:url("' + imgSrc.replace(/"/g, '%22') + '")' : '');
+  document.body.appendChild(dot);
+  const dx = x1 - x0, dy = y1 - y0, lift = Math.max(90, Math.min(220, Math.abs(dy) * 0.5 + 80));
+  const anim = dot.animate([
+    { transform: 'translate(' + x0 + 'px,' + y0 + 'px) scale(1) rotate(0deg)', opacity: 1, offset: 0 },
+    { transform: 'translate(' + (x0 + dx * 0.5) + 'px,' + (Math.min(y0, y1) - lift) + 'px) scale(.62) rotate(-12deg)', opacity: 1, offset: 0.45 },
+    { transform: 'translate(' + x1 + 'px,' + y1 + 'px) scale(.16) rotate(8deg)', opacity: .75, offset: 1 }
+  ], { duration: 780, easing: 'cubic-bezier(.5, .05, .6, 1)' });
+  anim.onfinish = () => {
+    dot.remove();
+    cart.classList.remove('wiggle'); void cart.offsetWidth; cart.classList.add('wiggle');
+  };
+  anim.oncancel = () => dot.remove();
+}
 function accordion(it) {
   const slotText = CONFIG.slots.map(s => s.label).join(', ');
   const row = (key, title, body, open) => '<details' + (open ? ' open' : '') + '><summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICO[key] + '</svg>' + title + '</summary><div class="acc-body">' + body + '</div></details>';
@@ -512,6 +538,8 @@ document.addEventListener('click', e => {
   const q = e.target.closest('[data-qty]');
   if (q) { prodQty = Math.max(1, Math.min(50, prodQty + Number(q.dataset.qty))); const o = $('qty'); o.textContent = prodQty; o.classList.remove('bump'); void o.offsetWidth; o.classList.add('bump'); return; }
   if (e.target.closest('#addBtn')) {
+    const phImg = document.querySelector('.pd-img img');
+    flyToCart(phImg || $('addBtn'), phImg && phImg.currentSrc);
     change(prodItem.id, prodQty);
     const btn = $('addBtn'); btn.textContent = 'Ditambahkan ✓';
     clearTimeout(addTimer); addTimer = setTimeout(() => { btn.textContent = 'Tambah ke keranjang'; }, 1600);

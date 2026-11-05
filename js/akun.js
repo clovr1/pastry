@@ -168,6 +168,8 @@
     $q('aBought').addEventListener('click', e => {
       const b = e.target.closest('[data-again]');
       if (!b) return;
+      const row = b.closest('.acc-vrow'), im = row && row.querySelector('img');
+      flyToCart(im || b, im && im.currentSrc);
       change(b.dataset.again, 1);
       b.textContent = 'Ditambahkan ✓';
       setTimeout(() => { b.textContent = 'Pesan lagi'; }, 1600);
