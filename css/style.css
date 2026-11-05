@@ -938,3 +938,5 @@ html { overflow-x: clip; }
 @media (max-width: 520px) { .brand .b0 { height: 28px; } .foot .brand .b0 { height: 44px; } }
 /* Di HP, .brand milik menu atas memakai grid-area "brand"; di footer itu membuat logo menjorok ke kanan, jadi dinetralkan */
 .foot .brand { grid-area: auto; }
+/* Footer tanpa logo kue: hanya tulisan nama toko */
+.foot .brand .b0 { display: none; }
