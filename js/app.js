@@ -173,7 +173,6 @@ const SHELL_PANEL = `
     </div>
     <div class="nudge" id="nudge" hidden></div>
     <ul class="lines" id="lines"></ul>
-    <section class="upsell" id="upsell" hidden></section>
   </div>
   <div class="dfoot" id="dfoot" hidden>
     <div class="sum" id="sum"></div>
@@ -447,33 +446,53 @@ document.addEventListener('click', e => {
     body._a.onfinish = () => { body.style.overflow = ''; body._a = null; };
   }
 });
-/* Animasi tambah ke keranjang: bulatan kecil berisi foto produk keluar dari tombol yang ditekan, melengkung ke ikon keranjang, lalu ikon bergoyang. */
+/* Animasi tambah ke keranjang: bulatan berisi foto produk (dengan ekor) keluar dari tombol yang ditekan, melengkung ke ikon keranjang.
+   Angka di ikon keranjang ditahan dan baru naik saat bulatan mendarat, lalu ikon bergoyang dan memancarkan gelombang. */
 function flyToCart(btn, imgSrc) {
   const cart = document.getElementById('cartBtn');
   if (!cart || !btn || reducedMotion() || !cart.getBoundingClientRect().width) return;
   const bar = document.getElementById('topbar');
   if (bar && bar.classList.contains('is-hidden')) bar.classList.remove('is-hidden');   // menu atas tersembunyi: munculkan supaya tujuan terlihat
-  const a = btn.getBoundingClientRect(), b = cart.getBoundingClientRect(), size = 46;
-  const x0 = a.left + a.width / 2 - size / 2, y0 = a.top + a.height / 2 - size / 2;
-  const x1 = b.left + b.width / 2 - size / 2, y1 = b.top + b.height / 2 - size / 2;
-  const dot = document.createElement('div');
-  dot.className = 'flyer';
-  dot.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:0;top:0;' + (imgSrc ? 'background-image:url("' + imgSrc.replace(/"/g, '%22') + '")' : '');
-  document.body.appendChild(dot);
+  const total = () => Object.keys(state.cart).reduce((n, k) => n + state.cart[k], 0);
+  const before = total();
+  if (badgeHold === null) badgeHold = before;   // tahan angka sampai mendarat (kalau sudah ada yang terbang, lanjutkan penahanannya)
+  let added = 0;
+  setTimeout(() => { added = total() - before; }, 0);   // jumlah yang ditambahkan oleh klik ini (diukur setelah change() dijalankan)
+  flying++;
+  const a = btn.getBoundingClientRect(), b = cart.getBoundingClientRect();
+  const cx0 = a.left + a.width / 2, cy0 = a.top + a.height / 2, cx1 = b.left + b.width / 2, cy1 = b.top + b.height / 2;
+  const dx = cx1 - cx0, dy = cy1 - cy0;
+  const midY = Math.max(14, cy0 + dy * 0.5 - 90);
   btn.classList.remove('pressed'); void btn.offsetWidth; btn.classList.add('pressed');
-  const dx = x1 - x0, dy = y1 - y0;
-  const midY = Math.max(12, y0 + dy * 0.5 - 70);   // lengkungan ringan, tidak pernah keluar dari layar
-  const anim = dot.animate([
-    { transform: 'translate(' + x0 + 'px,' + y0 + 'px) scale(.4)', opacity: 0, offset: 0 },
-    { transform: 'translate(' + x0 + 'px,' + y0 + 'px) scale(1)', opacity: 1, offset: 0.12 },
-    { transform: 'translate(' + (x0 + dx * 0.5) + 'px,' + midY + 'px) scale(.85)', opacity: 1, offset: 0.5 },
-    { transform: 'translate(' + x1 + 'px,' + y1 + 'px) scale(.35)', opacity: .9, offset: 1 }
-  ], { duration: 820, easing: 'cubic-bezier(.45, .05, .55, .95)' });
-  anim.onfinish = () => {
-    dot.remove();
-    cart.classList.remove('wiggle'); void cart.offsetWidth; cart.classList.add('wiggle');
+  const DUR = 900;
+  const make = (size, delay, main) => {
+    const dot = document.createElement('div');
+    dot.className = 'flyer' + (main ? '' : ' trail');
+    dot.style.cssText = 'width:' + size + 'px;height:' + size + 'px;left:0;top:0;' + (main && imgSrc ? 'background-image:url("' + imgSrc.replace(/"/g, '%22') + '")' : '');
+    document.body.appendChild(dot);
+    const x0 = cx0 - size / 2, y0 = cy0 - size / 2, x1 = cx1 - size / 2, y1 = cy1 - size / 2;
+    const an = dot.animate([
+      { transform: 'translate(' + x0 + 'px,' + y0 + 'px) scale(.3)', opacity: 0, offset: 0 },
+      { transform: 'translate(' + x0 + 'px,' + y0 + 'px) scale(1)', opacity: 1, offset: 0.1 },
+      { transform: 'translate(' + (x0 + dx * 0.5) + 'px,' + (midY - size / 2) + 'px) scale(.9)', opacity: 1, offset: 0.5 },
+      { transform: 'translate(' + x1 + 'px,' + y1 + 'px) scale(.3)', opacity: main ? 1 : 0, offset: 1 }
+    ], { duration: DUR, delay, easing: 'cubic-bezier(.45, .05, .55, .95)', fill: 'both' });
+    an.onfinish = () => dot.remove();
+    an.oncancel = () => dot.remove();
+    return an;
   };
-  anim.oncancel = () => dot.remove();
+  [[22, 50], [16, 100], [11, 150]].forEach(t => make(t[0], t[1], false));
+  const main = make(52, 0, true);
+  let landed = false;
+  const land = () => {
+    if (landed) return; landed = true;
+    flying--;
+    if (flying <= 0) { flying = 0; badgeHold = null; paintBadge(total(), true); }   // semua sudah mendarat: tampilkan angka sebenarnya
+    else { badgeHold += added; paintBadge(badgeHold, true); }                          // masih ada yang terbang: naik sebesar yang baru mendarat
+    cart.classList.remove('wiggle', 'ring'); void cart.offsetWidth; cart.classList.add('wiggle', 'ring');
+  };
+  main.onfinish = () => { land(); document.querySelectorAll('.flyer:not(.trail)').forEach(d => d.remove()); };
+  setTimeout(land, DUR + 400);   // pengaman kalau animasi terganggu
 }
 function accordion(it) {
   const slotText = CONFIG.slots.map(s => s.label).join(', ');
@@ -615,6 +634,16 @@ function pairItems(ids, max) {
   return out;
 }
 function thumbImg(it) { return it.img ? '<img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : ''; }
+/* Angka di ikon keranjang: kalau animasi lempar sedang berjalan, angka ditahan dan baru naik saat bulatan mendarat. */
+let badgeHold = null, flying = 0;   // angka yang ditampilkan selama animasi (null = ikuti isi keranjang)
+function paintBadge(n, pop) {
+  const badge = $('cartN');
+  if (!badge) return;
+  const first = badge.dataset.n === undefined, prev = Number(badge.dataset.n || 0);
+  badge.textContent = n > 99 ? '99+' : n; badge.hidden = n === 0;
+  if (pop && !first && n > prev) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
+  badge.dataset.n = String(n);
+}
 function renderCart() {
   const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
   $('emptyMsg').hidden = has;
@@ -633,19 +662,10 @@ function renderCart() {
       '<div class="rt"><button type="button" class="rm" data-act="rm" data-id="' + id + '" aria-label="Hapus ' + esc(it.name) + '">✕</button><span class="price">' + rp(it.price * q) + '</span></div></li>';
   }).join('');
   const dc = $('dCount'); dc.textContent = t.count; dc.hidden = t.count === 0;
-  // saran tambahan: produk yang cocok dengan isi keranjang dan belum ada di dalamnya
-  const up = $('upsell');
-  const sug = has ? pairItems(ids, 3) : [];
-  up.hidden = !sug.length;
-  up.innerHTML = sug.length ? '<h3>Cocok untuk ditambahkan</h3><div class="upl">' + sug.map(x => '<div class="upi"><span class="upimg">' + thumbImg(x.o) + '</span><div><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><em>Pas dengan ' + esc(x.src.name) + '</em></div><button type="button" class="upadd" data-up="' + x.o.id + '" aria-label="Tambah ' + esc(x.o.name) + '">+</button></div>').join('') + '</div>' : '';
 
   $('sum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
   $('dfoot').hidden = !has;
-  const badge = $('cartN');
-  const prevN = Number(badge.dataset.n || 0);
-  badge.textContent = t.count > 99 ? '99+' : t.count; badge.hidden = t.count === 0;
-  if (t.count > prevN && prevN !== undefined && badge.dataset.n !== undefined) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
-  badge.dataset.n = String(t.count);
+  paintBadge(badgeHold !== null ? badgeHold : t.count, badgeHold === null);
   $('cartBtn').setAttribute('aria-label', (PAGE === 'checkout' ? 'Kembali ke keranjang, ' : 'Shopping Cart, ') + t.count + ' item');
   updateInCart();
   if (PAGE === 'checkout') renderCheckout();
@@ -682,6 +702,10 @@ function renderCheckout() {
     const it = byId(id), q = state.cart[id];
     return '<li class="cl">' + thumb(it) + '<div class="lm"><span class="ln">' + esc(it.name) + '</span><span class="sub">' + q + ' × ' + rp(it.price) + '</span></div><span class="price">' + rp(it.price * q) + '</span></li>';
   }).join('');
+  // penawaran tambahan di detail pesanan: pasangan yang melengkapi isi pesanan (bisa ditambah dengan satu ketukan)
+  const sug = pairItems(ids, 2), of = $('coOffer');
+  of.hidden = !sug.length;
+  of.innerHTML = sug.length ? '<h3>Tambahkan ke pesananmu</h3>' + sug.map(x => '<div class="upi"><span class="upimg">' + thumbImg(x.o) + '</span><div><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><em>Pas dengan ' + esc(x.src.name) + '</em></div><button type="button" class="upadd" data-up="' + x.o.id + '" aria-label="Tambah ' + esc(x.o.name) + '">+</button></div>').join('') : '';
   $('coSum').innerHTML = sumRows(t, true);
   const mh = $('minHint'), low = mode() === 'delivery' && t.sub < CONFIG.minDelivery;
   mh.hidden = !low;

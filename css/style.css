@@ -967,24 +967,21 @@ html { overflow-x: clip; }
 .pg { height: 6px; border-radius: 3px; }
 .pg i { border-radius: 3px; transition: width .5s var(--ease); background: linear-gradient(90deg, var(--accent), #d4506a); }
 
-.lines { gap: 12px; }
-.lines li { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 14px; align-items: stretch; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px 10px 10px; }
-.lines .th { width: 84px; height: 100%; min-height: 96px; border-radius: 10px; }
-.lines .lm { gap: 4px; align-content: start; }
-.lines .ln { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.3; color: inherit; text-decoration: none; }
-.lines .ln:hover { color: var(--accent); }
-.lines .unit { color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
-.lines .stepper { margin-top: auto; background: var(--surface); }
-.lines .stepper button { height: 34px; width: 34px; font-size: 18px; }
-.lines .stepper button:hover { color: var(--accent); }
-.lines .rt { align-content: space-between; }
-.lines .rt .price { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
-.rm { width: 30px; height: 30px; font-size: 13px; }
-.rm:hover { background: var(--accent-soft); color: var(--accent); }
+.dbody .lines { gap: 12px; }
+.dbody .lines li { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 14px; align-items: stretch; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px 10px 10px; }
+.dbody .lines .th { width: 84px; height: 100%; min-height: 96px; border-radius: 10px; }
+.dbody .lines .lm { gap: 4px; align-content: start; }
+.dbody .lines .ln { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.3; color: inherit; text-decoration: none; }
+.dbody .lines .ln:hover { color: var(--accent); }
+.dbody .lines .unit { color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.dbody .lines .stepper { margin-top: auto; background: var(--surface); }
+.dbody .lines .stepper button { height: 34px; width: 34px; font-size: 18px; }
+.dbody .lines .stepper button:hover { color: var(--accent); }
+.dbody .lines .rt { align-content: space-between; }
+.dbody .lines .rt .price { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.dbody .rm { width: 30px; height: 30px; font-size: 13px; }
+.dbody .rm:hover { background: var(--accent-soft); color: var(--accent); }
 
-.upsell { display: grid; gap: 12px; padding-top: 6px; }
-.upsell h3 { font-family: var(--font-name); font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
-.upl { display: grid; gap: 8px; }
 .upi { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 10px 8px 8px; border-radius: 14px; background: var(--tile); }
 .upimg { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; background: var(--line); display: block; }
 .upimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -1009,3 +1006,14 @@ html { overflow-x: clip; }
 }
 
 .upi em { display: block; font-style: normal; font-size: 12px; color: var(--accent); margin-top: 2px; }
+
+.flyer.trail { border: 0; background: var(--accent); box-shadow: none; }
+.cartbtn.ring::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent); animation: cartRing .7s var(--ease) forwards; pointer-events: none; }
+@keyframes cartRing { from { transform: scale(1); opacity: .9; } to { transform: scale(1.9); opacity: 0; } }
+
+/* Penawaran tambahan di panel ringkasan pesanan */
+.co-offer { display: grid; gap: 8px; padding-top: 4px; }
+.co-offer[hidden] { display: none; }
+.co-offer h3 { font-family: var(--font-name); font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+.co-offer .upi { background: var(--surface); border: 1px solid var(--line); }
+.co-offer .upi em { color: var(--accent); }
