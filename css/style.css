@@ -1011,15 +1011,20 @@ html { overflow-x: clip; }
 .cartbtn.ring::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent); animation: cartRing .7s var(--ease) forwards; pointer-events: none; }
 @keyframes cartRing { from { transform: scale(1); opacity: .9; } to { transform: scale(1.9); opacity: 0; } }
 
-/* Penawaran tambahan di panel ringkasan pesanan: baris ringkas satu garis */
-.co-offer { display: grid; gap: 6px; padding-top: 2px; }
+/* Saran "Kamu mungkin suka" di panel ringkasan pesanan: kartu kecil yang bisa digeser ke samping */
+.co-offer { display: grid; gap: 10px; padding-top: 2px; min-width: 0; }
 .co-offer[hidden] { display: none; }
+.sg-head { display: flex; align-items: center; justify-content: space-between; }
 .co-offer h3 { font-family: var(--font-name); font-weight: 600; font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
-.offer { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 4px 4px 4px 4px; border-radius: 10px; }
-.offer:hover { background: rgba(0, 0, 0, .035); }
-.offer-img { width: 34px; height: 34px; border-radius: 8px; overflow: hidden; background: var(--line); display: block; }
-.offer-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.offer-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; min-width: 0; font-size: 14px; }
-.offer-t b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.offer-t small { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.offer .upadd { width: 30px; height: 30px; font-size: 18px; }
+.sg-nav { display: inline-flex; gap: 6px; }
+.sg-nav button { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line); background: transparent; font-size: 16px; line-height: 1; }
+.sg-nav button:hover { border-color: var(--ink); }
+.sg-track { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; margin-inline: -2px; padding: 2px; -webkit-overflow-scrolling: touch; }
+.sg-track::-webkit-scrollbar { display: none; }
+.sg-card { flex: 0 0 132px; scroll-snap-align: start; display: grid; gap: 3px; align-content: start; }
+.sg-img { display: block; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--line); margin-bottom: 4px; }
+.sg-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sg-card b { font-size: 13.5px; font-weight: 600; line-height: 1.25; }
+.sg-card small { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.sg-add { margin-top: 6px; border: 1px solid var(--ink); background: transparent; border-radius: 999px; padding: 6px 0; font-size: 13px; font-weight: 600; transition: background-color .2s ease, color .2s ease; }
+.sg-add:hover { background: var(--ink); color: var(--bg); }

@@ -607,7 +607,7 @@ function renderCartPage() {
 /* "Cocok untuk ditambahkan" di panel keranjang: pasangan yang melengkapi isi keranjang, bukan produk yang sejenis.
    Kategori yang saling melengkapi diatur di config.pairs (mis. croissant -> tart dan kue kering). Paket/bundle dan produk yang
    sudah ada di keranjang tidak disarankan; label Terlaris/Baru dan harga yang ringan (mudah ditambah) menambah nilai. */
-function pairItems(ids, max) {
+function pairItems(ids, max, perCatMax) {
   const pairs = CONFIG.pairs || {}, inCart = new Set(ids), best = new Map();
   ids.forEach((cid, order) => {
     const src = byId(cid);
@@ -628,7 +628,7 @@ function pairItems(ids, max) {
   // maksimal dua saran dari kategori yang sama supaya beragam
   const out = [], perCat = {};
   Array.from(best.values()).sort((a, b) => b.sc - a.sc).forEach(x => {
-    if (out.length >= max || (perCat[x.o.cat] || 0) >= 2) return;
+    if (out.length >= max || (perCat[x.o.cat] || 0) >= (perCatMax || 2)) return;
     perCat[x.o.cat] = (perCat[x.o.cat] || 0) + 1; out.push(x);
   });
   return out;
@@ -703,9 +703,12 @@ function renderCheckout() {
     return '<li class="cl">' + thumb(it) + '<div class="lm"><span class="ln">' + esc(it.name) + '</span><span class="sub">' + q + ' × ' + rp(it.price) + '</span></div><span class="price">' + rp(it.price * q) + '</span></li>';
   }).join('');
   // penawaran tambahan di detail pesanan: pasangan yang melengkapi isi pesanan (bisa ditambah dengan satu ketukan)
-  const sug = pairItems(ids, 2), of = $('coOffer');
+  const sug = pairItems(ids, 8, 4), of = $('coOffer');
+  const keep = of.querySelector('.sg-track') ? of.querySelector('.sg-track').scrollLeft : 0;   // posisi geser dipertahankan saat daftar digambar ulang
   of.hidden = !sug.length;
-  of.innerHTML = sug.length ? '<h3>Lengkapi pesananmu</h3>' + sug.map(x => '<div class="offer"><span class="offer-img">' + thumbImg(x.o) + '</span><span class="offer-t"><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small></span><button type="button" class="upadd" data-up="' + x.o.id + '" title="Pas dengan ' + esc(x.src.name) + '" aria-label="Tambah ' + esc(x.o.name) + '">+</button></div>').join('') : '';
+  of.innerHTML = sug.length ? '<div class="sg-head"><h3>Kamu mungkin suka</h3><span class="sg-nav"><button type="button" data-sg="-1" aria-label="Sebelumnya">‹</button><button type="button" data-sg="1" aria-label="Berikutnya">›</button></span></div>' +
+    '<div class="sg-track" tabindex="0" aria-label="Saran produk, geser untuk melihat lainnya">' + sug.map(x => '<div class="sg-card"><span class="sg-img">' + thumbImg(x.o) + '</span><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><button type="button" class="sg-add" data-up="' + x.o.id + '" title="Pas dengan ' + esc(x.src.name) + '" aria-label="Tambah ' + esc(x.o.name) + '">+ Tambah</button></div>').join('') + '</div>' : '';
+  if (keep) of.querySelector('.sg-track').scrollLeft = keep;
   $('coSum').innerHTML = sumRows(t, true);
   const mh = $('minHint'), low = mode() === 'delivery' && t.sub < CONFIG.minDelivery;
   mh.hidden = !low;
@@ -847,9 +850,11 @@ document.addEventListener('click', e => {
   if (b) change(b.dataset.id, b.dataset.act === 'inc' ? 1 : (b.dataset.act === 'rm' ? -999 : -1));
 });
 document.addEventListener('click', e => {
+  const g = e.target.closest('[data-sg]');
+  if (g) { const tr = document.querySelector('.sg-track'); if (tr) tr.scrollBy({ left: Number(g.dataset.sg) * Math.max(150, tr.clientWidth * 0.8), behavior: 'smooth' }); return; }
   const u = e.target.closest('[data-up]');
   if (!u) return;
-  const row = u.closest('.offer, .upi'), im = row && row.querySelector('img');
+  const row = u.closest('.sg-card, .offer, .upi'), im = row && row.querySelector('img');
   flyToCart(u, im && im.currentSrc);
   change(u.dataset.up, 1);
 });
