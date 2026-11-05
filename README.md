@@ -220,3 +220,7 @@ Koleksi adalah tema yang mengumpulkan beberapa produk sekaligus. Bisa dipakai un
 - Contoh "Perfect for Christmas" sudah dibuatkan sebagai bawaan; ubah atau hapus sesukamu. Sorotan produk launching (mis. Kouign-Amann) tetap diatur dari form produk.
 
 **Menemukan koleksi**: menu atas punya tautan **Collection** (di sebelah Product) yang membuka daftar semua koleksi, dan footer punya tautan **Collection** yang sama di kolom Jelajahi. Keduanya otomatis muncul selama ada minimal satu koleksi, walaupun koleksinya tidak ditampilkan sebagai sorotan di beranda.
+
+## Logo
+
+Gambar kue dari logo toko dipakai di sebelah nama toko (menu atas, footer, dan halaman owner) dan sebagai ikon tab browser. File-nya `images/logo-mark.png` (transparan, bentuknya hanya garis, warnanya mengikuti tema terang/gelap lewat CSS mask) dan `images/favicon.png`. `images/logo.png` adalah logo lengkap dengan tulisannya (belum dipakai di halaman). Untuk mengganti: timpa file-file itu dengan gambar PNG transparan yang berisi satu warna (warna aslinya diabaikan, yang dipakai hanya tingkat transparansinya). Logo asli berukuran 150×150 px; kalau punya file yang lebih besar atau SVG, hasilnya akan jauh lebih tajam.

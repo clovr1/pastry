@@ -14,7 +14,7 @@
   let SHOP = 'Toko';
   const brandHtml = name => {
     const w = String(name).trim().split(/\s+/), first = w.shift();
-    return '<span class="b1">' + esc(first) + '</span>' + (w.length ? '<span class="b2">' + esc(w.join(' ')) + '</span>' : '');
+    return '<i class="b0" aria-hidden="true"></i><span class="b1">' + esc(first) + '</span>' + (w.length ? '<span class="b2">' + esc(w.join(' ')) + '</span>' : '');
   };
   const state = { orders: [], counts: {}, filter: 'aktif', q: '', open: new Set(), fresh: new Set(), maxId: 0, first: true, offset: 0, confirm: null, sound: false, timer: 0, busy: false };
   try { state.sound = localStorage.getItem('sweetbite-owner-sound') === '1'; } catch (e) {}

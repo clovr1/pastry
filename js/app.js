@@ -8,7 +8,7 @@ const PAGE = document.body.dataset.page || 'home';
 /* Nama toko: kata pertama bertulisan sambung, sisanya huruf besar renggang (mis. "Sweet" + "BITE"). */
 function brandHtml(name) {
   const w = String(name).trim().split(/\s+/), first = w.shift();
-  return '<span class="b1">' + esc(first) + '</span>' + (w.length ? '<span class="b2">' + esc(w.join(' ')) + '</span>' : '');
+  return '<i class="b0" aria-hidden="true"></i><span class="b1">' + esc(first) + '</span>' + (w.length ? '<span class="b2">' + esc(w.join(' ')) + '</span>' : '');
 }
 
 /* ---- Mode terang / gelap ---- */
