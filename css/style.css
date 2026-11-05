@@ -949,3 +949,60 @@ html { overflow-x: clip; }
 .cartbtn.wiggle { animation: cartWiggle .55s var(--ease); }
 @keyframes cartWiggle { 0% { transform: none; } 20% { transform: rotate(-14deg) scale(1.12); } 45% { transform: rotate(10deg) scale(1.12); } 70% { transform: rotate(-5deg); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .flyer { display: none; } }
+
+/* ============ Panel keranjang: tampilan baru ============ */
+.dhead { padding-block: 20px 16px; }
+.dhead h2 { display: flex; align-items: center; gap: 12px; }
+.dcount { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 8px; border-radius: 999px; background: var(--accent); color: #fff; font-family: var(--font-body); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dcount[hidden] { display: none; }
+.dbody { gap: 18px; padding-top: 18px; }
+.dempty { justify-items: center; text-align: center; gap: 10px; padding: 56px 16px; }
+.dmark { width: 96px; height: 74px; margin-bottom: 8px; background-color: var(--muted); opacity: .55; -webkit-mask: url(../images/logo-mark.png) center / contain no-repeat; mask: url(../images/logo-mark.png) center / contain no-repeat; }
+.dempty b { font-family: var(--font-display); font-weight: 500; font-size: 24px; color: var(--ink); }
+.dempty span { max-width: 28ch; }
+.dempty .btn { margin-top: 10px; padding: 13px 30px; }
+
+.nudge { background: var(--tile); border-radius: 14px; padding: 14px 16px; }
+.pg { height: 6px; border-radius: 3px; }
+.pg i { border-radius: 3px; transition: width .5s var(--ease); background: linear-gradient(90deg, var(--accent), #d4506a); }
+
+.lines { gap: 12px; }
+.lines li { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 14px; align-items: stretch; background: var(--bg); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px 10px 10px; }
+.lines .th { width: 84px; height: 100%; min-height: 96px; border-radius: 10px; }
+.lines .lm { gap: 4px; align-content: start; }
+.lines .ln { font-family: var(--font-name); font-weight: 600; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; line-height: 1.3; color: inherit; text-decoration: none; }
+.lines .ln:hover { color: var(--accent); }
+.lines .unit { color: var(--muted); font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.lines .stepper { margin-top: auto; background: var(--surface); }
+.lines .stepper button { height: 34px; width: 34px; font-size: 18px; }
+.lines .stepper button:hover { color: var(--accent); }
+.lines .rt { align-content: space-between; }
+.lines .rt .price { font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; }
+.rm { width: 30px; height: 30px; font-size: 13px; }
+.rm:hover { background: var(--accent-soft); color: var(--accent); }
+
+.upsell { display: grid; gap: 12px; padding-top: 6px; }
+.upsell h3 { font-family: var(--font-name); font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.upl { display: grid; gap: 8px; }
+.upi { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 10px 8px 8px; border-radius: 14px; background: var(--tile); }
+.upimg { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; background: var(--line); display: block; }
+.upimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.upi b { display: block; font-size: 14px; font-weight: 600; line-height: 1.25; }
+.upi small { color: var(--muted); font-size: 13px; }
+.upadd { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--ink); background: transparent; font-size: 20px; line-height: 1; transition: background-color .2s ease, color .2s ease, transform .2s var(--ease); }
+.upadd:hover { background: var(--ink); color: var(--bg); transform: rotate(90deg); }
+
+.dfoot { gap: 14px; padding-top: 18px; box-shadow: 0 -14px 30px rgba(0, 0, 0, .07); }
+.dfoot .sum { gap: 8px; }
+.dfoot .sum .total { font-family: var(--font-display); font-weight: 500; font-size: 26px; }
+.dfoot .muted { color: var(--muted); font-size: 14px; }
+.dbtns .btn { border-radius: 999px; }
+.dbtns .btn:last-child { box-shadow: 0 10px 24px rgba(0, 0, 0, .18); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .lines li.new { animation: lineIn .5s var(--ease) backwards; }
+  @keyframes lineIn { from { opacity: 0; transform: translateX(28px) scale(.96); } to { opacity: 1; transform: none; } }
+  .upi { animation: softIn .4s var(--ease) backwards; }
+  .lines li { transition: border-color .2s ease, box-shadow .25s ease; }
+  .lines li:hover { border-color: var(--ink); box-shadow: 0 8px 22px rgba(0, 0, 0, .07); }
+}

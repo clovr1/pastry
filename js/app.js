@@ -161,16 +161,19 @@ const SHELL_PANEL = `
 <div class="scrim" id="scrim" hidden></div>
 <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" inert>
   <div class="dhead">
-    <h2 id="cartTitle">Shopping Cart</h2>
+    <h2 id="cartTitle">Shopping Cart <span class="dcount" id="dCount" hidden>0</span></h2>
     <button class="x" type="button" id="closeCart" aria-label="Tutup">✕</button>
   </div>
   <div class="dbody" id="dbody">
-    <div class="empty" id="emptyMsg">
-      <span>Belum ada pesanan. Tambahkan pastry dari menu.</span>
-      <a class="btn ghost" href="products.html" id="toMenu">Lihat produk</a>
+    <div class="empty dempty" id="emptyMsg">
+      <i class="dmark" aria-hidden="true"></i>
+      <b>Keranjangmu masih kosong</b>
+      <span>Pilih pastry favoritmu dari menu, lalu tambahkan ke sini.</span>
+      <a class="btn" href="products.html" id="toMenu">Lihat produk</a>
     </div>
     <div class="nudge" id="nudge" hidden></div>
     <ul class="lines" id="lines"></ul>
+    <section class="upsell" id="upsell" hidden></section>
   </div>
   <div class="dfoot" id="dfoot" hidden>
     <div class="sum" id="sum"></div>
@@ -583,6 +586,7 @@ function renderCartPage() {
   }).join('');
   $('krSum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
 }
+function thumbImg(it) { return it.img ? '<img src="' + esc(it.img) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()">' : ''; }
 function renderCart() {
   const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
   $('emptyMsg').hidden = has;
@@ -592,13 +596,20 @@ function renderCart() {
   nd.hidden = !has;
   if (has) nd.innerHTML = nudgeHtml(t);
 
+  const known = new Set(Array.from($('lines').children).map(li => li.dataset.id));
   $('lines').innerHTML = ids.map(id => {
     const it = byId(id), q = state.cart[id];
-    return '<li>' + thumb(it) +
-      '<div class="lm"><span class="ln">' + esc(it.name) + '</span>' +
+    return '<li data-id="' + id + '"' + (known.has(id) ? '' : ' class="new"') + '>' + thumb(it) +
+      '<div class="lm"><a class="ln" href="product.html?id=' + encodeURIComponent(id) + '">' + esc(it.name) + '</a><span class="unit">' + rp(it.price) + (q > 1 ? ' × ' + q : '') + '</span>' +
       '<div class="stepper"><button type="button" data-act="dec" data-id="' + id + '" aria-label="Kurangi ' + esc(it.name) + '">−</button><output>' + q + '</output><button type="button" data-act="inc" data-id="' + id + '" aria-label="Tambah ' + esc(it.name) + '">+</button></div></div>' +
-      '<div class="rt"><button type="button" class="rm" data-act="rm" data-id="' + id + '" aria-label="Hapus ' + esc(it.name) + '">×</button><span class="price">' + rp(it.price * q) + '</span></div></li>';
+      '<div class="rt"><button type="button" class="rm" data-act="rm" data-id="' + id + '" aria-label="Hapus ' + esc(it.name) + '">✕</button><span class="price">' + rp(it.price * q) + '</span></div></li>';
   }).join('');
+  const dc = $('dCount'); dc.textContent = t.count; dc.hidden = t.count === 0;
+  // saran tambahan: produk yang cocok dengan isi keranjang dan belum ada di dalamnya
+  const up = $('upsell');
+  const sug = has ? relatedItems(byId(ids[ids.length - 1])).filter(o => !state.cart[o.id] && !o.soldOut).slice(0, 3) : [];
+  up.hidden = !sug.length;
+  up.innerHTML = sug.length ? '<h3>Cocok untuk ditambahkan</h3><div class="upl">' + sug.map(o => '<div class="upi"><span class="upimg">' + thumbImg(o) + '</span><div><b>' + esc(o.name) + '</b><small>' + rp(o.price) + '</small></div><button type="button" class="upadd" data-up="' + o.id + '" aria-label="Tambah ' + esc(o.name) + '">+</button></div>').join('') + '</div>' : '';
 
   $('sum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
   $('dfoot').hidden = !has;
@@ -782,6 +793,13 @@ document.addEventListener('click', e => {
   }
   const b = e.target.closest('[data-act]');
   if (b) change(b.dataset.id, b.dataset.act === 'inc' ? 1 : (b.dataset.act === 'rm' ? -999 : -1));
+});
+document.addEventListener('click', e => {
+  const u = e.target.closest('[data-up]');
+  if (!u) return;
+  const im = u.closest('.upi').querySelector('img');
+  flyToCart(im || u, im && im.currentSrc);
+  change(u.dataset.up, 1);
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
 if (PAGE !== 'checkout') $('cartBtn').addEventListener('click', openCart);   // di checkout, tombol ini tautan ke halaman keranjang
