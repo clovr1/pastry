@@ -396,10 +396,7 @@ function setupCars() {
 /* ---- Halaman detail produk ---- */
 let prodItem = null, prodQty = 1;
 function updateInCart() {
-  const el = $('inCart');
-  if (!el || !prodItem) return;
-  const n = state.cart[prodItem.id] || 0;
-  el.hidden = !n; el.textContent = 'Sudah ada ' + n + ' di keranjangmu.';
+  // keterangan "Sudah ada N di keranjangmu" sengaja dihilangkan; angka di ikon keranjang sudah cukup
 }
 const ICO = {
   alert: '<path d="M12 3 2 20h20L12 3z"/><path d="M12 10v4M12 17.5v.01"/>',
@@ -526,7 +523,7 @@ function renderProduct() {
     '<div class="pd-info"><p class="label">' + esc(cat ? cat.name : '') + '</p><h1>' + esc(it.name) + '</h1><p class="pd-price">' + rp(it.price) + '</p>' +
     (it.soldOut ? '<p class="soldout">Habis hari ini. Coba lagi besok atau pilih produk lain.</p>' :
       '<div class="qtyrow"><span class="label">Jumlah</span><div class="stepper q"><button type="button" data-qty="-1" aria-label="Kurangi jumlah">−</button><output id="qty" aria-live="polite">1</output><button type="button" data-qty="1" aria-label="Tambah jumlah">+</button></div></div>' +
-      '<p class="incart" id="inCart" hidden></p><button class="btn block" type="button" id="addBtn">Tambah ke keranjang</button>') +
+      '<button class="btn block" type="button" id="addBtn">Tambah ke keranjang</button>') +
     hoursLine() + '<p class="pd-desc">' + esc(it.desc) + '</p>' +
     (it.includes && it.includes.length ? '<div class="pd-incl"><span class="label">Isi paket</span><ul>' + it.includes.map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>' : '') + accordion(it) +
     '<p class="hint">Toko mengonfirmasi pesananmu sebelum kamu membayar.</p></div>';

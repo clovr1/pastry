@@ -288,7 +288,6 @@ a.item:hover .nm { color: var(--accent); }
 .qtyrow .stepper { background: transparent; color: var(--ink); border: 1px solid var(--ink); border-radius: 4px; }
 .qtyrow .stepper button { height: 46px; width: 46px; }
 .qtyrow .stepper output { min-width: 40px; }
-.incart { margin: -6px 0 0; font-size: 14px; color: var(--ok); font-weight: 600; }
 .soldout { margin: 0; color: var(--warn); font-weight: 600; }
 .pd-desc { margin: 0; color: var(--muted); font-size: 16px; max-width: 52ch; }
 .pd-meta { display: grid; gap: 10px; margin: 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 14px; }
@@ -759,7 +758,7 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
 .pay:has(input:checked) { box-shadow: 0 0 0 1px var(--ink); }
 .acc summary { transition: color .2s ease; }
 @media (prefers-reduced-motion: no-preference) {
-  .infobox:not([hidden]), .hint.warn:not([hidden]), .err:not([hidden]), .done:not([hidden]), .soldout, .incart:not([hidden]) { animation: softIn .35s var(--ease) backwards; }
+  .infobox:not([hidden]), .hint.warn:not([hidden]), .err:not([hidden]), .done:not([hidden]), .soldout { animation: softIn .35s var(--ease) backwards; }
   @keyframes softIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
   .stepper output.bump, .q output.bump { animation: numBump .3s var(--ease); }
   @keyframes numBump { 0% { transform: scale(1); } 45% { transform: scale(1.3); } 100% { transform: scale(1); } }
