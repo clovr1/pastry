@@ -1,0 +1,7 @@
+# Halaman HTML selalu dicek ulang ke server (tidak dipakai dari cache tanpa verifikasi), supaya setiap halaman
+# langsung memakai versi CSS dan JavaScript terbaru (nomor ?v=... di tautannya). Butuh modul mod_headers (aktif di Laragon).
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
