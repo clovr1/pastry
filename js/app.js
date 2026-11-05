@@ -604,28 +604,31 @@ function renderCartPage() {
   }).join('');
   $('krSum').innerHTML = sumRows(t, false) + '<div class="muted"><span>Ongkir</span><span>Dihitung di detail pesanan</span></div>';
 }
-/* "Cocok untuk ditambahkan" di panel keranjang: pasangan yang melengkapi isi keranjang, bukan produk yang sejenis.
-   Kategori yang saling melengkapi diatur di config.pairs (mis. croissant -> tart dan kue kering). Paket/bundle dan produk yang
-   sudah ada di keranjang tidak disarankan; label Terlaris/Baru dan harga yang ringan (mudah ditambah) menambah nilai. */
+/* Saran di detail pesanan ("Kamu mungkin suka"): mengikuti isi pesanan.
+   1) Produk sekategori lebih dulu: pembeli croissant kemungkinan mau croissant atau roti lain.
+   2) Lalu pasangan yang melengkapi dari kategori lain (config.pairs, mis. croissant -> tart dan kue kering).
+   Produk yang sudah dipesan dan yang habis tidak disarankan; paket hanya disarankan kalau pesanan sudah berisi paket.
+   Label Terlaris/Baru, harga yang mirip dengan yang dipesan, dan harga yang ringan menambah nilai. */
 function pairItems(ids, max, perCatMax) {
   const pairs = CONFIG.pairs || {}, inCart = new Set(ids), best = new Map();
   ids.forEach((cid, order) => {
     const src = byId(cid);
     if (!src) return;
-    const want = pairs[src.cat] || CATS.map(c => c.id).filter(c => c !== src.cat);
+    const want = [src.cat].concat(pairs[src.cat] || CATS.map(c => c.id).filter(c => c !== src.cat));
     ITEMS.forEach(o => {
-      if (inCart.has(o.id) || o.soldOut || o.cat === 'paket') return;
+      if (inCart.has(o.id) || o.soldOut) return;
+      if (o.cat === 'paket' && src.cat !== 'paket') return;
       const rank = want.indexOf(o.cat);
       if (rank < 0) return;
-      let sc = 60 - rank * 12;
+      let sc = 80 - rank * 16;                                   // sekategori 80, pasangan pertama 64, kedua 48
       if (o.tag === 'Terlaris') sc += 14; else if (o.tag === 'Baru') sc += 8;
-      sc += 10 * (1 - Math.min(1, o.price / 120000));
-      sc += order * 0.5;   // isi keranjang yang terbaru sedikit lebih berpengaruh
+      if (rank === 0) sc += 10 * (1 - Math.min(1, Math.abs(o.price - src.price) / Math.max(src.price, 1)));   // sekategori: harga yang mirip lebih cocok
+      else sc += 10 * (1 - Math.min(1, o.price / 120000));        // pasangan: yang ringan lebih mudah ditambah
+      sc += order * 0.5;                                          // isi pesanan yang terbaru sedikit lebih berpengaruh
       const prev = best.get(o.id);
-      if (!prev || sc > prev.sc) best.set(o.id, { o, sc, src });
+      if (!prev || sc > prev.sc) best.set(o.id, { o, sc, src, same: rank === 0 });
     });
   });
-  // maksimal dua saran dari kategori yang sama supaya beragam
   const out = [], perCat = {};
   Array.from(best.values()).sort((a, b) => b.sc - a.sc).forEach(x => {
     if (out.length >= max || (perCat[x.o.cat] || 0) >= (perCatMax || 2)) return;
@@ -707,7 +710,7 @@ function renderCheckout() {
   const keep = of.querySelector('.sg-track') ? of.querySelector('.sg-track').scrollLeft : 0;   // posisi geser dipertahankan saat daftar digambar ulang
   of.hidden = !sug.length;
   of.innerHTML = sug.length ? '<div class="sg-head"><h3>Kamu mungkin suka</h3><span class="sg-nav"><button type="button" data-sg="-1" aria-label="Sebelumnya">‹</button><button type="button" data-sg="1" aria-label="Berikutnya">›</button></span></div>' +
-    '<div class="sg-track" tabindex="0" aria-label="Saran produk, geser untuk melihat lainnya">' + sug.map(x => '<div class="sg-card"><span class="sg-img">' + thumbImg(x.o) + '</span><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><button type="button" class="sg-add" data-up="' + x.o.id + '" title="Pas dengan ' + esc(x.src.name) + '" aria-label="Tambah ' + esc(x.o.name) + '">+ Tambah</button></div>').join('') + '</div>' : '';
+    '<div class="sg-track" tabindex="0" aria-label="Saran produk, geser untuk melihat lainnya">' + sug.map(x => '<div class="sg-card"><span class="sg-img">' + thumbImg(x.o) + '</span><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><button type="button" class="sg-add" data-up="' + x.o.id + '" title="' + (x.same ? 'Sejenis dengan ' : 'Pas dengan ') + esc(x.src.name) + '" aria-label="Tambah ' + esc(x.o.name) + '">+ Tambah</button></div>').join('') + '</div>' : '';
   if (keep) of.querySelector('.sg-track').scrollLeft = keep;
   $('coSum').innerHTML = sumRows(t, true);
   const mh = $('minHint'), low = mode() === 'delivery' && t.sub < CONFIG.minDelivery;

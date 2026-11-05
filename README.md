@@ -231,4 +231,9 @@ Browser kadang menyimpan halaman HTML lama, padahal CSS dan JavaScript-nya sudah
 
 ## "Kamu mungkin suka" di detail pesanan
 
-Di panel ringkasan halaman **Detail pesanan** ada baris saran berupa kartu kecil (foto, nama, harga, tombol **+ Tambah**) yang bisa **digeser ke samping** (swipe di HP, roda mouse/trackpad atau tombol panah ‹ › di laptop). Sarannya **pasangan yang melengkapi** isi pesanan, bukan produk sejenis: croissant disarankan bersama tart/éclair dan kue kering, tart bersama croissant dan kue kering, dan seterusnya (menyorot tombol menunjukkan "Pas dengan <produk di pesanan>"). Paket/bundle, produk yang sudah ada di pesanan, dan produk yang habis tidak disarankan; label Terlaris/Baru dan harga yang ringan menambah nilai. Setelah ditambah, ringkasan dan total langsung berubah. Panel keranjang sengaja dibiarkan bersih. Aturan pasangan kategori ada di `config.pairs` pada `data/menu.json` (isi: `"croissant": ["tart", "kering"]` artinya pembeli croissant disarankan tart dulu, lalu kue kering). Logikanya ada di fungsi `pairItems` pada `js/app.js`.
+Di panel ringkasan halaman **Detail pesanan** ada baris kartu kecil (foto, nama, harga, tombol **+ Tambah**) yang bisa **digeser ke samping** (swipe di HP; tombol panah ‹ › atau scroll horizontal di laptop). Sarannya mengikuti isi pesanan:
+
+1. **Sekategori lebih dulu**: pembeli croissant kemungkinan mau croissant atau roti lain, jadi croissant lain muncul paling depan (yang harganya mirip dan berlabel Terlaris/Baru sedikit lebih diutamakan).
+2. **Lalu pasangan yang melengkapi** dari kategori lain, diatur di `config.pairs` pada `data/menu.json` (isi: `"croissant": ["tart", "kering"]` artinya setelah croissant lain, disarankan tart, lalu kue kering).
+
+Produk yang sudah dipesan dan yang habis tidak disarankan; paket/bundle hanya disarankan kalau pesanan sudah berisi paket. Menyorot tombol **+ Tambah** menunjukkan alasannya ("Sejenis dengan ..." atau "Pas dengan ..."). Setelah ditambah, ringkasan dan total langsung berubah. Panel keranjang sengaja dibiarkan bersih. Logikanya ada di fungsi `pairItems` pada `js/app.js`.
