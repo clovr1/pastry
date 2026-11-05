@@ -1011,9 +1011,15 @@ html { overflow-x: clip; }
 .cartbtn.ring::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent); animation: cartRing .7s var(--ease) forwards; pointer-events: none; }
 @keyframes cartRing { from { transform: scale(1); opacity: .9; } to { transform: scale(1.9); opacity: 0; } }
 
-/* Penawaran tambahan di panel ringkasan pesanan */
-.co-offer { display: grid; gap: 8px; padding-top: 4px; }
+/* Penawaran tambahan di panel ringkasan pesanan: baris ringkas satu garis */
+.co-offer { display: grid; gap: 6px; padding-top: 2px; }
 .co-offer[hidden] { display: none; }
-.co-offer h3 { font-family: var(--font-name); font-weight: 600; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
-.co-offer .upi { background: var(--surface); border: 1px solid var(--line); }
-.co-offer .upi em { color: var(--accent); }
+.co-offer h3 { font-family: var(--font-name); font-weight: 600; font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.offer { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 4px 4px 4px 4px; border-radius: 10px; }
+.offer:hover { background: rgba(0, 0, 0, .035); }
+.offer-img { width: 34px; height: 34px; border-radius: 8px; overflow: hidden; background: var(--line); display: block; }
+.offer-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.offer-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; min-width: 0; font-size: 14px; }
+.offer-t b { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.offer-t small { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.offer .upadd { width: 30px; height: 30px; font-size: 18px; }

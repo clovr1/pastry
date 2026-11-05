@@ -705,7 +705,7 @@ function renderCheckout() {
   // penawaran tambahan di detail pesanan: pasangan yang melengkapi isi pesanan (bisa ditambah dengan satu ketukan)
   const sug = pairItems(ids, 2), of = $('coOffer');
   of.hidden = !sug.length;
-  of.innerHTML = sug.length ? '<h3>Tambahkan ke pesananmu</h3>' + sug.map(x => '<div class="upi"><span class="upimg">' + thumbImg(x.o) + '</span><div><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small><em>Pas dengan ' + esc(x.src.name) + '</em></div><button type="button" class="upadd" data-up="' + x.o.id + '" aria-label="Tambah ' + esc(x.o.name) + '">+</button></div>').join('') : '';
+  of.innerHTML = sug.length ? '<h3>Lengkapi pesananmu</h3>' + sug.map(x => '<div class="offer"><span class="offer-img">' + thumbImg(x.o) + '</span><span class="offer-t"><b>' + esc(x.o.name) + '</b><small>' + rp(x.o.price) + '</small></span><button type="button" class="upadd" data-up="' + x.o.id + '" title="Pas dengan ' + esc(x.src.name) + '" aria-label="Tambah ' + esc(x.o.name) + '">+</button></div>').join('') : '';
   $('coSum').innerHTML = sumRows(t, true);
   const mh = $('minHint'), low = mode() === 'delivery' && t.sub < CONFIG.minDelivery;
   mh.hidden = !low;
@@ -849,7 +849,7 @@ document.addEventListener('click', e => {
 document.addEventListener('click', e => {
   const u = e.target.closest('[data-up]');
   if (!u) return;
-  const im = u.closest('.upi').querySelector('img');
+  const row = u.closest('.offer, .upi'), im = row && row.querySelector('img');
   flyToCart(u, im && im.currentSrc);
   change(u.dataset.up, 1);
 });
