@@ -945,7 +945,9 @@ html { overflow-x: clip; }
 .coll-note b { display: block; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 3px; }
 
 /* Gambar yang "dilempar" ke keranjang */
-.flyer { position: fixed; z-index: 90; pointer-events: none; border-radius: 14px; background: var(--tile) center / cover no-repeat; box-shadow: 0 14px 34px rgba(0, 0, 0, .28); will-change: transform, opacity; }
+.flyer { position: fixed; z-index: 90; pointer-events: none; border-radius: 50%; background: var(--accent) center / cover no-repeat; border: 3px solid #fff; box-shadow: 0 8px 22px rgba(0, 0, 0, .3); will-change: transform, opacity; }
+.btn.pressed, .upadd.pressed { animation: btnPress .4s var(--ease); }
+@keyframes btnPress { 0% { transform: scale(1); } 35% { transform: scale(.94); } 100% { transform: scale(1); } }
 .cartbtn.wiggle { animation: cartWiggle .55s var(--ease); }
 @keyframes cartWiggle { 0% { transform: none; } 20% { transform: rotate(-14deg) scale(1.12); } 45% { transform: rotate(10deg) scale(1.12); } 70% { transform: rotate(-5deg); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .flyer { display: none; } }
