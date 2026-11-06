@@ -129,6 +129,27 @@ function mountShell() {
 
 /* Garis penanda menu aktif: diletakkan tepat di bawah tautan halaman ini. Saat pindah halaman, browser yang mendukung
    (view transition) menggeser garis itu dari menu lama ke menu baru. */
+// sebelum meninggalkan halaman: munculkan menu atas kalau sedang tersembunyi (karena digulir), supaya gambar menu yang dipakai transisi lengkap
+window.addEventListener('pageswap', () => {
+  const bar = document.getElementById('topbar');
+  if (bar && bar.classList.contains('is-hidden')) { bar.style.transition = 'none'; bar.classList.remove('is-hidden'); }
+});
+// lebar tulisan nama toko diingat dari kunjungan sebelumnya dan dipesan sejak awal, supaya "BITE" tidak bergeser saat font selesai dimuat
+function reserveBrandWidth() {
+  ['b1', 'b2'].forEach(cls => {
+    const el = document.querySelector('.topbar .' + cls);
+    if (!el) return;
+    const key = 'sb-' + cls + ':' + CONFIG.shop;
+    let w = 0; try { w = Number(localStorage.getItem(key)) || 0; } catch (e) {}
+    if (w) { el.style.display = 'inline-block'; el.style.minWidth = w + 'px'; }
+    const measure = () => {
+      const keep = el.style.minWidth; el.style.minWidth = '0';
+      const nat = Math.round(el.getBoundingClientRect().width); el.style.minWidth = keep;
+      if (nat > 10 && nat !== w) { try { localStorage.setItem(key, String(nat)); } catch (e) {} }
+    };
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure); else window.addEventListener('load', measure);
+  });
+}
 function placeNavIndicator() {
   const nav = document.querySelector('.nav'), ind = nav && nav.querySelector('.nav-ind'), cur = nav && nav.querySelector('a[aria-current]');
   if (!ind) return;
@@ -1011,6 +1032,7 @@ if (PAGE === 'checkout') {
 
 initInfo();
 initHeaderHide();
+reserveBrandWidth();
 placeNavIndicator();
 window.addEventListener('resize', placeNavIndicator);
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeNavIndicator);
