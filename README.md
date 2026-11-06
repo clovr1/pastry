@@ -237,3 +237,32 @@ Di panel ringkasan halaman **Detail pesanan** ada baris kartu kecil (foto, nama,
 2. **Lalu pasangan yang melengkapi** dari kategori lain, diatur di `config.pairs` pada `data/menu.json` (isi: `"croissant": ["tart", "kering"]` artinya setelah croissant lain, disarankan tart, lalu kue kering).
 
 Produk yang sudah dipesan dan yang habis tidak disarankan; paket/bundle hanya disarankan kalau pesanan sudah berisi paket. Menyorot tombol **+ Tambah** menunjukkan alasannya ("Sejenis dengan ..." atau "Pas dengan ..."). Setelah ditambah, ringkasan dan total langsung berubah. Panel keranjang sengaja dibiarkan bersih. Logikanya ada di fungsi `pairItems` pada `js/app.js`.
+
+## Memasang di hosting (online)
+
+**Syarat hosting**: PHP 7.3 atau lebih baru (tanpa ekstensi khusus, tanpa database), bisa menulis file di folder `storage/` dan `images/`, dan HTTPS. Hosting statis (GitHub Pages, Netlify, Vercel) **tidak bisa** karena situs ini memakai PHP. Yang cocok: shared hosting/cPanel (mis. Niagahoster, Hostinger, Rumahweb, Domainesia) atau VPS kecil.
+
+1. **Siapkan di komputermu**: jalankan `php tools/set-owner-password.php` (sekali) supaya `api/config.php` terbentuk, dan `php tools/bump-version.php` setelah mengubah CSS/JS. `api/config.php` tidak ikut GitHub, jadi harus diunggah sendiri.
+2. **Unggah semua file proyek** ke folder web (biasanya `public_html`): lewat File Manager/FTP, atau `git clone` kalau hostingmu punya SSH. Lalu unggah juga `api/config.php`. **Hapus `api/diagnose.php`** di server.
+3. **Izin folder**: `storage/` dan `images/` harus bisa ditulis PHP (di cPanel: klik kanan folder, Change Permissions, 755 atau 775). `storage/` berisi pesanan, akun, sesi, bukti bayar, dan `menu-live.json` (menu yang diubah owner).
+4. **Aktifkan HTTPS** (di cPanel: SSL/TLS atau AutoSSL, gratis lewat Let's Encrypt), lalu buka situsnya lewat `https://`. Cookie login otomatis memakai mode aman di HTTPS.
+5. **Batas unggah foto**: pastikan `upload_max_filesize` dan `post_max_size` di PHP minimal 10M (di cPanel: Select PHP Version, Options).
+6. **Isi data asli** di dashboard owner (`/owner/`): rekening dan QRIS, alamat, kontak, jam buka, ongkir, dan cek ulang data alergen tiap produk. Data rekening bawaan hanyalah contoh.
+7. **Tes sekali**: buat pesanan percobaan, tandai lunas dari dashboard, lalu coba daftar akun pembeli.
+
+**Server Apache** (hampir semua shared hosting): `.htaccess` di folder utama, `storage/`, dan `data/` sudah mengatur cache halaman dan menutup folder data dari akses web.
+
+**Server Nginx** (VPS): `.htaccess` tidak dibaca, jadi tambahkan aturan ini di konfigurasi situs supaya data pesanan tidak bisa diunduh orang:
+
+```nginx
+location ~ ^/(storage|data|tools)/ { deny all; }
+location = /api/config.php { deny all; }
+location = /api/_lib.php { deny all; }
+location ~* \.html$ { add_header Cache-Control "no-cache"; }
+```
+
+**Di belakang Cloudflare atau reverse proxy**: batas pesanan (8 per 10 menit) dan batas login dihitung per alamat IP. Di belakang proxy, semua pengunjung bisa terlihat berasal dari satu IP sehingga batas itu mengenai semua orang sekaligus. Kalau memakai Cloudflare, bilang saja supaya aturannya dibaca dari header IP asli.
+
+**Cadangan**: yang penting dicadangkan hanya folder `storage/` (pesanan, akun, menu yang diubah owner, bukti bayar) dan `images/` (foto unggahan), karena tidak ada di GitHub. Pesanan otomatis dicadangkan harian di `storage/backup-*.json`, tapi file itu ada di server yang sama, jadi salin juga ke tempat lain secara berkala.
+
+**Memperbarui situs**: ubah di komputer, jalankan `php tools/bump-version.php`, lalu unggah ulang file yang berubah (atau `git pull` di server). Jangan menimpa folder `storage/`, `images/u-*`, dan `api/config.php` di server.
