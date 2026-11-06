@@ -1056,10 +1056,12 @@ html { overflow-x: clip; }
   ::view-transition-new(topbar) { display: none; }
   ::view-transition-group(navind) { animation-duration: .5s; animation-timing-function: cubic-bezier(.22, .61, .36, 1); }
   ::view-transition-old(navind), ::view-transition-new(navind) { height: 100%; }
-  /* tulisan menu langsung memakai warna barunya (tanpa pudar silang, yang membuat tulisan nyaris hilang di tengah transisi) */
+  /* tulisan menu: gambar lama tetap tampil selama halaman baru dimuat (supaya tidak ada saat tulisan hilang di koneksi lambat),
+     lalu begitu halaman baru siap, gambar baru langsung menggantikannya tanpa pudar silang */
   ::view-transition-group(navtext) { animation: none; }
-  ::view-transition-old(navtext) { display: none; }
+  ::view-transition-old(navtext) { animation: navOut .01s linear both; }
   ::view-transition-new(navtext) { animation: none; }
+  @keyframes navOut { to { opacity: 0; } }
   ::view-transition-old(root) { animation: vtOut .22s ease both; }
   ::view-transition-new(root) { animation: vtIn .45s cubic-bezier(.22, .61, .36, 1) both; }
   @keyframes vtOut { to { opacity: 0; transform: translateY(-8px); } }
