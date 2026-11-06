@@ -678,9 +678,11 @@ html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *
   .cartbtn:hover, .themebtn:hover, .acctbtn:hover { transform: translateY(-2px); }
   .cn.pop { animation: pop .45s var(--ease); }
   @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.5); } 100% { transform: scale(1); } }
+  .nav { position: relative; }
   .nav a { position: relative; }
   .nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .35s var(--ease); }
-  .nav a:hover::after, .nav a[aria-current]::after { transform: scaleX(1); }
+  .nav a:hover::after { transform: scaleX(1); }
+  .nav a[aria-current]::after { display: none; }
   .acc-order, .acc-vrow, .ord-card, .o-card2, .o-prod { transition: transform .25s var(--ease), border-color .2s ease, box-shadow .25s ease; }
   .acc-vrow:hover, .ord-card:hover { box-shadow: 0 10px 24px rgba(0, 0, 0, .08); }
   .notice, .closedbar { animation: dropIn .5s var(--ease) backwards; }
@@ -1028,3 +1030,21 @@ html { overflow-x: clip; }
 .sg-card small { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .sg-add { margin-top: 6px; border: 1px solid var(--ink); background: transparent; border-radius: 999px; padding: 6px 0; font-size: 13px; font-weight: 600; transition: background-color .2s ease, color .2s ease; }
 .sg-add:hover { background: var(--ink); color: var(--bg); }
+
+/* Indikator menu aktif + transisi pindah halaman lewat menu atas */
+.nav { position: relative; }
+.nav-ind { position: absolute; left: 0; bottom: -6px; height: 1px; width: var(--w, 0); transform: translateX(var(--x, 0)); background: var(--accent); pointer-events: none; }
+@media (max-width: 900px) { .nav-ind { bottom: -1px; height: 2px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .nav-ind { transition: transform .45s var(--ease), width .45s var(--ease), opacity .3s ease; }
+  /* perpindahan antarhalaman (Chrome, Edge, Safari terbaru; browser lain tetap pindah biasa) */
+  @view-transition { navigation: auto; }
+  html:not(.vt-theme) .topbar { view-transition-name: topbar; }      /* menu atas diam di tempat, tidak ikut memudar */
+  html:not(.vt-theme) .nav-ind { view-transition-name: navind; }     /* garis penanda meluncur ke menu baru */
+  ::view-transition-group(navind) { animation-duration: .5s; animation-timing-function: cubic-bezier(.22, .61, .36, 1); }
+  ::view-transition-old(navind), ::view-transition-new(navind) { height: 100%; }
+  ::view-transition-old(root) { animation: vtOut .22s ease both; }
+  ::view-transition-new(root) { animation: vtIn .45s cubic-bezier(.22, .61, .36, 1) both; }
+  @keyframes vtOut { to { opacity: 0; transform: translateY(-8px); } }
+  @keyframes vtIn { from { opacity: 0; transform: translateY(14px); } }
+}

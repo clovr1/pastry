@@ -266,3 +266,5 @@ location ~* \.html$ { add_header Cache-Control "no-cache"; }
 **Cadangan**: yang penting dicadangkan hanya folder `storage/` (pesanan, akun, menu yang diubah owner, bukti bayar) dan `images/` (foto unggahan), karena tidak ada di GitHub. Pesanan otomatis dicadangkan harian di `storage/backup-*.json`, tapi file itu ada di server yang sama, jadi salin juga ke tempat lain secara berkala.
 
 **Memperbarui situs**: ubah di komputer, jalankan `php tools/bump-version.php`, lalu unggah ulang file yang berubah (atau `git pull` di server). Jangan menimpa folder `storage/`, `images/u-*`, dan `api/config.php` di server.
+
+**Pindah halaman lewat menu atas**: isi halaman memudar keluar lalu halaman baru naik halus, menu atas tetap diam, dan garis penanda menu aktif (garis merah di bawah Home/Product/Collection) meluncur dari menu lama ke menu baru. Memakai fitur View Transition browser (Chrome, Edge, dan Safari terbaru); browser lain pindah halaman seperti biasa, dan semuanya mati kalau pengguna memilih "kurangi gerakan". Gayanya ada di bagian `/* Indikator menu aktif ... */` pada `css/style.css`.

@@ -45,7 +45,7 @@ function toggleTheme() {
     const radius = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
     document.documentElement.classList.add('vt-theme');
     const vt = document.startViewTransition(apply);
-    vt.finished.finally(() => document.documentElement.classList.remove('vt-theme'));
+    vt.finished.catch(() => {}).finally(() => document.documentElement.classList.remove('vt-theme'));
     vt.ready.then(() => document.documentElement.animate(
       { clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)'] },
       { duration: 650, easing: 'cubic-bezier(.4, 0, .2, 1)', pseudoElement: '::view-transition-new(root)' })).catch(() => {});
@@ -113,6 +113,7 @@ function mountShell() {
         '<a href="index.html"' + cur('home') + '>Home</a>' +
         '<a href="products.html"' + cur('products') + '>Product</a>' +
         ((CONFIG.collections || []).length ? '<a href="koleksi.html"' + cur('koleksi') + '>Collection</a>' : '') +
+        '<i class="nav-ind" aria-hidden="true"></i>' +
       '</nav>' +
       '<div class="top-r"><span class="status" id="status">Memuat…</span>' + THEME_BTN_HTML + ACCT_BTN_HTML +
         '<button class="cartbtn" type="button" id="cartBtn" aria-label="Shopping Cart, 0 item">' +
@@ -126,6 +127,14 @@ function mountShell() {
   document.body.insertAdjacentHTML('beforeend', footerHtml());
 }
 
+/* Garis penanda menu aktif: diletakkan tepat di bawah tautan halaman ini. Saat pindah halaman, browser yang mendukung
+   (view transition) menggeser garis itu dari menu lama ke menu baru. */
+function placeNavIndicator() {
+  const nav = document.querySelector('.nav'), ind = nav && nav.querySelector('.nav-ind'), cur = nav && nav.querySelector('a[aria-current]');
+  if (!ind) return;
+  if (!cur) { ind.style.opacity = '0'; return; }
+  ind.style.setProperty('--x', cur.offsetLeft + 'px'); ind.style.setProperty('--w', cur.offsetWidth + 'px'); ind.style.opacity = '1';
+}
 /* Menu atas: sembunyi saat digulir ke bawah, muncul lagi begitu digulir ke atas (tidak perlu sampai paling atas). */
 function initHeaderHide() {
   const bar = document.getElementById('topbar');
@@ -1002,6 +1011,9 @@ if (PAGE === 'checkout') {
 
 initInfo();
 initHeaderHide();
+placeNavIndicator();
+window.addEventListener('resize', placeNavIndicator);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeNavIndicator);
 if (PAGE === 'checkout') { initForm(); syncMode(); } else { renderCart(); }
 if (PAGE === 'checkout') authReady.then(user => {
   const note = $('coAcct');
