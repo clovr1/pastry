@@ -1,7 +1,15 @@
-# Halaman HTML selalu dicek ulang ke server (tidak dipakai dari cache tanpa verifikasi), supaya setiap halaman
-# langsung memakai versi CSS dan JavaScript terbaru (nomor ?v=... di tautannya). Butuh modul mod_headers (aktif di Laragon).
+# Aturan cache. Butuh modul mod_headers (aktif di Laragon dan hampir semua hosting).
 <IfModule mod_headers.c>
+  # Halaman HTML selalu dicek ulang ke server, supaya langsung memakai nomor versi (?v=...) CSS/JS terbaru.
   <FilesMatch "\.html$">
     Header set Cache-Control "no-cache"
+  </FilesMatch>
+  # CSS dan JavaScript punya nomor versi di tautannya (?v=...), jadi aman disimpan lama: pindah halaman tidak mengunduh ulang.
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # Gambar, logo, dan ikon: simpan seminggu. Foto produk memakai ?v= dari server, jadi foto baru langsung terbaca.
+  <FilesMatch "\.(png|jpe?g|webp|gif|svg|ico|woff2?)$">
+    Header set Cache-Control "public, max-age=604800"
   </FilesMatch>
 </IfModule>

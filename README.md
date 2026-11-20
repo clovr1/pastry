@@ -284,3 +284,11 @@ Hasilnya `deploy/sweetbite-deploy.zip` (folder `deploy/` tidak masuk Git). Isiny
 **Font harga**: semua harga memakai satu pengaturan, `--font-price` di bagian atas `css/style.css` (bawaan Fraunces, serif seperti nama produk). Untuk mengganti, ubah nilainya, misalnya ke `var(--font-body)` supaya kembali ke font isi.
 
 **Tampilan HP**: baris atas (logo, nama toko, tiga tombol) mengecil otomatis di layar sempit supaya halaman tidak melebar melebihi layar. Setelah mengubah logo atau nama toko, cek di lebar 360 px (di Chrome: F12, ikon ponsel, pilih ukuran) dan pastikan tidak ada gulir ke samping.
+
+## Kecepatan pindah halaman (cache)
+
+Supaya pindah halaman terasa cepat, `.htaccess` di folder utama mengatur cache: file CSS dan JavaScript disimpan browser selama setahun (aman, karena nomor versi `?v=...` di tautannya berganti setiap kali kamu menjalankan `php tools/bump-version.php`), gambar seminggu, dan halaman HTML selalu dicek ulang. Data menu (`api/menu.php`) dipakai ulang selama 20 detik, jadi perubahan dari dashboard owner terlihat paling lambat 20 detik kemudian (harga, stok, dan status buka tetap diperiksa ulang oleh server saat pesanan masuk). Di pengukuran saya (koneksi 10 Mbps, latensi 120 ms), jeda dari klik sampai halaman baru muncul turun dari sekitar 440 ms ke sekitar 180 ms.
+
+**Penting setelah mengubah CSS atau JavaScript**: jalankan `php tools/bump-version.php` sebelum mengunggah, kalau tidak, pengunjung yang pernah membuka situs masih memakai file lama dari cache. Lalu muat ulang dengan Ctrl+F5.
+
+Saat mengklik tautan apa pun, garis merah tipis langsung berjalan di bagian paling atas layar sebagai tanda halaman sedang dimuat.

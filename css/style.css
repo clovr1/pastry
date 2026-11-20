@@ -1128,3 +1128,10 @@ body[data-page="profil"] { padding-bottom: 56px; }
 .acctbtn.on::after { content: ""; position: absolute; right: 6px; bottom: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 2px var(--bg); }
 .acctbtn.on:hover { background: var(--tile); }
 .cartbtn .cn { top: 0; right: -3px; min-width: 18px; height: 18px; padding: 0 4px; font-size: 11px; line-height: 18px; box-shadow: 0 0 0 2px var(--bg); }
+
+/* Umpan balik instan saat pindah halaman */
+html.navigating::before { content: ""; position: fixed; z-index: 100; top: 0; left: 0; height: 3px; width: 100%; background: var(--accent); transform-origin: left; transform: scaleX(.08); animation: navLoad 1.6s cubic-bezier(.1, .6, .2, 1) forwards; pointer-events: none; }
+@keyframes navLoad { to { transform: scaleX(.92); } }
+.nav a.pending { color: var(--accent); }
+.nav a:active { color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { html.navigating::before { animation: none; transform: scaleX(.6); } }

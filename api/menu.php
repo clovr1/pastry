@@ -21,7 +21,7 @@ unset($it);
 
 $flags = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 header('Content-Type: application/javascript; charset=utf-8');
-header('Cache-Control: no-cache');
+header('Cache-Control: private, max-age=20, stale-while-revalidate=300');   // data menu dipakai ulang antarhalaman selama 20 detik; perubahan owner terlihat paling lambat setelah itu (server tetap memeriksa ulang harga, stok, dan status buka saat pesanan masuk)
 header('X-Content-Type-Options: nosniff');
 echo 'const CONFIG = ', json_encode($config, $flags), ";\n";
 echo 'const CATS = ', json_encode($menu['cats'], $flags), ";\n";
