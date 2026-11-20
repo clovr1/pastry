@@ -371,7 +371,7 @@ function sb_user_find(array $d, $id) {
 }
 
 function sb_user_view(array $u) {
-    return ['name' => $u['name'], 'email' => $u['email'], 'phone' => $u['phone']];
+    return ['name' => $u['name'], 'email' => $u['email'], 'phone' => $u['phone'], 'google' => !empty($u['gsub']), 'hasPw' => empty($u['nopw'])];
 }
 
 /* ---------- Teks ---------- */

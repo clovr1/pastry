@@ -41,6 +41,7 @@
     root.innerHTML =
       '<div class="auth">' +
         '<div class="auth-head"><h1 id="aTitle"></h1><p id="aSub"></p></div>' +
+        (CONFIG.googleClientId ? '<div class="auth-google" id="gBox" hidden><div id="gBtn" class="g-btn"></div><p class="err" id="gErr" role="alert" hidden></p><p class="auth-or"><span>atau pakai email</span></p></div>' : '') +
         '<form id="fIn" class="auth-form" name="login" method="post" action="masuk.html" novalidate>' +
           field('inEmail', 'Email', 'email', ' name="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required') +
           field('inPw', 'Kata sandi', 'password', ' name="password" autocomplete="current-password" required') +
@@ -104,6 +105,38 @@
     });
 
     tab(startTab);
+    if (CONFIG.googleClientId) setupGoogle($q);
+  }
+
+  // Tombol resmi "Masuk dengan Google" (Google Identity Services). Hanya muncul kalau skripnya berhasil dimuat.
+  function setupGoogle($q) {
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.defer = true;
+    s.onload = () => {
+      if (!window.google || !google.accounts || !google.accounts.id) return;
+      google.accounts.id.initialize({
+        client_id: CONFIG.googleClientId, auto_select: false, itp_support: true,
+        callback: async resp => {
+          setErr($q('gErr'), '');
+          const r = await api('google', { credential: resp.credential });
+          if (!r.ok) { setErr($q('gErr'), r.data.error || 'Gagal masuk dengan Google.'); return; }
+          rememberUser(r.data.user);
+          const next = nextUrl();
+          // akun baru dari Google belum punya nomor HP: arahkan melengkapinya, kecuali sedang di tengah pesanan
+          location.href = r.data.created && !r.data.user.phone && next !== 'checkout.html' ? 'profil.html#lengkapi' : next;
+        }
+      });
+      const draw = () => {
+        const dark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+          (!document.documentElement.getAttribute('data-theme') && window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches);
+        const box = $q('gBtn'); if (!box) return;
+        box.innerHTML = '';
+        google.accounts.id.renderButton(box, { type: 'standard', theme: dark ? 'filled_black' : 'outline', size: 'large', text: 'continue_with', shape: 'pill', logo_alignment: 'left', locale: 'id', width: Math.min(400, Math.max(200, Math.floor(box.parentNode.clientWidth || 360))) });
+      };
+      $q('gBox').hidden = false; draw();
+      new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    };
+    document.head.appendChild(s);
   }
 
   /* ---------- Akun ---------- */
@@ -204,8 +237,8 @@
           '<form id="fProf" class="pf-form" name="profile" novalidate hidden>' +
             '<input type="email" name="email" autocomplete="username" value="' + esc(user.email) + '" hidden readonly tabindex="-1" aria-hidden="true">' +
             '<div class="two">' + field('pName', 'Nama lengkap', 'text', ' autocomplete="name"') + field('pPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel"') + '</div>' +
-            '<details class="acc-pw"><summary>Ganti kata sandi</summary>' +
-              '<div class="two">' + field('pOld', 'Kata sandi lama', 'password', ' name="current-password" autocomplete="current-password"') + field('pNew', 'Kata sandi baru', 'password', ' name="new-password" autocomplete="new-password"') + '</div>' +
+            '<details class="acc-pw" id="pPwBox"><summary id="pPwSum">Ganti kata sandi</summary>' +
+              '<div class="two"><div id="pOldBox">' + field('pOld', 'Kata sandi lama', 'password', ' name="current-password" autocomplete="current-password"') + '</div>' + field('pNew', 'Kata sandi baru', 'password', ' name="new-password" autocomplete="new-password"') + '</div>' +
             '</details>' +
             '<p class="err" id="pErr" role="alert" hidden></p>' +
             '<div class="pf-act"><button class="btn" type="submit" id="pBtn">Simpan perubahan</button><button class="btn ghost" type="button" id="pCancel">Batal</button></div>' +
@@ -218,7 +251,9 @@
       $q('pName').value = u.name; $q('pPhone').value = u.phone;
       $q('pAv').textContent = u.name.trim().charAt(0).toUpperCase();
       $q('pTitle').textContent = u.name;
-      $q('aInfo').innerHTML = [['Nama', u.name], ['Email', u.email], ['No. HP', u.phone]].map(r => '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>').join('');
+      const noPw = u.hasPw === false;   // akun yang dibuat lewat Google belum punya kata sandi
+      $q('pOldBox').hidden = noPw; $q('pPwSum').textContent = noPw ? 'Buat kata sandi (opsional)' : 'Ganti kata sandi';
+      $q('aInfo').innerHTML = [['Nama', u.name], ['Email', u.email + (u.google ? ' · Google' : '')], ['No. HP', u.phone || 'Belum diisi']].map(r => '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>').join('');
     }
     fill(user);
     const setEdit = open => {
@@ -227,13 +262,17 @@
       if (open) $q('pName').focus();
     };
     $q('editBtn').addEventListener('click', () => setEdit(true));
+    if (location.hash === '#lengkapi' && !user.phone) {
+      setEdit(true); $q('pPhone').focus();
+      setErr($q('pErr'), 'Satu langkah lagi: isi nomor HP (WhatsApp) supaya kami bisa menghubungimu soal pesanan.');
+    }
     $q('pCancel').addEventListener('click', () => { fill(user); setEdit(false); });
 
     $q('fProf').addEventListener('submit', async e => {
       e.preventDefault();
       setErr($q('pErr'), ''); $q('pOk').hidden = true;
       const b = { name: $q('pName').value.trim(), phone: $q('pPhone').value.trim() };
-      if ($q('pNew').value) { b.newPassword = $q('pNew').value; b.password = $q('pOld').value; }
+      if ($q('pNew').value) { b.newPassword = $q('pNew').value; b.password = user.hasPw === false ? '' : $q('pOld').value; }
       busy($q('pBtn'), true, 'Menyimpan…');
       const r = await api('update', b);
       busy($q('pBtn'), false, 'Simpan perubahan');

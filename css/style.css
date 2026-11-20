@@ -1187,3 +1187,10 @@ html.navigating::before { content: ""; position: fixed; z-index: 100; top: 0; le
   .dhead { padding-top: 10px; touch-action: none; }
   .dbody { min-height: 0; }
 }
+
+/* Masuk dengan Google */
+.auth-google { display: grid; gap: 14px; justify-items: center; }
+.auth-google[hidden] { display: none; }
+.auth-google .g-btn { display: flex; justify-content: center; min-height: 44px; width: 100%; color-scheme: light; }
+.auth-or { display: flex; align-items: center; gap: 12px; width: 100%; margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+.auth-or::before, .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }

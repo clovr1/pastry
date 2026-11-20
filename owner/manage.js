@@ -367,7 +367,7 @@
     const list = st.cust.filter(c => !q || (c.name + ' ' + c.email + ' ' + c.phone).toLowerCase().includes(q));
     const rows = list.map(c => '<button type="button" class="o-cust" data-cid="' + c.id + '">' +
       '<span class="o-av" aria-hidden="true">' + esc(c.name.trim().charAt(0).toUpperCase()) + '</span>' +
-      '<span class="o-cinfo"><b>' + esc(c.name) + (c.disabled ? ' <span class="o-pill no">Nonaktif</span>' : '') + '</b><span class="o-muted">' + esc(c.email) + ' · ' + esc(c.phone) + '</span></span>' +
+      '<span class="o-cinfo"><b>' + esc(c.name) + (c.google ? ' <span class="o-pill">Google</span>' : '') + (c.disabled ? ' <span class="o-pill no">Nonaktif</span>' : '') + '</b><span class="o-muted">' + esc(c.email) + ' · ' + (c.phone ? esc(c.phone) : 'HP belum diisi') + '</span></span>' +
       '<span class="o-cstat"><b>' + c.orders + ' pesanan</b><span class="o-muted">' + rp(c.spent) + '</span></span>' +
       '<span class="o-muted o-cdate">Daftar ' + fmtDay(c.createdAt) + '</span></button>').join('');
     box.innerHTML =
@@ -387,7 +387,7 @@
         '<div class="o-cstats"><div><span>Pesanan</span><b>' + c.orders + '</b></div><div><span>Total belanja</span><b>' + rp(c.spent) + '</b></div><div><span>Pesanan terakhir</span><b>' + (c.lastOrder ? fmtDay(c.lastOrder) : '-') + '</b></div></div>' +
         '<div id="cResult" class="o-cres" hidden></div>' +
         '<div class="o-cact">' +
-          '<a class="o-btn" href="' + esc(waLink(c.phone)) + '" target="_blank" rel="noopener">Chat WhatsApp</a>' +
+          (c.phone ? '<a class="o-btn" href="' + esc(waLink(c.phone)) + '" target="_blank" rel="noopener">Chat WhatsApp</a>' : '') +
           '<button type="button" class="o-btn" data-cx="reset">Buat kata sandi sementara</button>' +
           (c.linkable ? '<button type="button" class="o-btn" data-cx="link">Hubungkan ' + c.linkable + ' pesanan lama</button>' : '') +
           '<button type="button" class="o-btn" data-cx="toggle">' + (c.disabled ? 'Aktifkan kembali akun' : 'Nonaktifkan akun') + '</button>' +
@@ -453,6 +453,12 @@
         '<div class="field"><label for="sIg">Instagram</label><input id="sIg" maxlength="150" value="' + esc((s.social || {}).instagram || '') + '" placeholder="@namaakun atau tautan lengkap"></div>' +
         '<div class="field"><label for="sTt">TikTok</label><input id="sTt" maxlength="150" value="' + esc((s.social || {}).tiktok || '') + '" placeholder="@namaakun atau tautan lengkap"></div>' +
         '<div class="field"><label for="sFb">Facebook</label><input id="sFb" maxlength="150" value="' + esc((s.social || {}).facebook || '') + '" placeholder="namahalaman atau tautan lengkap"></div>' +
+        '<button class="btn" type="submit">Simpan</button></form>' +
+
+      '<form class="o-card2" data-set="google" novalidate><h2>Masuk dengan Google</h2>' +
+        '<p class="o-hint">Pembeli bisa masuk atau daftar dengan satu klik memakai akun Google. Isi Client ID dari Google Cloud Console (langkahnya ada di README, bagian "Masuk dengan Google"). Kosongkan untuk mematikan fitur ini.</p>' +
+        '<div class="field"><label for="sGoogle">Client ID Google</label><input id="sGoogle" maxlength="120" autocomplete="off" spellcheck="false" value="' + esc(s.googleClientId || '') + '" placeholder="1234567890-abcdef.apps.googleusercontent.com"></div>' +
+        '<p class="o-muted" style="margin:0">Status: <b>' + (s.googleClientId ? 'aktif' : 'belum aktif') + '</b></p>' +
         '<button class="btn" type="submit">Simpan</button></form>' +
 
       '<form class="o-card2" data-set="quote" novalidate><h2>Kutipan di beranda</h2>' +
@@ -522,6 +528,7 @@
     const f = e.target, kind = f.dataset.set, v = id => $(id).value;
     let body = {};
     if (kind === 'info') body = { shop: v('sShop'), address: v('sAddr'), contact: v('sContact'), social: { instagram: v('sIg'), tiktok: v('sTt'), facebook: v('sFb') } };
+    if (kind === 'google') body = { googleClientId: v('sGoogle').trim() };
     if (kind === 'quote') body = { quote: { text: v('qText'), author: v('qAuthor'), role: v('qRole'), lang: v('qLang') } };
     if (kind === 'hours') body = { open: Number(v('sOpen')), close: Number(v('sClose')), closedDays: Array.from(f.querySelectorAll('input[name="cday"]:checked')).map(x => Number(x.value)) };
     if (kind === 'delivery') body = { minDelivery: v('sMin'), zones: Array.from(f.querySelectorAll('.o-zone')).map(r => ({ id: r.dataset.zid, label: r.querySelector('[data-z="label"]').value, fee: r.querySelector('[data-z="fee"]').value })) };

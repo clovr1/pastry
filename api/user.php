@@ -30,6 +30,79 @@ function sb_log_in($uid, $sv = 0) {
     $_SESSION['sv'] = (int)$sv;
 }
 
+
+/* ---------- Masuk dengan Google ---------- */
+// Token (ID token) dari Google diperiksa di sini: tanda tangannya dicocokkan dengan kunci publik Google,
+// lalu tujuan (aud), penerbit (iss), masa berlaku, dan email terverifikasinya dicek.
+function sb_b64u($s) {
+    $s = strtr((string)$s, '-_', '+/');
+    $pad = strlen($s) % 4;
+    if ($pad) $s .= str_repeat('=', 4 - $pad);
+    return base64_decode($s, true);
+}
+function sb_http_get($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 6, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_FOLLOWLOCATION => false]);
+        $r = curl_exec($ch);
+        $code = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return ($r !== false && $code === 200) ? $r : null;
+    }
+    $r = @file_get_contents($url, false, stream_context_create(['http' => ['timeout' => 6, 'ignore_errors' => false]]));
+    return $r === false ? null : $r;
+}
+function sb_der_len($n) { return $n < 128 ? chr($n) : (($n < 256) ? "\x81" . chr($n) : "\x82" . chr($n >> 8) . chr($n & 255)); }
+function sb_jwk_pem(array $k) {
+    $n = sb_b64u($k['n'] ?? ''); $e = sb_b64u($k['e'] ?? '');
+    if ($n === false || $e === false || $n === '' || $e === '') return null;
+    $int = function ($b) { if (ord($b[0]) > 127) $b = "\0" . $b; return "\x02" . sb_der_len(strlen($b)) . $b; };
+    $seq = $int($n) . $int($e);
+    $rsa = "\x30" . sb_der_len(strlen($seq)) . $seq;
+    $bits = "\x03" . sb_der_len(strlen($rsa) + 1) . "\0" . $rsa;
+    $algo = hex2bin('300d06092a864886f70d0101010500');
+    $spki = "\x30" . sb_der_len(strlen($algo . $bits)) . $algo . $bits;
+    return "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($spki), 64, "\n") . "-----END PUBLIC KEY-----\n";
+}
+// Kunci publik Google disimpan sebentar di storage supaya tidak diunduh setiap ada yang masuk.
+function sb_google_keys($force = false) {
+    $file = SB_ROOT . '/storage/google-jwks.json';
+    $cache = is_file($file) ? json_decode((string)@file_get_contents($file), true) : null;
+    $fresh = is_array($cache) && isset($cache['at'], $cache['keys']) && $cache['at'] > time() - 3600;
+    if ($fresh && (!$force || $cache['at'] > time() - 300)) return $cache['keys'];   // unduh ulang paksa paling sering tiap 5 menit
+    $raw = sb_http_get('https://www.googleapis.com/oauth2/v3/certs');
+    $j = $raw ? json_decode($raw, true) : null;
+    if (is_array($j) && !empty($j['keys'])) {
+        @file_put_contents($file, json_encode(['at' => time(), 'keys' => $j['keys']]), LOCK_EX);
+        return $j['keys'];
+    }
+    return is_array($cache) && !empty($cache['keys']) ? $cache['keys'] : [];
+}
+// Mengembalikan data pengguna dari token, atau string kode galat.
+function sb_google_verify($token, $clientId) {
+    if (!function_exists('openssl_verify')) return 'noopenssl';
+    if (!is_string($token) || strlen($token) > 4096 || substr_count($token, '.') !== 2) return 'invalid';
+    list($h64, $p64, $s64) = explode('.', $token);
+    $h = json_decode((string)sb_b64u($h64), true); $p = json_decode((string)sb_b64u($p64), true); $sig = sb_b64u($s64);
+    if (!is_array($h) || !is_array($p) || $sig === false || ($h['alg'] ?? '') !== 'RS256' || empty($h['kid'])) return 'invalid';
+    $key = null;
+    foreach ([false, true] as $force) {
+        foreach (sb_google_keys($force) as $k) { if (($k['kid'] ?? '') === $h['kid'] && ($k['kty'] ?? '') === 'RSA') $key = $k; }
+        if ($key) break;
+    }
+    if (!$key) return 'nokey';
+    $pem = sb_jwk_pem($key);
+    if (!$pem || openssl_verify($h64 . '.' . $p64, $sig, $pem, OPENSSL_ALGO_SHA256) !== 1) return 'invalid';
+    $now = time();
+    if (!in_array($p['iss'] ?? '', ['accounts.google.com', 'https://accounts.google.com'], true)) return 'invalid';
+    if (($p['aud'] ?? '') !== $clientId) return 'invalid';
+    if ((int)($p['exp'] ?? 0) < $now - 30 || (int)($p['iat'] ?? 0) > $now + 300) return 'expired';
+    if (!in_array($p['email_verified'] ?? false, [true, 'true'], true)) return 'unverified';
+    $email = sb_email($p['email'] ?? '');
+    if ($email === '' || empty($p['sub'])) return 'invalid';
+    return ['email' => $email, 'sub' => (string)$p['sub'], 'name' => (string)($p['name'] ?? '')];
+}
+
 if ($action === 'me') {
     $uid = sb_user_id();
     if (!$uid) sb_json(['loggedIn' => false]);
@@ -95,6 +168,45 @@ if ($action === 'login') {
     sb_json(['ok' => true, 'user' => sb_user_view($res)]);
 }
 
+
+if ($action === 'google') {
+    sb_require_post();
+    $cid = (string)(sb_menu()['config']['googleClientId'] ?? '');
+    if ($cid === '') sb_fail(503, 'Masuk dengan Google belum diaktifkan oleh toko.');
+    $in = sb_body();
+    $g = sb_google_verify($in['credential'] ?? '', $cid);
+    if (!is_array($g)) {
+        $msg = ['noopenssl' => 'Server belum mendukung masuk dengan Google.', 'nokey' => 'Tidak bisa memeriksa token Google. Coba lagi sebentar lagi.', 'expired' => 'Sesi Google sudah kedaluwarsa. Coba lagi.', 'unverified' => 'Email Google kamu belum terverifikasi.'];
+        sb_fail($g === 'nokey' || $g === 'noopenssl' ? 503 : 401, $msg[$g] ?? 'Token Google tidak valid.');
+    }
+    $name = sb_text($g['name'], 80);
+    if (sb_len($name) < 2) $name = sb_text(strstr($g['email'], '@', true), 80);
+    $ip = sb_ip_hash(); $now = time(); $created = false;
+    $res = sb_store_update(function (&$d) use ($g, $name, $ip, $now, &$created) {
+        foreach ($d['users'] as &$u) {
+            if ($u['email'] !== $g['email']) continue;
+            if (!empty($u['disabled'])) return 'disabled';
+            if (!empty($u['gsub']) && $u['gsub'] !== $g['sub']) return 'mismatch';
+            $u['gsub'] = $g['sub'];
+            return $u;
+        }
+        unset($u);
+        $d['attempts'] = array_values(array_filter($d['attempts'], function ($a) use ($now) { return $a['at'] > $now - 3600; }));
+        if (sb_attempts_recent($d, 'r', $ip, $now, 3600) >= 8) return 'blocked';
+        $d['attempts'][] = ['ip' => 'r|' . $ip, 'at' => $now];
+        $id = ++$d['useq'];
+        $u = ['id' => $id, 'name' => $name, 'email' => $g['email'], 'phone' => '', 'pass' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT), 'created_at' => $now, 'gsub' => $g['sub'], 'nopw' => true];
+        $d['users'][] = $u;
+        $created = true;
+        return $u;
+    });
+    if ($res === 'disabled') sb_fail(403, 'Akun ini dinonaktifkan oleh toko. Hubungi toko kalau ini keliru.');
+    if ($res === 'mismatch') sb_fail(409, 'Email ini terhubung ke akun Google yang lain.');
+    if ($res === 'blocked') sb_fail(429, 'Terlalu banyak pendaftaran dari perangkat ini. Coba lagi nanti.');
+    sb_log_in($res['id'], $res['sv'] ?? 0);
+    sb_json(['ok' => true, 'created' => $created, 'user' => sb_user_view($res)]);
+}
+
 if ($action === 'logout') {
     sb_require_post();
     sb_user_session();
@@ -126,8 +238,9 @@ if ($action === 'update') {
         foreach ($d['users'] as &$u) {
             if ((int)$u['id'] !== $uid) continue;
             if ($changePw) {
-                if (!password_verify($oldPw, $u['pass'])) return 'badpw';
-                $u['pass'] = $newHash;
+                // akun yang dibuat lewat Google belum punya kata sandi, jadi tidak ada kata sandi lama yang perlu diperiksa
+                if (empty($u['nopw']) && !password_verify($oldPw, $u['pass'])) return 'badpw';
+                $u['pass'] = $newHash; unset($u['nopw']);
             }
             $u['name'] = $name; $u['phone'] = $phone;
             return $u;

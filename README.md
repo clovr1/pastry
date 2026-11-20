@@ -171,6 +171,23 @@ Buka `/owner/` lalu tab **Pelanggan**. Isinya:
 
 Kata sandi pembeli tersimpan sebagai hash dan tidak pernah dikirim ke dashboard. Hanya owner yang sudah masuk yang bisa memakai fitur ini.
 
+## Masuk dengan Google
+
+Pembeli bisa masuk atau daftar dengan satu klik memakai akun Google. Fitur ini baru muncul setelah kamu mengisi **Client ID** (gratis, dibuat sekali):
+
+1. Buka <https://console.cloud.google.com/>, buat proyek baru (nama bebas, mis. "Sweet Bite").
+2. Menu **APIs & Services → OAuth consent screen**: pilih **External**, isi nama aplikasi (Sweet Bite) dan email kamu, lalu simpan. Setelah selesai, tekan **Publish app** supaya semua orang bisa masuk (kalau masih "Testing", hanya email yang kamu daftarkan sebagai penguji yang bisa).
+3. Menu **APIs & Services → Credentials → Create credentials → OAuth client ID**, jenis **Web application**.
+4. Di **Authorized JavaScript origins** isi alamat situsmu, mis. `https://sweetbite.id` dan `https://www.sweetbite.id` (tambahkan juga `http://localhost` kalau mau mencoba di komputer sendiri; Google tidak menerima alamat `.test` dari Laragon). **Authorized redirect URIs** dibiarkan kosong.
+5. Salin **Client ID** (bentuknya `1234567890-abcdef.apps.googleusercontent.com`). Jangan pakai Client Secret, tidak diperlukan.
+6. Buka `/owner/` → **Pengaturan toko → Masuk dengan Google**, tempel Client ID, Simpan. Tombol Google langsung muncul di halaman Masuk. Kosongkan lagi untuk mematikannya.
+
+Cara kerjanya: tombol dari Google menghasilkan token; server memeriksa tanda tangannya dengan kunci publik Google (disimpan sementara di `storage/google-jwks.json`), memastikan token itu untuk situsmu, belum kedaluwarsa, dan emailnya terverifikasi. Syarat server: ekstensi PHP `openssl` (ada di hampir semua hosting) dan bisa mengakses `googleapis.com`.
+
+- Email yang sama dengan akun yang sudah ada akan tersambung ke akun itu (data lama tidak berubah).
+- Akun baru dari Google belum punya nomor HP; pembeli diarahkan melengkapinya di halaman Data diri (kecuali sedang di tengah pesanan). Mereka juga bisa membuat kata sandi di sana, tanpa kata sandi lama.
+- Di dashboard owner (tab Pelanggan), akun ini diberi label "Google". Menonaktifkan akun juga memblokir login Google.
+
 ## Footer
 
 Footer di semua halaman pembeli (kecuali detail pesanan) dibuat otomatis dari data toko: nama, alamat, jam buka, dan media sosial. Jadi cukup ubah di dashboard owner (Pengaturan toko) atau `data/menu.json`. Kalimat pendek di bawah logo bisa diganti lewat `config.tagline` di `data/menu.json` (opsional). Gayanya ada di bagian `/* Footer */` pada `css/style.css`.

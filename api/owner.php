@@ -148,7 +148,7 @@ function sb_catalog_view() {
         'collections' => $c['collections'] ?? [],
         'settings' => [
             'acceptOrders' => !empty($c['acceptOrders']), 'closedNote' => $c['closedNote'] ?? '',
-            'shop' => $c['shop'], 'address' => $c['address'], 'contact' => $c['contact'],
+            'shop' => $c['shop'], 'address' => $c['address'], 'contact' => $c['contact'], 'googleClientId' => (string)($c['googleClientId'] ?? ''),
             'social' => $c['social'] ?? ['instagram' => '', 'tiktok' => '', 'facebook' => ''],
             'quote' => $c['quote'] ?? ['text' => '', 'author' => '', 'role' => ''],
             'open' => (int)$c['open'], 'close' => (int)$c['close'], 'closedDays' => array_values($c['closedDays']),
@@ -461,7 +461,7 @@ function sb_customers_view() {
         foreach ($d['orders'] as $o) { if (empty($o['user_id']) && $key !== '' && sb_phone_key($o['phone']) === $key) $linkable++; }
         $s = $stats[(int)$u['id']] ?? ['orders' => 0, 'spent' => 0, 'last' => 0];
         $out[] = ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'phone' => $u['phone'], 'createdAt' => (int)$u['created_at'],
-                  'disabled' => !empty($u['disabled']), 'orders' => $s['orders'], 'spent' => $s['spent'], 'lastOrder' => $s['last'], 'linkable' => $linkable];
+                  'disabled' => !empty($u['disabled']), 'google' => !empty($u['gsub']), 'orders' => $s['orders'], 'spent' => $s['spent'], 'lastOrder' => $s['last'], 'linkable' => $linkable];
     }
     usort($out, function ($a, $b) { return $b['createdAt'] <=> $a['createdAt']; });
     return ['customers' => $out];
@@ -500,6 +500,7 @@ if ($action === 'customer_toggle' || $action === 'customer_reset' || $action ===
             $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789'; $pw = '';
             for ($k = 0; $k < 10; $k++) $pw .= $chars[random_int(0, strlen($chars) - 1)];
             $d['users'][$idx]['pass'] = password_hash($pw, PASSWORD_DEFAULT);
+            unset($d['users'][$idx]['nopw']);
             $d['users'][$idx]['sv'] = (int)($d['users'][$idx]['sv'] ?? 0) + 1;
             $extra = ['password' => $pw];
         } elseif ($action === 'customer_delete') {
@@ -530,6 +531,11 @@ if ($action === 'settings_save') {
     if (array_key_exists('shop', $in)) { $v = sb_text($in['shop'], 40); if (sb_len($v) < 2) sb_fail(422, 'Isi nama toko.'); $set['shop'] = $v; }
     if (array_key_exists('address', $in)) { $v = sb_text($in['address'], 200); if ($v === '') sb_fail(422, 'Isi alamat toko.'); $set['address'] = $v; }
     if (array_key_exists('contact', $in)) $set['contact'] = sb_text($in['contact'], 40);
+    if (array_key_exists('googleClientId', $in)) {
+        $v = sb_text($in['googleClientId'], 120);
+        if ($v !== '' && !preg_match('/^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$/', $v)) sb_fail(422, 'Client ID Google tidak valid. Bentuknya seperti 1234567890-abcdef.apps.googleusercontent.com');
+        $set['googleClientId'] = $v;
+    }
     if (array_key_exists('quote', $in) && is_array($in['quote'])) {
         $qt = sb_text($in['quote']['text'] ?? '', 260, true);
         $set['quote'] = $qt === '' ? ['text' => '', 'author' => '', 'role' => '', 'lang' => ''] : ['text' => $qt, 'author' => sb_text($in['quote']['author'] ?? '', 60), 'role' => sb_text($in['quote']['role'] ?? '', 80), 'lang' => preg_match('/^[a-z]{2,3}$/', (string)($in['quote']['lang'] ?? '')) ? $in['quote']['lang'] : ''];
