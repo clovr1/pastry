@@ -177,43 +177,46 @@
     box.innerHTML = '<div class="acc-orders">' + list.map(orderRow).join('') + '</div>';
   }
 
-  /* Halaman data diri: tampilan data dan tombol untuk mengubahnya. */
+  /* Halaman data diri: header dengan avatar, tiga kotak data, dan form ubah yang terbuka di bawahnya. */
   function showProfile(user) {
     document.title = 'Data diri · ' + CONFIG.shop;
     root.innerHTML =
-      '<div class="acc-wrap prof">' +
-        '<nav class="steps" aria-label="Navigasi"><a href="akun.html">Akun saya</a><span aria-hidden="true">›</span><b aria-current="page">Data diri</b></nav>' +
-        '<div class="co-head"><h1>Data diri</h1><p>Data ini terisi otomatis saat kamu memesan.</p></div>' +
-        '<div class="acc-side">' +
-          '<dl class="acc-dl" id="aInfo"></dl>' +
+      '<div class="acc-wrap pf">' +
+        '<header class="acc-hero">' +
+          '<span class="acc-av" id="pAv" aria-hidden="true"></span>' +
+          '<div class="acc-who"><span class="label">Data diri</span><h1 id="pTitle"></h1><p>Data ini terisi otomatis saat kamu memesan.</p></div>' +
+          '<div class="acc-btns"><a class="btn ghost" href="akun.html">‹ Akun saya</a></div>' +
+        '</header>' +
+        '<section class="pf-card" aria-labelledby="pfH">' +
+          '<div class="pf-head"><h2 class="acc-h" id="pfH">Informasi akun</h2><button class="btn" type="button" id="editBtn" aria-expanded="false">Ubah data</button></div>' +
+          '<dl class="pf-grid" id="aInfo"></dl>' +
           '<p class="acc-ok" id="pOk" role="status" hidden></p>' +
-          '<button class="btn ghost block" type="button" id="editBtn" aria-expanded="false">Ubah data diri</button>' +
-          '<form id="fProf" class="auth-form" novalidate hidden>' +
-            field('pName', 'Nama lengkap', 'text', ' autocomplete="name"') +
-            field('pPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel"') +
+          '<form id="fProf" class="pf-form" novalidate hidden>' +
+            '<div class="two">' + field('pName', 'Nama lengkap', 'text', ' autocomplete="name"') + field('pPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel"') + '</div>' +
             '<details class="acc-pw"><summary>Ganti kata sandi</summary>' +
-              field('pOld', 'Kata sandi lama', 'password', ' autocomplete="current-password"') +
-              field('pNew', 'Kata sandi baru', 'password', ' autocomplete="new-password"') +
+              '<div class="two">' + field('pOld', 'Kata sandi lama', 'password', ' autocomplete="current-password"') + field('pNew', 'Kata sandi baru', 'password', ' autocomplete="new-password"') + '</div>' +
             '</details>' +
             '<p class="err" id="pErr" role="alert" hidden></p>' +
-            '<button class="btn block" type="submit" id="pBtn">Simpan</button>' +
+            '<div class="pf-act"><button class="btn" type="submit" id="pBtn">Simpan perubahan</button><button class="btn ghost" type="button" id="pCancel">Batal</button></div>' +
           '</form>' +
-        '</div>' +
+        '</section>' +
+        '<div class="pf-out"><button class="btn ghost" type="button" id="outBtn">Keluar dari akun</button></div>' +
       '</div>';
     const $q = id => document.getElementById(id);
     function fill(u) {
       $q('pName').value = u.name; $q('pPhone').value = u.phone;
-      $q('aInfo').innerHTML = '<div><dt>Nama</dt><dd>' + esc(u.name) + '</dd></div><div><dt>Email</dt><dd>' + esc(u.email) + '</dd></div><div><dt>No. HP</dt><dd>' + esc(u.phone) + '</dd></div>';
+      $q('pAv').textContent = u.name.trim().charAt(0).toUpperCase();
+      $q('pTitle').textContent = u.name;
+      $q('aInfo').innerHTML = [['Nama', u.name], ['Email', u.email], ['No. HP', u.phone]].map(r => '<div><dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd></div>').join('');
     }
     fill(user);
-
-    $q('editBtn').addEventListener('click', () => {
-      const open = $q('fProf').hidden;
-      $q('fProf').hidden = !open; $q('editBtn').setAttribute('aria-expanded', String(open));
-      $q('editBtn').textContent = open ? 'Batal' : 'Ubah data diri';
-      $q('pOk').hidden = true;
+    const setEdit = open => {
+      $q('fProf').hidden = !open; $q('editBtn').hidden = open; $q('editBtn').setAttribute('aria-expanded', String(open));
+      $q('pOk').hidden = true; setErr($q('pErr'), '');
       if (open) $q('pName').focus();
-    });
+    };
+    $q('editBtn').addEventListener('click', () => setEdit(true));
+    $q('pCancel').addEventListener('click', () => { fill(user); setEdit(false); });
 
     $q('fProf').addEventListener('submit', async e => {
       e.preventDefault();
@@ -222,11 +225,18 @@
       if ($q('pNew').value) { b.newPassword = $q('pNew').value; b.password = $q('pOld').value; }
       busy($q('pBtn'), true, 'Menyimpan…');
       const r = await api('update', b);
-      busy($q('pBtn'), false, 'Simpan');
+      busy($q('pBtn'), false, 'Simpan perubahan');
       if (!r.ok) { setErr($q('pErr'), r.data.error || 'Belum tersimpan.'); return; }
-      fill(r.data.user); $q('pOld').value = ''; $q('pNew').value = '';
-      $q('fProf').hidden = true; $q('editBtn').textContent = 'Ubah data diri'; $q('editBtn').setAttribute('aria-expanded', 'false');
-      $q('pOk').textContent = 'Perubahan tersimpan.'; $q('pOk').hidden = false;
+      user = r.data.user; fill(user); $q('pOld').value = ''; $q('pNew').value = '';
+      setEdit(false);
+      $q('pOk').textContent = '✓ Perubahan tersimpan.'; $q('pOk').hidden = false;
+    });
+
+    $q('outBtn').addEventListener('click', async () => {
+      busy($q('outBtn'), true);
+      await api('logout', {});
+      rememberUser(null);
+      location.href = 'index.html';
     });
   }
 

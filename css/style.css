@@ -23,6 +23,7 @@ img { max-width: 100%; }
   --font-name: "Fraunces", Georgia, "Times New Roman", serif;
   /* nama toko: tulisan tegak bersambung. Untuk mengganti, ubah baris ini dan nama font di tautan Google Fonts tiap halaman. */
   --font-brand: "Petit Formal Script", "Snell Roundhand", "Brush Script MT", cursive;
+  --font-price: "Fraunces", Georgia, "Times New Roman", serif;   /* font khusus harga; ganti di sini untuk mengubah semua harga */
   --font-body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
@@ -534,7 +535,6 @@ a.backcart { text-decoration: none; color: inherit; }
 .acc-stats span { font-size: 13px; color: var(--muted); }
 .acc-stats b { font-family: var(--font-display); font-weight: 500; font-size: clamp(22px, 3vw, 30px); line-height: 1.1; }
 .acc-btns { display: flex; gap: 10px; }
-.acc-wrap.prof { width: min(100%, 560px); margin: 0 auto; }
 .acc-cols { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 40px; align-items: start; }
 .acc-h { font-family: var(--font-name); font-weight: 600; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 1px solid var(--line); }
 .acc-side { background: var(--tile); border-radius: 14px; padding: 24px; display: grid; gap: 16px; }
@@ -1048,13 +1048,15 @@ html { overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) {
   /* perpindahan antarhalaman (Chrome, Edge, Safari terbaru; browser lain tetap pindah biasa) */
   @view-transition { navigation: auto; }
+  /* lapisan transisi tidak menangkap klik: menu dan tombol bisa langsung ditekan walau animasi masih berjalan */
+  ::view-transition { pointer-events: none; }
   html:not(.vt-theme) .topbar { view-transition-name: topbar; }
   html:not(.vt-theme) .nav-ind { view-transition-name: navind; }
   html:not(.vt-theme) .nav { view-transition-name: navtext; }   /* tulisan menu berganti warna (merah ke hitam dan sebaliknya) seirama dengan garisnya */
   ::view-transition-group(topbar) { animation: none; }
   ::view-transition-old(topbar) { animation: none; }
   ::view-transition-new(topbar) { display: none; }
-  ::view-transition-group(navind) { animation-duration: .5s; animation-timing-function: cubic-bezier(.22, .61, .36, 1); }
+  ::view-transition-group(navind) { animation-duration: .28s; animation-timing-function: cubic-bezier(.22, .61, .36, 1); }
   ::view-transition-old(navind), ::view-transition-new(navind) { height: 100%; }
   /* tulisan menu: gambar lama tetap tampil selama halaman baru dimuat (supaya tidak ada saat tulisan hilang di koneksi lambat),
      lalu begitu halaman baru siap, gambar baru langsung menggantikannya tanpa pudar silang */
@@ -1062,8 +1064,57 @@ html { overflow-x: clip; }
   ::view-transition-old(navtext) { animation: navOut .01s linear both; }
   ::view-transition-new(navtext) { animation: none; }
   @keyframes navOut { to { opacity: 0; } }
-  ::view-transition-old(root) { animation: vtOut .22s ease both; }
-  ::view-transition-new(root) { animation: vtIn .45s cubic-bezier(.22, .61, .36, 1) both; }
+  ::view-transition-old(root) { animation: vtOut .12s ease both; }
+  ::view-transition-new(root) { animation: vtIn .26s cubic-bezier(.22, .61, .36, 1) both; }
   @keyframes vtOut { to { opacity: 0; transform: translateY(-8px); } }
   @keyframes vtIn { from { opacity: 0; transform: translateY(14px); } }
 }
+
+/* Halaman Data diri: lebar penuh seperti halaman Akun, tanpa footer */
+body[data-page="profil"] { padding-bottom: 56px; }
+.acc-wrap.pf { padding-bottom: 24px; }
+.pf-card { background: var(--tile); border-radius: 18px; padding: clamp(22px, 3vw, 36px); display: grid; gap: 22px; }
+.pf-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.pf-head .acc-h { padding: 0; margin: 0; border: 0; }
+.pf-head .btn[hidden] { display: none; }
+.pf-grid { margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.pf-grid > div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 4px; min-width: 0; }
+.pf-grid dt { font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.pf-grid dd { margin: 0; font-weight: 500; font-size: 17px; overflow-wrap: anywhere; }
+.pf-form { display: grid; gap: 16px; border-top: 1px solid var(--line); padding-top: 22px; }
+.pf-form[hidden] { display: none; }
+.pf-form .acc-pw { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+.pf-form .acc-pw[open] { display: grid; gap: 14px; }
+.pf-form .acc-pw summary { margin: 0; }
+.pf-act { display: flex; gap: 10px; flex-wrap: wrap; }
+.pf-out { display: flex; justify-content: flex-start; }
+@media (max-width: 800px) { .pf-grid { grid-template-columns: 1fr; } .pf-head { flex-wrap: wrap; } }
+
+/* Font harga: satu pengaturan (--font-price), angka sejajar dan tinggi sama */
+.price, .pd-price, .rt .price, .dbody .lines .rt .price, .dbody .lines .unit, .kr-total, .feat-price b, .sg-card small, .upi small, .offer-t small,
+.ord-lines b, .acc-body li b, .acc-o-bot b, .sum div span:last-child, .lines .sub, .kr-price, .coll-note + .price, .kr-sub {
+  font-family: var(--font-price); font-variant-numeric: lining-nums tabular-nums; letter-spacing: .01em;
+}
+.price { font-size: 15px; font-weight: 500; }
+.pd-price { font-size: 24px; font-weight: 500; }
+.sum .total span { font-weight: 600; }
+
+/* Baris atas di HP: logo, nama toko, dan tiga tombol harus muat di lebar layar (sebelumnya melebar sampai 430 px sehingga halaman terlihat terpotong) */
+@media (max-width: 900px) { .top { grid-template-columns: minmax(0, 1fr) auto; } .brand { min-width: 0; } }
+@media (max-width: 520px) {
+  .brand { gap: 6px; }
+  .brand .b0 { height: 24px; margin-right: 0; }
+  .brand .b1 { font-size: 32px; }
+  .brand .b2 { font-size: 14px; letter-spacing: .26em; }
+  .top-r { gap: 8px; }
+  .themebtn, .acctbtn, .cartbtn { width: 40px; height: 40px; }
+}
+@media (max-width: 380px) {
+  .brand { gap: 4px; }
+  .brand .b0 { height: 20px; }
+  .brand .b1 { font-size: 28px; }
+  .brand .b2 { font-size: 12px; letter-spacing: .22em; }
+  .top-r { gap: 6px; }
+  .themebtn, .acctbtn, .cartbtn { width: 36px; height: 36px; }
+}
+@media (max-width: 380px) { .auth-head h1 { white-space: normal; font-size: 28px; } .auth { padding-inline: 0; } }

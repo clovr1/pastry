@@ -123,8 +123,10 @@ function mountShell() {
   document.getElementById('topbar').insertAdjacentHTML('beforeend', closedBarHtml());
   document.querySelector('.wrap').insertAdjacentHTML('afterbegin', '<div class="notice" id="notice" role="status" hidden></div>');
   document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
-  document.body.classList.add('has-foot');
-  document.body.insertAdjacentHTML('beforeend', footerHtml());
+  if (PAGE !== 'profil') {   // halaman Data diri sengaja tanpa footer
+    document.body.classList.add('has-foot');
+    document.body.insertAdjacentHTML('beforeend', footerHtml());
+  }
 }
 
 /* Garis penanda menu aktif: diletakkan tepat di bawah tautan halaman ini. Saat pindah halaman, browser yang mendukung
@@ -139,7 +141,7 @@ function reserveBrandWidth() {
   ['b1', 'b2'].forEach(cls => {
     const el = document.querySelector('.topbar .' + cls);
     if (!el) return;
-    const key = 'sb-' + cls + ':' + CONFIG.shop;
+    const key = 'sb-' + cls + (innerWidth <= 520 ? 'm' : innerWidth <= 900 ? 't' : 'd') + ':' + CONFIG.shop;   // ukuran font berbeda tiap lebar layar
     let w = 0; try { w = Number(localStorage.getItem(key)) || 0; } catch (e) {}
     if (w) { el.style.display = 'inline-block'; el.style.minWidth = w + 'px'; }
     const measure = () => {

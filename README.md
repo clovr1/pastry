@@ -280,3 +280,7 @@ php tools/make-deploy-zip.php
 ```
 
 Hasilnya `deploy/sweetbite-deploy.zip` (folder `deploy/` tidak masuk Git). Isinya seluruh situs plus `api/config.php` dan menu yang sudah kamu ubah (`storage/menu-live.json`). Pesanan, akun, dan bukti bayar percobaan di komputermu, `api/diagnose.php`, folder `tools`, dan `.git` tidak ikut. Zip ini berisi hash kata sandi owner, jadi jangan dibagikan. Unggah dan ekstrak di `public_html` hosting, lalu ikuti langkah di bagian "Memasang di hosting".
+
+**Font harga**: semua harga memakai satu pengaturan, `--font-price` di bagian atas `css/style.css` (bawaan Fraunces, serif seperti nama produk). Untuk mengganti, ubah nilainya, misalnya ke `var(--font-body)` supaya kembali ke font isi.
+
+**Tampilan HP**: baris atas (logo, nama toko, tiga tombol) mengecil otomatis di layar sempit supaya halaman tidak melebar melebihi layar. Setelah mengubah logo atau nama toko, cek di lebar 360 px (di Chrome: F12, ikon ponsel, pilih ukuran) dan pastikan tidak ada gulir ke samping.
