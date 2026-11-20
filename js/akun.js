@@ -24,6 +24,14 @@
   function field(id, label, type, extra) {
     return '<div class="field"><label for="' + id + '">' + label + '</label><input id="' + id + '" type="' + type + '"' + (extra || '') + '></div>';
   }
+  // minta browser menyimpan email + kata sandi setelah berhasil masuk/daftar
+  async function offerSave(email, pw, name) {
+    try {
+      if (window.PasswordCredential && navigator.credentials && navigator.credentials.store) {
+        await navigator.credentials.store(new PasswordCredential({ id: email, password: pw, name: name || email }));
+      }
+    } catch (e) { /* tidak didukung atau ditolak pengguna: lanjutkan saja */ }
+  }
   function setErr(el, msg) { el.textContent = msg || ''; el.hidden = !msg; }
   function busy(btn, on, text) { btn.disabled = on; if (text) btn.textContent = text; }
 
@@ -33,17 +41,17 @@
     root.innerHTML =
       '<div class="auth">' +
         '<div class="auth-head"><h1 id="aTitle"></h1><p id="aSub"></p></div>' +
-        '<form id="fIn" class="auth-form" novalidate>' +
-          field('inEmail', 'Email', 'email', ' autocomplete="email" inputmode="email" required') +
-          field('inPw', 'Kata sandi', 'password', ' autocomplete="current-password" required') +
+        '<form id="fIn" class="auth-form" name="login" method="post" action="masuk.html" novalidate>' +
+          field('inEmail', 'Email', 'email', ' name="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required') +
+          field('inPw', 'Kata sandi', 'password', ' name="password" autocomplete="current-password" required') +
           '<p class="err" id="inErr" role="alert" hidden></p>' +
           '<button class="btn block" type="submit" id="inBtn">Masuk</button>' +
         '</form>' +
-        '<form id="fUp" class="auth-form" novalidate hidden>' +
-          field('upName', 'Nama lengkap', 'text', ' autocomplete="name" required') +
-          field('upEmail', 'Email', 'email', ' autocomplete="email" inputmode="email" required') +
-          field('upPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel" placeholder="0812…" required') +
-          field('upPw', 'Kata sandi', 'password', ' autocomplete="new-password" minlength="8" required') +
+        '<form id="fUp" class="auth-form" name="register" method="post" action="masuk.html" novalidate hidden>' +
+          field('upName', 'Nama lengkap', 'text', ' name="fullname" autocomplete="name" required') +
+          field('upEmail', 'Email', 'email', ' name="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required') +
+          field('upPhone', 'No. HP (WhatsApp)', 'tel', ' name="phone" autocomplete="tel" inputmode="tel" placeholder="0812…" required') +
+          field('upPw', 'Kata sandi', 'password', ' name="password" autocomplete="new-password" minlength="8" required') +
           '<p class="auth-hint">Minimal 8 karakter.</p>' +
           '<p class="err" id="upErr" role="alert" hidden></p>' +
           '<button class="btn block" type="submit" id="upBtn">Buat akun</button>' +
@@ -76,6 +84,7 @@
       const r = await api('login', { email, password: pw });
       if (!r.ok) { setErr($q('inErr'), r.data.error || 'Gagal masuk.'); busy($q('inBtn'), false, 'Masuk'); return; }
       rememberUser(r.data.user);
+      await offerSave(email, pw, r.data.user && r.data.user.name);
       location.href = nextUrl();
     });
 
@@ -90,6 +99,7 @@
       const r = await api('register', b);
       if (!r.ok) { setErr($q('upErr'), r.data.error || 'Pendaftaran gagal.'); busy($q('upBtn'), false, 'Buat akun'); return; }
       rememberUser(r.data.user);
+      await offerSave(b.email, b.password, b.name);
       location.href = nextUrl();
     });
 
@@ -191,10 +201,11 @@
           '<div class="pf-head"><h2 class="acc-h" id="pfH">Informasi akun</h2><button class="btn" type="button" id="editBtn" aria-expanded="false">Ubah data</button></div>' +
           '<dl class="pf-grid" id="aInfo"></dl>' +
           '<p class="acc-ok" id="pOk" role="status" hidden></p>' +
-          '<form id="fProf" class="pf-form" novalidate hidden>' +
+          '<form id="fProf" class="pf-form" name="profile" novalidate hidden>' +
+            '<input type="email" name="email" autocomplete="username" value="' + esc(user.email) + '" hidden readonly tabindex="-1" aria-hidden="true">' +
             '<div class="two">' + field('pName', 'Nama lengkap', 'text', ' autocomplete="name"') + field('pPhone', 'No. HP (WhatsApp)', 'tel', ' autocomplete="tel" inputmode="tel"') + '</div>' +
             '<details class="acc-pw"><summary>Ganti kata sandi</summary>' +
-              '<div class="two">' + field('pOld', 'Kata sandi lama', 'password', ' autocomplete="current-password"') + field('pNew', 'Kata sandi baru', 'password', ' autocomplete="new-password"') + '</div>' +
+              '<div class="two">' + field('pOld', 'Kata sandi lama', 'password', ' name="current-password" autocomplete="current-password"') + field('pNew', 'Kata sandi baru', 'password', ' name="new-password" autocomplete="new-password"') + '</div>' +
             '</details>' +
             '<p class="err" id="pErr" role="alert" hidden></p>' +
             '<div class="pf-act"><button class="btn" type="submit" id="pBtn">Simpan perubahan</button><button class="btn ghost" type="button" id="pCancel">Batal</button></div>' +
@@ -227,7 +238,9 @@
       const r = await api('update', b);
       busy($q('pBtn'), false, 'Simpan perubahan');
       if (!r.ok) { setErr($q('pErr'), r.data.error || 'Belum tersimpan.'); return; }
+      const newPw = $q('pNew').value;
       user = r.data.user; fill(user); $q('pOld').value = ''; $q('pNew').value = '';
+      if (newPw) await offerSave(user.email, newPw, user.name);
       setEdit(false);
       $q('pOk').textContent = '✓ Perubahan tersimpan.'; $q('pOk').hidden = false;
     });
