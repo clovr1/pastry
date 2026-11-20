@@ -158,6 +158,19 @@ Buka `owner/` lalu masuk. Selain tab **Pesanan**, ada:
 
 Pesanan **bayar tunai** otomatis ditandai lunas saat statusnya diubah ke Selesai (transfer dan QRIS tetap harus kamu tandai lunas sendiri setelah uangnya masuk).
 
+## Dashboard owner: tab Pelanggan (kelola akun pembeli)
+
+Buka `/owner/` lalu tab **Pelanggan**. Isinya:
+
+- Daftar akun pembeli (nama, email, nomor HP, jumlah pesanan, total belanja) dengan kolom cari.
+- Klik satu pelanggan untuk melihat riwayat pesanannya dan tombol **Chat WhatsApp**.
+- **Buat kata sandi sementara**: kalau pembeli lupa kata sandi. Kata sandi baru tampil sekali saja di layar owner; kirim lewat WhatsApp dan minta pembeli menggantinya di halaman Data diri. Kata sandi lama tidak berlaku dan semua perangkat pembeli itu otomatis keluar.
+- **Nonaktifkan / Aktifkan kembali akun**: pembeli tidak bisa masuk selama nonaktif, sesi yang sedang aktif langsung berakhir. Pesanan lamanya tetap tersimpan. Ini cara yang disarankan untuk menghentikan akses.
+- **Hubungkan pesanan lama**: pesanan yang dibuat sebagai tamu dengan nomor HP yang sama (9 angka terakhir dicocokkan) bisa dipindahkan ke akun itu.
+- **Hapus akun**: permanen. Pesanannya tetap ada sebagai pesanan tamu.
+
+Kata sandi pembeli tersimpan sebagai hash dan tidak pernah dikirim ke dashboard. Hanya owner yang sudah masuk yang bisa memakai fitur ini.
+
 ## Footer
 
 Footer di semua halaman pembeli (kecuali detail pesanan) dibuat otomatis dari data toko: nama, alamat, jam buka, dan media sosial. Jadi cukup ubah di dashboard owner (Pengaturan toko) atau `data/menu.json`. Kalimat pendek di bawah logo bisa diganti lewat `config.tagline` di `data/menu.json` (opsional). Gayanya ada di bagian `/* Footer */` pada `css/style.css`.

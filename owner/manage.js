@@ -5,7 +5,7 @@
   if (!S) return;
   const { $, esc, rp, toast } = S;
   const DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-  const st = { data: null, tab: 'orders', edit: null, coll: null, q: '', cat: 'all', loaded: false, upload: false };
+  const st = { data: null, tab: 'orders', edit: null, coll: null, cust: null, custQ: '', custOpen: null, q: '', cat: 'all', loaded: false, upload: false };
 
   /* ---------- API ---------- */
   async function call(action, body) {
@@ -23,13 +23,14 @@
   function setTab(t) {
     st.tab = t;
     document.querySelectorAll('#mainTabs [data-tab]').forEach(b => { if (b.dataset.tab === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
-    $('tabOrders').hidden = t !== 'orders'; $('tabProducts').hidden = t !== 'products'; $('tabCollections').hidden = t !== 'collections'; $('tabSettings').hidden = t !== 'settings';
+    $('tabOrders').hidden = t !== 'orders'; $('tabProducts').hidden = t !== 'products'; $('tabCollections').hidden = t !== 'collections'; $('tabCustomers').hidden = t !== 'customers'; $('tabSettings').hidden = t !== 'settings';
     if (t !== 'orders' && !st.loaded) { load().then(() => render()); } else render();
   }
   async function load() { take(await call('catalog')); }
   function render() {
     if (st.tab === 'products') renderProducts();
     if (st.tab === 'collections') renderCollections();
+    if (st.tab === 'customers') loadCustomers();
     if (st.tab === 'settings') renderSettings();
   }
   S.onDash = async function () { await load(); setTab(st.tab); };
@@ -348,6 +349,89 @@
     const d = take(await call('collection_save', { id: c.isNew ? '' : c.id, title: c.title, label: c.label, text: c.text, reasons: c.reasons, img: c.img, items: c.items, notes: c.notes, cta: c.cta, home: c.home, layout: c.layout }));
     btn.disabled = false; btn.textContent = 'Simpan koleksi';
     if (d) { toast('Koleksi tersimpan.'); st.coll = null; renderCollections(); }
+  });
+
+
+  /* ---------- pelanggan (akun pembeli) ---------- */
+  const fmtDay = ts => new Date(ts * 1000).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  const waLink = p => { let d = String(p).replace(/\D/g, ''); if (d.startsWith('0')) d = '62' + d.slice(1); return 'https://wa.me/' + d; };
+  async function loadCustomers() {
+    const d = await call('customers');
+    if (d) { st.cust = d.customers; renderCustomers(); }
+  }
+  function renderCustomers() {
+    const box = $('tabCustomers');
+    if (!st.cust) { box.innerHTML = '<p class="o-muted">Memuat…</p>'; return; }
+    if (st.custOpen) { renderCustomerDetail(); return; }
+    const q = st.custQ.trim().toLowerCase();
+    const list = st.cust.filter(c => !q || (c.name + ' ' + c.email + ' ' + c.phone).toLowerCase().includes(q));
+    const rows = list.map(c => '<button type="button" class="o-cust" data-cid="' + c.id + '">' +
+      '<span class="o-av" aria-hidden="true">' + esc(c.name.trim().charAt(0).toUpperCase()) + '</span>' +
+      '<span class="o-cinfo"><b>' + esc(c.name) + (c.disabled ? ' <span class="o-pill no">Nonaktif</span>' : '') + '</b><span class="o-muted">' + esc(c.email) + ' · ' + esc(c.phone) + '</span></span>' +
+      '<span class="o-cstat"><b>' + c.orders + ' pesanan</b><span class="o-muted">' + rp(c.spent) + '</span></span>' +
+      '<span class="o-muted o-cdate">Daftar ' + fmtDay(c.createdAt) + '</span></button>').join('');
+    box.innerHTML =
+      '<div class="o-bar"><p class="o-hint" style="margin:0">' + st.cust.length + ' akun pembeli terdaftar. Kata sandi pembeli tersimpan terenkripsi dan tidak bisa dilihat; kalau ada yang lupa, buatkan kata sandi sementara.</p>' +
+        '<div class="field o-search"><label class="o-sr" for="cq">Cari pelanggan</label><input id="cq" type="search" placeholder="Cari nama, email, atau nomor HP" value="' + esc(st.custQ) + '"></div></div>' +
+      '<div class="o-plist">' + (rows || '<div class="o-empty">' + (st.cust.length ? 'Tidak ada pelanggan yang cocok.' : 'Belum ada pembeli yang mendaftar akun.') + '</div>') + '</div>';
+  }
+  function custById(id) { return (st.cust || []).find(c => c.id === id); }
+  async function renderCustomerDetail() {
+    const c = custById(st.custOpen), box = $('tabCustomers');
+    if (!c) { st.custOpen = null; renderCustomers(); return; }
+    box.innerHTML =
+      '<div class="o-form o-cdetail">' +
+        '<div class="o-formhead"><button type="button" class="o-btn" data-cx="back">‹ Kembali</button><h2>Detail pelanggan</h2></div>' +
+        '<div class="o-chead"><span class="o-av big" aria-hidden="true">' + esc(c.name.trim().charAt(0).toUpperCase()) + '</span>' +
+          '<div><h3>' + esc(c.name) + (c.disabled ? ' <span class="o-pill no">Nonaktif</span>' : '') + '</h3><p class="o-muted">' + esc(c.email) + '</p><p class="o-muted">' + esc(c.phone) + ' · daftar ' + fmtDay(c.createdAt) + '</p></div></div>' +
+        '<div class="o-cstats"><div><span>Pesanan</span><b>' + c.orders + '</b></div><div><span>Total belanja</span><b>' + rp(c.spent) + '</b></div><div><span>Pesanan terakhir</span><b>' + (c.lastOrder ? fmtDay(c.lastOrder) : '-') + '</b></div></div>' +
+        '<div id="cResult" class="o-cres" hidden></div>' +
+        '<div class="o-cact">' +
+          '<a class="o-btn" href="' + esc(waLink(c.phone)) + '" target="_blank" rel="noopener">Chat WhatsApp</a>' +
+          '<button type="button" class="o-btn" data-cx="reset">Buat kata sandi sementara</button>' +
+          (c.linkable ? '<button type="button" class="o-btn" data-cx="link">Hubungkan ' + c.linkable + ' pesanan lama</button>' : '') +
+          '<button type="button" class="o-btn" data-cx="toggle">' + (c.disabled ? 'Aktifkan kembali akun' : 'Nonaktifkan akun') + '</button>' +
+          '<button type="button" class="o-btn danger" data-cx="delete">Hapus akun</button>' +
+        '</div>' +
+        '<h2 class="o-subh">Riwayat pesanan</h2><div id="cOrders"><p class="o-muted">Memuat…</p></div>' +
+      '</div>';
+    const r = await call('customer_orders&id=' + c.id);
+    const target = $('cOrders');
+    if (!target) return;
+    const STAT = { baru: 'Baru', dikonfirmasi: 'Dikonfirmasi', disiapkan: 'Disiapkan', siap: 'Siap', selesai: 'Selesai', dibatalkan: 'Dibatalkan' };
+    target.innerHTML = r && r.orders.length ? '<div class="o-plist">' + r.orders.map(o => '<div class="o-crow"><b>' + esc(o.code) + '</b><span class="o-pill ' + (o.status === 'dibatalkan' ? 'no' : 'warn') + '">' + esc(STAT[o.status] || o.status) + '</span>' +
+      '<span class="o-muted">' + o.items.map(i => i.qty + '× ' + esc(i.name)).join(', ') + '</span><b>' + rp(o.total) + '</b><span class="o-muted">' + fmtDay(o.createdAt) + (o.paid ? ' · Lunas' : '') + '</span></div>').join('') + '</div>' : '<div class="o-empty">Belum ada pesanan dari akun ini.</div>';
+  }
+  $('tabCustomers').addEventListener('input', e => { if (e.target.id === 'cq') { st.custQ = e.target.value; const pos = e.target.selectionStart; renderCustomers(); const i = $('cq'); i.focus(); i.setSelectionRange(pos, pos); } });
+  $('tabCustomers').addEventListener('click', async e => {
+    const row = e.target.closest('[data-cid]');
+    if (row) { st.custOpen = Number(row.dataset.cid); renderCustomerDetail(); window.scrollTo(0, 0); return; }
+    const b = e.target.closest('[data-cx]');
+    if (!b) return;
+    const act = b.dataset.cx, c = custById(st.custOpen);
+    if (act === 'back') { st.custOpen = null; renderCustomers(); return; }
+    if (!c) return;
+    const show = html => { const r = $('cResult'); r.innerHTML = html; r.hidden = false; };
+    if (act === 'reset') {
+      if (!confirm('Buat kata sandi sementara untuk ' + c.name + '? Kata sandi lamanya tidak berlaku lagi dan akunnya otomatis keluar dari perangkat mana pun.')) return;
+      const d = await call('customer_reset', { id: c.id });
+      if (!d) return;
+      st.cust = d.customers;
+      show('<b>Kata sandi sementara untuk ' + esc(c.name) + ':</b><div class="o-pwline"><code id="tmpPw">' + esc(d.result.password) + '</code> <button type="button" class="o-btn" data-cx="copy">Salin</button></div><p class="o-muted">Tampil sekali ini saja. Kirim lewat WhatsApp dan minta pembeli menggantinya di halaman Data diri setelah masuk.</p>');
+    } else if (act === 'copy') {
+      try { await navigator.clipboard.writeText($('tmpPw').textContent); toast('Tersalin.'); } catch (x) { toast('Salin manual: blok tulisannya.'); }
+    } else if (act === 'toggle') {
+      if (!c.disabled && !confirm('Nonaktifkan akun ' + c.name + '? Ia tidak bisa masuk lagi sampai diaktifkan kembali. Pesanan lamanya tetap tersimpan.')) return;
+      const d = await call('customer_toggle', { id: c.id });
+      if (d) { st.cust = d.customers; toast(d.result.disabled ? 'Akun dinonaktifkan.' : 'Akun diaktifkan kembali.'); renderCustomerDetail(); }
+    } else if (act === 'link') {
+      const d = await call('customer_link', { id: c.id });
+      if (d) { st.cust = d.customers; toast(d.result.linked + ' pesanan lama dihubungkan ke akun ini.'); renderCustomerDetail(); }
+    } else if (act === 'delete') {
+      if (!confirm('Hapus akun ' + c.name + ' secara permanen? Pesanannya tetap tersimpan (sebagai pesanan tamu), tetapi akunnya tidak bisa dipulihkan. Kalau hanya ingin menghentikan akses, pakai "Nonaktifkan akun".')) return;
+      const d = await call('customer_delete', { id: c.id });
+      if (d) { st.cust = d.customers; st.custOpen = null; toast('Akun dihapus.'); renderCustomers(); }
+    }
   });
 
   /* ---------- pengaturan toko ---------- */

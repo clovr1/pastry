@@ -23,10 +23,11 @@ function sb_attempts_recent(array $d, $key, $ip, $now, $window) {
     foreach ($d['attempts'] as $a) { if ($a['ip'] === $key . '|' . $ip && $a['at'] > $now - $window) $n++; }
     return $n;
 }
-function sb_log_in($uid) {
+function sb_log_in($uid, $sv = 0) {
     sb_user_session();
     session_regenerate_id(true);
     $_SESSION['uid'] = (int)$uid;
+    $_SESSION['sv'] = (int)$sv;
 }
 
 if ($action === 'me') {
@@ -89,7 +90,8 @@ if ($action === 'login') {
     });
     if ($res === 'blocked') sb_fail(429, 'Terlalu banyak percobaan. Coba lagi 10 menit lagi.');
     if ($res === 'wrong') { usleep(400000); sb_fail(401, 'Email atau kata sandi salah.'); }
-    sb_log_in($res['id']);
+    if (!empty($res['disabled'])) sb_fail(403, 'Akun ini dinonaktifkan oleh toko. Hubungi toko kalau ini keliru.');
+    sb_log_in($res['id'], $res['sv'] ?? 0);
     sb_json(['ok' => true, 'user' => sb_user_view($res)]);
 }
 

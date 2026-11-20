@@ -437,6 +437,89 @@ if ($action === 'collection_delete') {
     sb_json(sb_catalog_view());
 }
 
+/* ---------- Pelanggan (akun pembeli) ---------- */
+
+function sb_digits($v) { return preg_replace('/\D+/', '', (string)$v); }
+// nomor HP dibandingkan dari 9 angka terakhir, supaya 0812... dan 62812... dianggap sama
+function sb_phone_key($v) { $d = sb_digits($v); return strlen($d) > 9 ? substr($d, -9) : $d; }
+
+function sb_customers_view() {
+    $d = sb_store_read();
+    $stats = [];
+    foreach ($d['orders'] as $o) {
+        $uid = (int)($o['user_id'] ?? 0);
+        if ($uid) {
+            if (!isset($stats[$uid])) $stats[$uid] = ['orders' => 0, 'spent' => 0, 'last' => 0];
+            $stats[$uid]['orders']++;
+            if (($o['status'] ?? '') !== 'dibatalkan') $stats[$uid]['spent'] += (int)$o['total'];
+            $stats[$uid]['last'] = max($stats[$uid]['last'], (int)$o['created_at']);
+        }
+    }
+    $out = [];
+    foreach ($d['users'] as $u) {
+        $key = sb_phone_key($u['phone']); $linkable = 0;
+        foreach ($d['orders'] as $o) { if (empty($o['user_id']) && $key !== '' && sb_phone_key($o['phone']) === $key) $linkable++; }
+        $s = $stats[(int)$u['id']] ?? ['orders' => 0, 'spent' => 0, 'last' => 0];
+        $out[] = ['id' => (int)$u['id'], 'name' => $u['name'], 'email' => $u['email'], 'phone' => $u['phone'], 'createdAt' => (int)$u['created_at'],
+                  'disabled' => !empty($u['disabled']), 'orders' => $s['orders'], 'spent' => $s['spent'], 'lastOrder' => $s['last'], 'linkable' => $linkable];
+    }
+    usort($out, function ($a, $b) { return $b['createdAt'] <=> $a['createdAt']; });
+    return ['customers' => $out];
+}
+
+if ($action === 'customers') {
+    sb_require_owner();
+    sb_json(sb_customers_view());
+}
+
+if ($action === 'customer_orders') {
+    sb_require_owner();
+    $id = (int)($_GET['id'] ?? 0);
+    $all = sb_store_read()['orders'];
+    $out = [];
+    for ($i = count($all) - 1; $i >= 0 && count($out) < 100; $i--) { if ((int)($all[$i]['user_id'] ?? 0) === $id) $out[] = sb_order_view($all[$i], true); }
+    sb_json(['orders' => $out]);
+}
+
+if ($action === 'customer_toggle' || $action === 'customer_reset' || $action === 'customer_delete' || $action === 'customer_link') {
+    sb_require_post();
+    sb_require_owner();
+    $in = sb_body();
+    $id = (int)($in['id'] ?? 0);
+    $extra = null;
+    $res = sb_store_update(function (&$d) use ($action, $id, &$extra) {
+        $idx = null;
+        foreach ($d['users'] as $i => $u) { if ((int)$u['id'] === $id) $idx = $i; }
+        if ($idx === null) return 'missing';
+        if ($action === 'customer_toggle') {
+            $d['users'][$idx]['disabled'] = empty($d['users'][$idx]['disabled']);
+            $d['users'][$idx]['sv'] = (int)($d['users'][$idx]['sv'] ?? 0) + 1;   // sesi yang sedang masuk ikut berakhir
+            $extra = ['disabled' => !empty($d['users'][$idx]['disabled'])];
+        } elseif ($action === 'customer_reset') {
+            // kata sandi sementara yang mudah dibaca (tanpa huruf mirip seperti 0/O dan 1/l), tampil sekali kepada owner
+            $chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789'; $pw = '';
+            for ($k = 0; $k < 10; $k++) $pw .= $chars[random_int(0, strlen($chars) - 1)];
+            $d['users'][$idx]['pass'] = password_hash($pw, PASSWORD_DEFAULT);
+            $d['users'][$idx]['sv'] = (int)($d['users'][$idx]['sv'] ?? 0) + 1;
+            $extra = ['password' => $pw];
+        } elseif ($action === 'customer_delete') {
+            foreach ($d['orders'] as &$o) { if ((int)($o['user_id'] ?? 0) === $id) $o['user_id'] = null; }   // pesanan tetap ada, sebagai pesanan tamu
+            unset($o);
+            array_splice($d['users'], $idx, 1);
+        } else {
+            $key = sb_phone_key($d['users'][$idx]['phone']); $n = 0;
+            if ($key !== '') foreach ($d['orders'] as &$o) { if (empty($o['user_id']) && sb_phone_key($o['phone']) === $key) { $o['user_id'] = $id; $n++; } }
+            unset($o);
+            $extra = ['linked' => $n];
+        }
+        return 'ok';
+    });
+    if ($res === 'missing') sb_fail(404, 'Akun tidak ditemukan.');
+    $v = sb_customers_view();
+    if ($extra) $v['result'] = $extra;
+    sb_json($v);
+}
+
 if ($action === 'settings_save') {
     sb_require_post();
     sb_require_owner();

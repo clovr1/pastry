@@ -295,6 +295,7 @@ function sb_order_view(array $o, $owner) {
     if ($owner) {
         $view['id'] = (int)$o['id'];
         $view['phone'] = $o['phone'];
+        $view['userId'] = (int)($o['user_id'] ?? 0);
         $view['proof'] = $o['proof'] ?? null;
         $view['payClaimAt'] = (int)($o['pay_claim'] ?? 0);
     }
@@ -355,8 +356,12 @@ function sb_user_session() {
 function sb_user_id() {
     if (empty($_COOKIE['sb_user'])) return 0;
     if (session_status() !== PHP_SESSION_ACTIVE) sb_session_start('sb_user', 30 * 86400);
-    $id = (int)($_SESSION['uid'] ?? 0);
+    $id = (int)($_SESSION['uid'] ?? 0); $sv = (int)($_SESSION['sv'] ?? 0);
     session_write_close();
+    if (!$id) return 0;
+    // akun harus masih ada, tidak dinonaktifkan, dan versi sesinya sama (naik saat owner mereset kata sandi, sehingga sesi lama keluar sendiri)
+    $u = sb_user_find(sb_store_read(), $id);
+    if (!$u || !empty($u['disabled']) || (int)($u['sv'] ?? 0) !== $sv) return 0;
     return $id;
 }
 
