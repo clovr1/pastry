@@ -270,3 +270,13 @@ location ~* \.html$ { add_header Cache-Control "no-cache"; }
 **Pindah halaman lewat menu atas**: isi halaman memudar keluar lalu halaman baru naik halus, sedangkan menu atas dibuat diam (tidak memudar, tidak bergeser) dan hanya garis merah penanda menu aktif yang meluncur dari menu lama ke menu baru (warna tulisan menu langsung berganti, tanpa pudar silang yang membuat tulisan nyaris hilang di tengah transisi). Supaya menu atas tidak berkedut: lebar tiap tautan menu dikunci, lebar tulisan nama toko diingat dari kunjungan sebelumnya (disimpan di browser), dan selama transisi yang ditampilkan adalah gambar menu dari halaman lama, bukan gambar halaman baru yang diambil sebelum font siap. Memakai fitur View Transition browser (Chrome, Edge, dan Safari terbaru); browser lain pindah halaman seperti biasa, dan semuanya mati kalau pengguna memilih "kurangi gerakan". Gayanya ada di bagian `/* Indikator menu aktif ... */` pada `css/style.css`; menghapus aturan `@view-transition` di sana mematikan transisi halaman sepenuhnya.
 
 **Mencegah halaman kosong/menu berkedip saat pindah halaman**: setiap halaman punya `<link rel="expect" href="#top" blocking="render">` di `<head>`, yang membuat browser (Chrome/Edge terbaru) menunggu menu atas selesai dibuat sebelum menampilkan halaman baru, dan `<link rel="preload">` untuk logo. Tanpa itu, di komputer atau koneksi yang lambat halaman baru bisa tampil kosong sesaat dan transisi dibatalkan browser. Browser yang belum mendukung mengabaikannya tanpa efek buruk. Halaman baru yang kamu buat sendiri sebaiknya menyertakan dua baris itu.
+
+## Paket zip siap unggah
+
+Di komputermu, setelah `php tools/set-owner-password.php` (sekali) dan `php tools/bump-version.php`, jalankan:
+
+```bash
+php tools/make-deploy-zip.php
+```
+
+Hasilnya `deploy/sweetbite-deploy.zip` (folder `deploy/` tidak masuk Git). Isinya seluruh situs plus `api/config.php` dan menu yang sudah kamu ubah (`storage/menu-live.json`). Pesanan, akun, dan bukti bayar percobaan di komputermu, `api/diagnose.php`, folder `tools`, dan `.git` tidak ikut. Zip ini berisi hash kata sandi owner, jadi jangan dibagikan. Unggah dan ekstrak di `public_html` hosting, lalu ikuti langkah di bagian "Memasang di hosting".
