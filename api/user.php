@@ -78,21 +78,8 @@ function sb_google_keys($force = false) {
     }
     return is_array($cache) && !empty($cache['keys']) ? $cache['keys'] : [];
 }
-// Mengembalikan data pengguna dari token, atau string kode galat.
-function sb_google_verify($token, $clientId) {
-    if (!function_exists('openssl_verify')) return 'noopenssl';
-    if (!is_string($token) || strlen($token) > 4096 || substr_count($token, '.') !== 2) return 'invalid';
-    list($h64, $p64, $s64) = explode('.', $token);
-    $h = json_decode((string)sb_b64u($h64), true); $p = json_decode((string)sb_b64u($p64), true); $sig = sb_b64u($s64);
-    if (!is_array($h) || !is_array($p) || $sig === false || ($h['alg'] ?? '') !== 'RS256' || empty($h['kid'])) return 'invalid';
-    $key = null;
-    foreach ([false, true] as $force) {
-        foreach (sb_google_keys($force) as $k) { if (($k['kid'] ?? '') === $h['kid'] && ($k['kty'] ?? '') === 'RSA') $key = $k; }
-        if ($key) break;
-    }
-    if (!$key) return 'nokey';
-    $pem = sb_jwk_pem($key);
-    if (!$pem || openssl_verify($h64 . '.' . $p64, $sig, $pem, OPENSSL_ALGO_SHA256) !== 1) return 'invalid';
+// Memeriksa isi (claims) token: penerbit, tujuan, masa berlaku, dan email terverifikasi.
+function sb_google_claims($p, $clientId) {
     $now = time();
     if (!in_array($p['iss'] ?? '', ['accounts.google.com', 'https://accounts.google.com'], true)) return 'invalid';
     if (($p['aud'] ?? '') !== $clientId) return 'invalid';
@@ -101,6 +88,32 @@ function sb_google_verify($token, $clientId) {
     $email = sb_email($p['email'] ?? '');
     if ($email === '' || empty($p['sub'])) return 'invalid';
     return ['email' => $email, 'sub' => (string)$p['sub'], 'name' => (string)($p['name'] ?? '')];
+}
+// Mengembalikan data pengguna dari token, atau string kode galat.
+function sb_google_verify($token, $clientId) {
+    if (!is_string($token) || strlen($token) > 4096 || substr_count($token, '.') !== 2) return 'invalid';
+    list($h64, $p64, $s64) = explode('.', $token);
+    $h = json_decode((string)sb_b64u($h64), true); $p = json_decode((string)sb_b64u($p64), true); $sig = sb_b64u($s64);
+    if (!is_array($h) || !is_array($p) || $sig === false || ($h['alg'] ?? '') !== 'RS256' || empty($h['kid'])) return 'invalid';
+
+    if (!function_exists('openssl_verify')) {
+        // Cadangan untuk PHP tanpa ekstensi openssl: Google sendiri yang memeriksa tanda tangannya (butuh ekstensi curl).
+        if (!function_exists('curl_init')) return 'noopenssl';
+        $raw = sb_http_get('https://oauth2.googleapis.com/tokeninfo?id_token=' . rawurlencode($token));
+        $j = $raw ? json_decode($raw, true) : null;
+        if (!is_array($j)) return 'invalid';
+        return sb_google_claims($j, $clientId);
+    }
+
+    $key = null;
+    foreach ([false, true] as $force) {
+        foreach (sb_google_keys($force) as $k) { if (($k['kid'] ?? '') === $h['kid'] && ($k['kty'] ?? '') === 'RSA') $key = $k; }
+        if ($key) break;
+    }
+    if (!$key) return 'nokey';
+    $pem = sb_jwk_pem($key);
+    if (!$pem || openssl_verify($h64 . '.' . $p64, $sig, $pem, OPENSSL_ALGO_SHA256) !== 1) return 'invalid';
+    return sb_google_claims($p, $clientId);
 }
 
 if ($action === 'me') {

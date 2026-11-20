@@ -182,7 +182,7 @@ Pembeli bisa masuk atau daftar dengan satu klik memakai akun Google. Fitur ini b
 5. Salin **Client ID** (bentuknya `1234567890-abcdef.apps.googleusercontent.com`). Jangan pakai Client Secret, tidak diperlukan.
 6. Buka `/owner/` → **Pengaturan toko → Masuk dengan Google**, tempel Client ID, Simpan. Tombol Google langsung muncul di halaman Masuk. Kosongkan lagi untuk mematikannya.
 
-Cara kerjanya: tombol dari Google menghasilkan token; server memeriksa tanda tangannya dengan kunci publik Google (disimpan sementara di `storage/google-jwks.json`), memastikan token itu untuk situsmu, belum kedaluwarsa, dan emailnya terverifikasi. Syarat server: ekstensi PHP `openssl` (ada di hampir semua hosting) dan bisa mengakses `googleapis.com`.
+Cara kerjanya: tombol dari Google menghasilkan token; server memeriksa tanda tangannya dengan kunci publik Google (disimpan sementara di `storage/google-jwks.json`), memastikan token itu untuk situsmu, belum kedaluwarsa, dan emailnya terverifikasi. Syarat server: ekstensi PHP `openssl` (ada di hampir semua hosting) dan bisa mengakses `googleapis.com`. Kalau `openssl` tidak aktif tetapi `curl` aktif, server otomatis meminta Google yang memeriksa tokennya (sedikit lebih lambat). Di Laragon, `openssl` bisa diaktifkan lewat menu kanan-klik Laragon → PHP → Extensions → openssl.
 
 - Email yang sama dengan akun yang sudah ada akan tersambung ke akun itu (data lama tidak berubah).
 - Akun baru dari Google belum punya nomor HP; pembeli diarahkan melengkapinya di halaman Data diri (kecuali sedang di tengah pesanan). Mereka juga bisa membuat kata sandi di sana, tanpa kata sandi lama.
