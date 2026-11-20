@@ -941,11 +941,11 @@ if ($('shelfTheme')) $('shelfTheme').addEventListener('click', toggleTheme);
   sh.addEventListener('click', e => { if (e.target.closest('a[href]')) close(true); });   // tertutup seketika sebelum pindah halaman, supaya tidak ikut terekam di transisi
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && sh.classList.contains('open')) close(); });
   window.addEventListener('resize', () => { if (innerWidth > 900 && sh.classList.contains('open')) close(true); });
-  // geser rak ke kiri untuk menutup
+  // geser rak ke kanan untuk menutup (rak keluar dari kanan, searah tombol ☰)
   let x0 = null, dx = 0;
   sh.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; dx = 0; sh.style.transition = 'none'; }, { passive: true });
-  sh.addEventListener('touchmove', e => { if (x0 === null) return; dx = Math.min(0, e.touches[0].clientX - x0); sh.style.transform = 'translateX(' + dx + 'px)'; }, { passive: true });
-  sh.addEventListener('touchend', () => { if (x0 === null) return; sh.style.transition = ''; sh.style.transform = ''; x0 = null; if (dx < -70) close(); });
+  sh.addEventListener('touchmove', e => { if (x0 === null) return; dx = Math.max(0, e.touches[0].clientX - x0); sh.style.transform = 'translateX(' + dx + 'px)'; }, { passive: true });
+  sh.addEventListener('touchend', () => { if (x0 === null) return; sh.style.transition = ''; sh.style.transform = ''; x0 = null; if (dx > 70) close(); });
 })();
 paintThemeBtn();
 // jika pembeli belum memilih sendiri, ikuti perubahan pengaturan sistem
