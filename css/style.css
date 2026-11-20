@@ -1188,9 +1188,14 @@ html.navigating::before { content: ""; position: fixed; z-index: 100; top: 0; le
   .dbody { min-height: 0; }
 }
 
-/* Masuk dengan Google */
+/* Masuk dengan Google: tombol buatan sendiri + tombol asli Google transparan di atasnya */
 .auth-google { display: grid; gap: 14px; justify-items: center; }
 .auth-google[hidden] { display: none; }
-.auth-google .g-btn { display: flex; justify-content: center; min-height: 44px; width: 100%; color-scheme: light; }
+.g-wrap { position: relative; width: 100%; }
+.g-fake { display: flex; align-items: center; justify-content: center; gap: 12px; pointer-events: none; transition: border-color .2s, background .2s; }
+.g-fake svg { flex: none; }
+.g-wrap:hover .g-fake { border-color: var(--ink); }
+.g-wrap:active .g-fake { transform: scale(.985); }
+.g-btn { position: absolute; left: 0; top: 0; z-index: 2; opacity: .01; overflow: hidden; transform-origin: 0 0; color-scheme: light; cursor: pointer; }
 .auth-or { display: flex; align-items: center; gap: 12px; width: 100%; margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 .auth-or::before, .auth-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
