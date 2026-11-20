@@ -1,6 +1,7 @@
 {
   "config": {
     "shop": "Sweet Bite",
+    "googleClientId": "291468514758-04uka9njmh32c5kv95v4ol928qkcbbpg.apps.googleusercontent.com",
     "address": "Jl. Melati No. 12, Bandung",
     "deliveryText": "Ongkir mulai Rp 10.000. Minimal pesanan Rp 75.000.",
     "allergyNote": "Semua produk dibuat dengan tangan di dapur yang juga mengolah gluten, susu, telur, kacang-kacangan, dan kedelai. Karena itu kami tidak bisa menjamin produk bebas dari alergen, dan resep bisa berubah sewaktu-waktu. Kalau kamu punya alergi, tulis di catatan pesanan atau tanyakan dulu ke toko.",
