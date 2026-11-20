@@ -41,7 +41,6 @@
     root.innerHTML =
       '<div class="auth">' +
         '<div class="auth-head"><h1 id="aTitle"></h1><p id="aSub"></p></div>' +
-        (CONFIG.googleClientId ? '<div class="auth-google" id="gBox" hidden><div id="gBtn" class="g-btn"></div><p class="err" id="gErr" role="alert" hidden></p><p class="auth-or"><span>atau pakai email</span></p></div>' : '') +
         '<form id="fIn" class="auth-form" name="login" method="post" action="masuk.html" novalidate>' +
           field('inEmail', 'Email', 'email', ' name="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required') +
           field('inPw', 'Kata sandi', 'password', ' name="password" autocomplete="current-password" required') +
@@ -57,6 +56,7 @@
           '<p class="err" id="upErr" role="alert" hidden></p>' +
           '<button class="btn block" type="submit" id="upBtn">Buat akun</button>' +
         '</form>' +
+        (CONFIG.googleClientId ? '<div class="auth-google" id="gBox" hidden><p class="auth-or"><span>atau</span></p><div id="gBtn" class="g-btn"></div><p class="err" id="gErr" role="alert" hidden></p></div>' : '') +
         '<div class="auth-switch"><span id="swText"></span><button class="btn ghost block" type="button" id="swBtn"></button></div>' +
       '</div>';
 
