@@ -292,3 +292,7 @@ Supaya pindah halaman terasa cepat, `.htaccess` di folder utama mengatur cache: 
 **Penting setelah mengubah CSS atau JavaScript**: jalankan `php tools/bump-version.php` sebelum mengunggah, kalau tidak, pengunjung yang pernah membuka situs masih memakai file lama dari cache. Lalu muat ulang dengan Ctrl+F5.
 
 Saat mengklik tautan apa pun, garis merah tipis langsung berjalan di bagian paling atas layar sebagai tanda halaman sedang dimuat.
+
+## Tampilan HP: bar menu di bawah dan keranjang dari bawah
+
+Di layar sampai 900 px (HP dan tablet), menu Home/Product/Collection pindah ke **bar di bawah layar** bersama Cart dan Account, sehingga bagian atas hanya logo dan tombol tema (tinggi sekitar 60 px, sebelumnya sekitar 134 px). Di layar lebih lebar tampilan atas tetap seperti biasa. Di HP (sampai 700 px), **keranjang naik dari bawah** setinggi maksimal 85% layar, dengan latar gelap di atasnya yang bisa diketuk, tombol ✕, atau digeser ke bawah untuk menutup. Halaman Detail pesanan sengaja tanpa bar bawah supaya fokus ke pengisian. Gayanya ada di bagian `/* HP: bar menu di bawah layar ... */` pada `css/style.css`, dan markup bar ada di fungsi `mountShell` pada `js/app.js`.

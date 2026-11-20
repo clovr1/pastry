@@ -121,6 +121,18 @@ function mountShell() {
           '<span class="cn" id="cartN" hidden>0</span></button></div>' +
     '</header></div>');
   document.getElementById('topbar').insertAdjacentHTML('beforeend', closedBarHtml());
+  // bar menu di bawah layar (hanya tampil di HP/tablet; di laptop disembunyikan lewat CSS)
+  const ti = (href, label, svg, on, extra) => '<a class="tab-i"' + (extra || '') + ' href="' + href + '"' + (on ? ' aria-current="page"' : '') + '>' + svg + '<span class="tab-l">' + label + '</span></a>';
+  const S24 = p => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + p + '</svg>';
+  document.body.insertAdjacentHTML('beforeend',
+    '<nav class="tabbar" id="tabbar" aria-label="Menu utama">' +
+      ti('index.html', 'Home', S24('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v10h13V10"/>'), PAGE === 'home') +
+      ti('products.html', 'Product', S24('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'), PAGE === 'products' || PAGE === 'product') +
+      ((CONFIG.collections || []).length ? ti('koleksi.html', 'Collection', S24('<path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6L3.3 9.3l6.1-.7L12 3z"/>'), PAGE === 'koleksi') : '') +
+      '<button class="tab-i" type="button" id="tabCart" aria-label="Shopping Cart, 0 item">' + S24('<circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 7H6"/>') + '<span class="tab-l">Cart</span><span class="cn" id="tabCartN" hidden>0</span></button>' +
+      ti('masuk.html', 'Account', S24('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'), ['masuk', 'akun', 'profil'].includes(PAGE), ' data-acct') +
+    '</nav>');
+  document.body.classList.add('has-tabbar');
   document.querySelector('.wrap').insertAdjacentHTML('afterbegin', '<div class="notice" id="notice" role="status" hidden></div>');
   document.body.insertAdjacentHTML('beforeend', SHELL_PANEL);
   if (PAGE !== 'profil') {   // halaman Data diri sengaja tanpa footer
@@ -481,7 +493,7 @@ document.addEventListener('click', e => {
 /* Animasi tambah ke keranjang: bulatan berisi foto produk (dengan ekor) keluar dari tombol yang ditekan, melengkung ke ikon keranjang.
    Angka di ikon keranjang ditahan dan baru naik saat bulatan mendarat, lalu ikon bergoyang dan memancarkan gelombang. */
 function flyToCart(btn, imgSrc) {
-  const cart = document.getElementById('cartBtn');
+  const cart = ['cartBtn', 'tabCart'].map(id => document.getElementById(id)).find(e => e && e.getBoundingClientRect().width > 0) || document.getElementById('cartBtn');
   if (!cart || !btn || reducedMotion() || !cart.getBoundingClientRect().width) return;
   const bar = document.getElementById('topbar');
   if (bar && bar.classList.contains('is-hidden')) bar.classList.remove('is-hidden');   // menu atas tersembunyi: munculkan supaya tujuan terlihat
@@ -672,12 +684,16 @@ function thumbImg(it) { return it.img ? '<img src="' + esc(it.img) + '" alt="" l
 /* Angka di ikon keranjang: kalau animasi lempar sedang berjalan, angka ditahan dan baru naik saat bulatan mendarat. */
 let badgeHold = null, flying = 0;   // angka yang ditampilkan selama animasi (null = ikuti isi keranjang)
 function paintBadge(n, pop) {
-  const badge = $('cartN');
-  if (!badge) return;
-  const first = badge.dataset.n === undefined, prev = Number(badge.dataset.n || 0);
-  badge.textContent = n > 99 ? '99+' : n; badge.hidden = n === 0;
-  if (pop && !first && n > prev) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
-  badge.dataset.n = String(n);
+  const first0 = $('cartN');
+  if (!first0) return;
+  const first = first0.dataset.n === undefined, prev = Number(first0.dataset.n || 0);
+  ['cartN', 'tabCartN'].forEach(id => {
+    const badge = $(id);
+    if (!badge) return;
+    badge.textContent = n > 99 ? '99+' : n; badge.hidden = n === 0;
+    if (pop && !first && n > prev) { badge.classList.remove('pop'); void badge.offsetWidth; badge.classList.add('pop'); }
+    badge.dataset.n = String(n);
+  });
 }
 function renderCart() {
   const t = totals(), ids = Object.keys(state.cart), has = ids.length > 0;
@@ -894,7 +910,7 @@ document.addEventListener('click', e => {
   change(u.dataset.up, 1);
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && drawerOpen()) closeCart(); });
-if (PAGE !== 'checkout') $('cartBtn').addEventListener('click', openCart);   // di checkout, tombol ini tautan ke halaman keranjang
+if (PAGE !== 'checkout') { $('cartBtn').addEventListener('click', openCart); if ($('tabCart')) $('tabCart').addEventListener('click', openCart); }   // di checkout, tombol ini tautan ke halaman keranjang
 $('themeBtn').addEventListener('click', toggleTheme);
 paintThemeBtn();
 // jika pembeli belum memilih sendiri, ikuti perubahan pengaturan sistem
@@ -902,12 +918,12 @@ try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change
 /* ---- Akun pembeli: tautan "Login" berubah jadi "Akun" kalau sudah masuk ---- */
 const USER_HINT = 'sweetbite-user';
 function paintLogin(user) {
-  const a = $('loginLink');
-  if (!a) return;
-  a.href = user ? 'akun.html' : 'masuk.html';
-  a.setAttribute('aria-label', user ? 'Akun saya' : 'Login');
-  a.title = user ? 'Akun saya' : 'Login';
-  a.classList.toggle('on', !!user);
+  document.querySelectorAll('#loginLink, [data-acct]').forEach(a => {
+    a.href = user ? 'akun.html' : 'masuk.html';
+    a.setAttribute('aria-label', user ? 'Akun saya' : 'Login');
+    if (a.id === 'loginLink') a.title = user ? 'Akun saya' : 'Login';
+    a.classList.toggle('on', !!user);
+  });
 }
 function rememberUser(user) { try { user ? sessionStorage.setItem(USER_HINT, '1') : sessionStorage.removeItem(USER_HINT); } catch (e) {} paintLogin(user); }
 try { if (sessionStorage.getItem(USER_HINT)) paintLogin({}); } catch (e) {}   // tebakan awal supaya tautan tidak berkedip
@@ -917,6 +933,15 @@ const authReady = fetch('api/user.php?action=me', { cache: 'no-store' }).then(r 
   return user;
 }).catch(() => null);
 $('closeCart').addEventListener('click', closeCart);
+// di HP keranjang berupa lembar dari bawah: geser kepala lembar ke bawah untuk menutup
+(function () {
+  const d = $('drawer'), h = d && d.querySelector('.dhead');
+  if (!h) return;
+  let y0 = null, dy = 0;
+  h.addEventListener('touchstart', e => { if (innerWidth > 700) return; y0 = e.touches[0].clientY; dy = 0; d.style.transition = 'none'; }, { passive: true });
+  h.addEventListener('touchmove', e => { if (y0 === null) return; dy = Math.max(0, e.touches[0].clientY - y0); d.style.transform = 'translateY(' + dy + 'px)'; }, { passive: true });
+  h.addEventListener('touchend', () => { if (y0 === null) return; d.style.transition = ''; d.style.transform = ''; y0 = null; if (dy > 90) closeCart(); });
+})();
 $('scrim').addEventListener('click', closeCart);
 $('toMenu').addEventListener('click', e => { if (PAGE === 'products') { e.preventDefault(); closeCart(); } });
 

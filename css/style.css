@@ -1135,3 +1135,40 @@ html.navigating::before { content: ""; position: fixed; z-index: 100; top: 0; le
 .nav a.pending { color: var(--accent); }
 .nav a:active { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) { html.navigating::before { animation: none; transform: scaleX(.6); } }
+
+/* ============ HP: bar menu di bawah layar + keranjang sebagai lembar dari bawah ============ */
+.tabbar { display: none; }
+@media (max-width: 900px) {
+  :root { --tab-h: 60px; }
+  .nav, .nav-ind, .top-r .acctbtn, .top-r .cartbtn { display: none; }
+  .top { grid-template-areas: "brand cart"; gap: 8px 12px; padding-block: 10px; }
+  .banner { height: calc(100vh - var(--hdr-h, 64px) - var(--tab-h) - env(safe-area-inset-bottom, 0px)); height: calc(100svh - var(--hdr-h, 64px) - var(--tab-h) - env(safe-area-inset-bottom, 0px)); }
+  body.has-tabbar { padding-bottom: calc(56px + var(--tab-h) + env(safe-area-inset-bottom, 0px)); }
+  body.has-tabbar .foot { margin-bottom: calc(-56px - var(--tab-h) - env(safe-area-inset-bottom, 0px)); padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px)); }
+  .tabbar { display: flex; position: fixed; z-index: 28; left: 0; right: 0; bottom: 0; height: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--bg); border-top: 1px solid var(--line); }
+  .tab-i { flex: 1; min-width: 0; position: relative; display: grid; place-items: center; align-content: center; gap: 4px; padding: 0; border: 0; background: transparent;
+    color: var(--muted); text-decoration: none; font: inherit; -webkit-tap-highlight-color: transparent; }
+  .tab-i svg { width: 23px; height: 23px; }
+  .tab-l { font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; line-height: 1; }
+  .tab-i[aria-current], .tab-i.pending, .tab-i:active { color: var(--accent); }
+  .tab-i[aria-current]::before { content: ""; position: absolute; top: -1px; left: 50%; width: 28px; height: 2px; margin-left: -14px; background: var(--accent); border-radius: 0 0 2px 2px; }
+  .tab-i .cn { position: absolute; top: 7px; left: calc(50% + 6px); min-width: 17px; height: 17px; padding: 0 4px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 700; line-height: 17px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+  .tab-i .cn[hidden] { display: none; }
+  .tab-i.on svg { color: var(--ink); }
+  .tab-i.on::after { content: ""; position: absolute; top: 12px; left: calc(50% + 4px); width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 2px var(--bg); }
+  #tabCart.wiggle svg { animation: cartWiggle .55s var(--ease); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.vt-theme) .tabbar { view-transition-name: tabbar; }
+  ::view-transition-group(tabbar) { animation: none; }
+  ::view-transition-old(tabbar) { display: none; }
+  ::view-transition-new(tabbar) { animation: none; }
+}
+@media (max-width: 700px) {
+  .drawer { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 85vh; max-height: 85svh; min-height: 46vh; min-height: 46svh; border-radius: 22px 22px 0 0;
+    transform: translateY(100%); box-shadow: 0 -20px 50px rgba(0, 0, 0, .28); padding-top: 0; }
+  .drawer::before { content: ""; flex: none; width: 40px; height: 4px; border-radius: 2px; background: var(--line); margin: 9px auto 0; }
+  .dhead { padding-top: 10px; touch-action: none; }
+  .dbody { min-height: 0; }
+}

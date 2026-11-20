@@ -55,9 +55,9 @@
     let u; try { u = new URL(a.href, location.href); } catch (x) { return; }
     if (u.origin !== location.origin || (u.pathname === location.pathname && u.search === location.search)) return;
     html.classList.add('navigating');
-    const nav = a.closest('.nav'); if (nav) a.classList.add('pending');
+    const nav = a.closest('.nav, .tabbar'); if (nav) a.classList.add('pending');
   }, true);
-  window.addEventListener('pageshow', () => { html.classList.remove('navigating'); document.querySelectorAll('.nav a.pending').forEach(x => x.classList.remove('pending')); });
+  window.addEventListener('pageshow', () => { html.classList.remove('navigating'); document.querySelectorAll('.nav a.pending, .tabbar .pending').forEach(x => x.classList.remove('pending')); });
 
   /* ---- gulir: garis kemajuan di atas, paralaks dan pudar pada banner ---- */
   const bar = document.createElement('i');
