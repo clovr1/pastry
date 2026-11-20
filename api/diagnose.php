@@ -28,6 +28,9 @@ foreach (['json', 'session', 'hash', 'pcre', 'date'] as $e) {
 echo "  password_hash : " . $yn(function_exists('password_hash')) . "\n";
 echo "  random_bytes  : " . $yn(function_exists('random_bytes')) . "\n";
 echo "  mbstring      : " . $yn(extension_loaded('mbstring')) . " (boleh tidak aktif)\n";
+echo "Untuk masuk dengan Google (cukup salah satu aktif):\n";
+echo "  openssl       : " . $yn(function_exists('openssl_verify')) . "\n";
+echo "  curl          : " . $yn(function_exists('curl_init')) . "\n";
 echo "Folder storage       : " . $storage . "\n";
 echo "  ada                : " . $yn(is_dir($storage)) . "\n";
 echo "  bisa ditulis       : " . $yn(is_writable($storage)) . "\n";
@@ -36,6 +39,9 @@ echo "api/config.php ada   : " . $yn(is_file($cfgFile)) . "\n";
 echo "Kata sandi owner     : " . $yn(is_array($cfg) && !empty($cfg['owner_password_hash'])) . " (sudah dibuat)\n";
 
 echo "\nKESIMPULAN\n";
+if (!function_exists('openssl_verify') && !function_exists('curl_init')) {
+    echo "Masuk dengan Google belum bisa: aktifkan ekstensi openssl (atau curl) di php.ini, lalu muat ulang Apache.\n";
+}
 $need = ['json', 'session', 'hash', 'pcre', 'date'];
 $missing = array_filter($need, function ($e) { return !extension_loaded($e); });
 if ($missing) {
